@@ -9,8 +9,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  BarChart,
+  ComposedChart,
   Bar,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -60,11 +61,11 @@ export function ImplementationActivityChart({
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={400}>
-          <BarChart
+          <ComposedChart
             data={chartData}
             margin={{
               top: 20,
-              right: 30,
+              right: 60,
               left: 20,
               bottom: 80,
             }}
@@ -77,13 +78,36 @@ export function ImplementationActivityChart({
               height={100}
               interval={0}
             />
-            <YAxis />
+            <YAxis
+              yAxisId="left"
+              label={{ value: "Commits", angle: -90, position: "insideLeft" }}
+            />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              label={{ value: "Lines", angle: 90, position: "insideRight" }}
+            />
             <Tooltip />
             <Legend />
-            <Bar dataKey="commits" fill="#8884d8" name="Commits" />
-            <Bar dataKey="linesAdded" fill="#82ca9d" name="Lines Added" />
-            <Bar dataKey="linesDeleted" fill="#ffc658" name="Lines Deleted" />
-          </BarChart>
+            <Bar
+              yAxisId="left"
+              dataKey="commits"
+              fill="#8884d8"
+              name="Commits"
+            />
+            <Bar
+              yAxisId="right"
+              dataKey="linesAdded"
+              fill="#82ca9d"
+              name="Lines Added"
+            />
+            <Bar
+              yAxisId="right"
+              dataKey="linesDeleted"
+              fill="#ffc658"
+              name="Lines Deleted"
+            />
+          </ComposedChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>

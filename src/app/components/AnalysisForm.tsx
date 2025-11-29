@@ -56,9 +56,7 @@ export function AnalysisForm({
     e.preventDefault();
 
     // Don't submit if date range is invalid
-    if (!dateRangeValidation.valid) {
-      return;
-    }
+    if (!dateRangeValidation.valid) return;
 
     const request: AnalysisRequest = {
       repositoryUrl: repositoryUrl.trim(),

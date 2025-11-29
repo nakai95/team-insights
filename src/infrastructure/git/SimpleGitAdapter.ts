@@ -87,16 +87,12 @@ export class SimpleGitAdapter implements IGitOperations {
         "log",
         "--all", // Include all branches
         "--numstat", // Include file change statistics
-        "--format=%H%n%an%n%ae%n%aI%n%s%n%b%n--END-COMMIT--", // Custom format for parsing
+        "--format=format:COMMIT_START%nHASH:%H%nAUTHOR:%an%nEMAIL:%ae%nDATE:%aI%nMESSAGE:%s%n", // Labeled format for easy parsing
       ];
 
-      if (sinceDate) {
-        logOptions.push(`--since=${sinceDate.toISOString()}`);
-      }
+      if (sinceDate) logOptions.push(`--since=${sinceDate.toISOString()}`);
 
-      if (untilDate) {
-        logOptions.push(`--until=${untilDate.toISOString()}`);
-      }
+      if (untilDate) logOptions.push(`--until=${untilDate.toISOString()}`);
 
       // Get raw log output
       const logResult = await repoGit.raw(logOptions);
@@ -126,29 +122,49 @@ export class SimpleGitAdapter implements IGitOperations {
 
   /**
    * Parse raw git log output into structured GitCommit objects
-   * Format: hash, author name, author email, date, subject, body, --END-COMMIT--, numstat entries
+   * Format: COMMIT_START followed by labeled fields (HASH:, AUTHOR:, etc.) and numstat entries
    */
   private parseGitLog(logOutput: string): GitCommit[] {
     const commits: GitCommit[] = [];
 
-    // Split by commit delimiter
+    // Split by COMMIT_START delimiter
     const commitBlocks = logOutput
-      .split("--END-COMMIT--")
+      .split("COMMIT_START")
       .filter((block) => block.trim());
 
     for (const block of commitBlocks) {
       const lines = block.trim().split("\n");
 
-      if (lines.length < 5) {
-        // Skip malformed entries
-        continue;
+      // Parse labeled commit fields
+      let hash = "";
+      let author = "";
+      let email = "";
+      let dateStr = "";
+      let message = "";
+      const numstatLines: string[] = [];
+
+      for (const line of lines) {
+        // Extract value after label prefix (e.g., "HASH:" is 5 chars, "AUTHOR:" is 7 chars)
+        if (line.startsWith("HASH:")) {
+          hash = line.substring(5).trim(); // Skip "HASH:" (5 chars)
+        } else if (line.startsWith("AUTHOR:")) {
+          author = line.substring(7).trim(); // Skip "AUTHOR:" (7 chars)
+        } else if (line.startsWith("EMAIL:")) {
+          email = line.substring(6).trim(); // Skip "EMAIL:" (6 chars)
+        } else if (line.startsWith("DATE:")) {
+          dateStr = line.substring(5).trim(); // Skip "DATE:" (5 chars)
+        } else if (line.startsWith("MESSAGE:")) {
+          message = line.substring(8).trim(); // Skip "MESSAGE:" (8 chars)
+        } else if (line.includes("\t")) {
+          // This is a numstat line (TAB-separated: additions, deletions, filename)
+          numstatLines.push(line);
+        }
       }
 
-      const hash = lines[0]?.trim() || "";
-      const author = lines[1]?.trim() || "";
-      const email = lines[2]?.trim() || "";
-      const dateStr = lines[3]?.trim() || "";
-      const message = lines[4]?.trim() || "";
+      // Skip if essential fields are missing
+      if (!hash || !dateStr) {
+        continue;
+      }
 
       // Parse date
       const date = new Date(dateStr);
@@ -157,47 +173,9 @@ export class SimpleGitAdapter implements IGitOperations {
         continue;
       }
 
-      // Parse numstat lines (after message and empty line)
-      let filesChanged = 0;
-      let linesAdded = 0;
-      let linesDeleted = 0;
-
-      // Find where numstat data starts (after message lines)
-      let numstatStartIndex = 5;
-      while (numstatStartIndex < lines.length) {
-        const line = lines[numstatStartIndex];
-        if (!line || line.trim() === "") {
-          numstatStartIndex++;
-          continue;
-        }
-
-        // Numstat format: additions deletions filename
-        const parts = line.trim().split(/\s+/);
-        if (parts.length >= 3) {
-          const additions = parts[0];
-          const deletions = parts[1];
-
-          // Skip if parts are undefined
-          if (!additions || !deletions) continue;
-
-          // Handle binary files (marked with -)
-          if (additions !== "-" && deletions !== "-") {
-            const addNum = parseInt(additions, 10);
-            const delNum = parseInt(deletions, 10);
-
-            if (!isNaN(addNum) && !isNaN(delNum)) {
-              linesAdded += addNum;
-              linesDeleted += delNum;
-              filesChanged++;
-            }
-          } else {
-            // Binary file, count as changed but no line stats
-            filesChanged++;
-          }
-        }
-
-        numstatStartIndex++;
-      }
+      // Parse numstat lines
+      const { filesChanged, linesAdded, linesDeleted } =
+        this.parseNumstat(numstatLines);
 
       commits.push({
         hash,
@@ -212,5 +190,45 @@ export class SimpleGitAdapter implements IGitOperations {
     }
 
     return commits;
+  }
+
+  /**
+   * Parse numstat lines to extract file change statistics
+   */
+  private parseNumstat(numstatLines: string[]): {
+    filesChanged: number;
+    linesAdded: number;
+    linesDeleted: number;
+  } {
+    let filesChanged = 0;
+    let linesAdded = 0;
+    let linesDeleted = 0;
+
+    for (const line of numstatLines) {
+      const parts = line.split("\t");
+      if (parts.length >= 3) {
+        const additions = parts[0];
+        const deletions = parts[1];
+
+        if (!additions || !deletions) continue;
+
+        // Handle binary files (marked with -)
+        if (additions !== "-" && deletions !== "-") {
+          const addNum = parseInt(additions, 10);
+          const delNum = parseInt(deletions, 10);
+
+          if (!isNaN(addNum) && !isNaN(delNum)) {
+            linesAdded += addNum;
+            linesDeleted += delNum;
+            filesChanged++;
+          }
+        } else {
+          // Binary file, count as changed but no line stats
+          filesChanged++;
+        }
+      }
+    }
+
+    return { filesChanged, linesAdded, linesDeleted };
   }
 }
