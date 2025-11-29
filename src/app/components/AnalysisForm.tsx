@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,7 +11,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle, AlertTriangle } from "lucide-react";
 import { AnalysisRequest } from "@/application/dto/AnalysisRequest";
+import { DateRange } from "@/domain/value-objects/DateRange";
 
 export interface AnalysisFormProps {
   onSubmit: (request: AnalysisRequest) => void;
@@ -31,8 +34,31 @@ export function AnalysisForm({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+  // Validate date range and get warnings
+  const dateRangeValidation = useMemo(() => {
+    if (!startDate || !endDate) {
+      return { valid: true, error: null, warning: null };
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const result = DateRange.create(start, end);
+    if (!result.ok) {
+      return { valid: false, error: result.error.message, warning: null };
+    }
+
+    const warning = result.value.getLargeRangeWarning();
+    return { valid: true, error: null, warning };
+  }, [startDate, endDate]);
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Don't submit if date range is invalid
+    if (!dateRangeValidation.valid) {
+      return;
+    }
 
     const request: AnalysisRequest = {
       repositoryUrl: repositoryUrl.trim(),
@@ -101,6 +127,9 @@ export function AnalysisForm({
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
                 disabled={isLoading}
+                className={
+                  dateRangeValidation.error ? "border-destructive" : ""
+                }
               />
             </div>
 
@@ -112,15 +141,36 @@ export function AnalysisForm({
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
                 disabled={isLoading}
+                className={
+                  dateRangeValidation.error ? "border-destructive" : ""
+                }
               />
             </div>
           </div>
+
+          {dateRangeValidation.error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{dateRangeValidation.error}</AlertDescription>
+            </Alert>
+          )}
+
+          {dateRangeValidation.warning && (
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{dateRangeValidation.warning}</AlertDescription>
+            </Alert>
+          )}
 
           <p className="text-sm text-muted-foreground">
             Leave dates empty to analyze the last 6 months
           </p>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoading || !dateRangeValidation.valid}
+          >
             {isLoading ? "Analyzing..." : "Analyze Repository"}
           </Button>
         </form>

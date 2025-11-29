@@ -28,6 +28,31 @@ export class DateRange {
     return ok(new DateRange(start, end));
   }
 
+  /**
+   * Check if the date range is large and may impact performance
+   * Returns true if range exceeds 2 years
+   */
+  isLargeRange(): boolean {
+    const twoYearsInMs = 2 * 365 * 24 * 60 * 60 * 1000;
+    const rangeInMs = this.end.getTime() - this.start.getTime();
+    return rangeInMs > twoYearsInMs;
+  }
+
+  /**
+   * Get a warning message for large date ranges
+   * Returns null if range is not considered large
+   */
+  getLargeRangeWarning(): string | null {
+    if (!this.isLargeRange()) {
+      return null;
+    }
+
+    const years = Math.floor(this.durationInDays / 365);
+    const months = Math.floor((this.durationInDays % 365) / 30);
+
+    return `Analyzing ${years > 0 ? `${years} year${years > 1 ? "s" : ""}` : ""}${years > 0 && months > 0 ? " and " : ""}${months > 0 ? `${months} month${months > 1 ? "s" : ""}` : ""} of data may take longer and use more resources.`;
+  }
+
   static defaultRange(): DateRange {
     const end = new Date();
     const start = new Date();

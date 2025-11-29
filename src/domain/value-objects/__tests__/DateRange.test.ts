@@ -163,4 +163,92 @@ describe("DateRange", () => {
       }
     });
   });
+
+  describe("isLargeRange", () => {
+    it.each([
+      { years: 1, expected: false, description: "1 year range" },
+      { years: 2, expected: false, description: "2 year range (boundary)" },
+      { years: 3, expected: true, description: "3 year range" },
+      { years: 5, expected: true, description: "5 year range" },
+    ] as const)(
+      "should return $expected for $description",
+      ({ years, expected }) => {
+        const end = new Date("2024-01-01");
+        const start = new Date(end);
+        start.setFullYear(start.getFullYear() - years);
+        const result = DateRange.create(start, end);
+
+        expect(result.ok).toBe(true);
+        if (result.ok) {
+          expect(result.value.isLargeRange()).toBe(expected);
+        }
+      },
+    );
+
+    it("should return false for 6-month range", () => {
+      const end = new Date("2024-06-01");
+      const start = new Date("2024-01-01");
+      const result = DateRange.create(start, end);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.isLargeRange()).toBe(false);
+      }
+    });
+  });
+
+  describe("getLargeRangeWarning", () => {
+    it("should return null for ranges under 2 years", () => {
+      const end = new Date("2024-01-01");
+      const start = new Date("2023-01-01");
+      const result = DateRange.create(start, end);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.getLargeRangeWarning()).toBeNull();
+      }
+    });
+
+    it("should return warning message for 3 year range", () => {
+      const end = new Date("2024-01-01");
+      const start = new Date("2021-01-01");
+      const result = DateRange.create(start, end);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        const warning = result.value.getLargeRangeWarning();
+        expect(warning).not.toBeNull();
+        expect(warning).toContain("3 year");
+        expect(warning).toContain("may take longer");
+      }
+    });
+
+    it("should return warning message for 5 year range", () => {
+      const end = new Date("2024-01-01");
+      const start = new Date("2019-01-01");
+      const result = DateRange.create(start, end);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        const warning = result.value.getLargeRangeWarning();
+        expect(warning).not.toBeNull();
+        expect(warning).toContain("5 year");
+        expect(warning).toContain("use more resources");
+      }
+    });
+
+    it("should handle plural years in warning message", () => {
+      const end = new Date("2024-06-01");
+      const start = new Date("2021-01-01");
+      const result = DateRange.create(start, end);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        const warning = result.value.getLargeRangeWarning();
+        expect(warning).not.toBeNull();
+        expect(warning).toContain("3 years");
+        expect(warning).toContain("may take longer");
+      }
+    });
+  });
 });
