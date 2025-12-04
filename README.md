@@ -10,6 +10,10 @@ Visualize GitHub repository activity to understand team dynamics. Track commits,
   - Pull request creation and review activity
   - Time-based activity trends
   - Contributor rankings and comparisons
+- **Identity Merging**: Merge duplicate contributor identities that represent the same person
+  - Interactive UI for selecting contributors to merge
+  - Preview merged metrics before confirming
+  - Aggregate implementation and review activity across identities
 - **Custom Date Ranges**: Analyze activity over specific time periods (default: last 6 months)
 - **Visual Dashboard**: Interactive charts and tables for easy data exploration
 - **Real-time Validation**: Immediate feedback on input validation and data quality
@@ -86,7 +90,14 @@ pnpm start
    - Review activity rankings
    - Detailed contributor list with sortable columns
 
-4. **Analyze another repository** using the "Analyze Another Repository" button
+4. **Merge duplicate identities** (optional):
+   - Click "Merge Identities" button
+   - Select contributors that represent the same person
+   - Choose a primary identity to preserve
+   - Review the merged metrics preview
+   - Confirm to merge and update the dashboard
+
+5. **Analyze another repository** using the "Analyze Another Repository" button
 
 ## GitHub Personal Access Token
 
@@ -158,23 +169,26 @@ This project uses Husky and lint-staged to ensure code quality:
 team-insights/
 ├── src/
 │   ├── domain/              # Domain layer (business logic)
-│   │   ├── entities/        # Contributor, RepositoryAnalysis
+│   │   ├── entities/        # Contributor, RepositoryAnalysis, IdentityMerge
 │   │   ├── value-objects/   # Email, DateRange, RepositoryUrl, etc.
-│   │   ├── services/        # ActivityAggregationService
-│   │   ├── interfaces/      # Port interfaces (IGitOperations, IGitHubAPI)
+│   │   ├── services/        # ActivityAggregationService, ContributorService
+│   │   ├── interfaces/      # Port interfaces (IGitOperations, IGitHubAPI, IStoragePort)
 │   │   └── types.ts         # Domain types and enums
 │   ├── application/         # Application layer (use cases)
-│   │   ├── use-cases/       # AnalyzeRepository, FetchGitData, CalculateMetrics
+│   │   ├── use-cases/       # AnalyzeRepository, FetchGitData, CalculateMetrics, MergeIdentities
 │   │   ├── dto/             # Data transfer objects
 │   │   └── mappers/         # Entity to DTO mappers
 │   ├── infrastructure/      # Infrastructure layer (adapters)
 │   │   ├── git/             # SimpleGitAdapter, GitLogParser
 │   │   ├── github/          # OctokitAdapter
+│   │   ├── storage/         # LocalStorageAdapter
 │   │   └── filesystem/      # TempDirectoryManager
-│   ├── app/                 # Presentation layer (Next.js App Router)
-│   │   ├── components/      # React components
-│   │   ├── hooks/           # Custom React hooks
-│   │   ├── actions/         # Server Actions
+│   ├── presentation/        # Presentation layer (React components & hooks)
+│   │   ├── components/      # IdentityMerger, etc.
+│   │   └── hooks/           # useIdentityMerge
+│   ├── app/                 # Next.js App Router
+│   │   ├── components/      # Dashboard, AnalysisForm
+│   │   ├── actions/         # Server Actions (analyzeRepository, mergeIdentities)
 │   │   └── page.tsx         # Routes
 │   ├── components/ui/       # Shared UI components (shadcn/ui)
 │   └── lib/                 # Utilities and helpers
@@ -204,7 +218,7 @@ For production deployment, consider:
 - Server Actions process analysis synchronously; very large repositories may timeout
 - Git cloning happens on the server; requires sufficient disk space
 - GitHub API pagination is limited to 100 results per page
-- Identity merging (User Story 3) is not yet implemented
+- Identity merge preferences are session-only (not persisted across page reloads)
 
 ## Contributing
 
