@@ -1,0 +1,279 @@
+import { Octokit } from "@octokit/rest";
+import {
+  IGitHubAPI,
+  PullRequest,
+  ReviewComment,
+  RateLimitInfo,
+} from "@/domain/interfaces/IGitHubAPI";
+import { Result, ok, err } from "@/lib/result";
+import { logger } from "@/lib/utils/logger";
+import { maskToken } from "@/lib/utils/tokenMasker";
+
+/**
+ * Adapter for GitHub API operations using Octokit
+ * Implements IGitHubAPI interface with rate limiting and pagination
+ */
+export class OctokitAdapter implements IGitHubAPI {
+  /**
+   * Validate GitHub token has access to repository
+   */
+  async validateAccess(
+    owner: string,
+    repo: string,
+    token: string,
+  ): Promise<Result<boolean>> {
+    try {
+      logger.info("Validating GitHub token access", {
+        owner,
+        repo,
+        token: maskToken(token),
+      });
+
+      const octokit = new Octokit({ auth: token });
+
+      // Try to get repository info to validate access
+      await octokit.rest.repos.get({ owner, repo });
+
+      logger.info("GitHub token validation successful");
+      return ok(true);
+    } catch (error: any) {
+      logger.error("GitHub token validation failed", {
+        owner,
+        repo,
+        token: maskToken(token),
+        error: error?.message || String(error),
+        status: error?.status,
+      });
+
+      // Handle specific error cases
+      if (error?.status === 401) {
+        return err(new Error("Invalid GitHub token"));
+      }
+
+      if (error?.status === 404) {
+        return err(
+          new Error("Repository not found or insufficient permissions"),
+        );
+      }
+
+      if (error?.status === 403) {
+        return err(
+          new Error("Rate limit exceeded or insufficient permissions"),
+        );
+      }
+
+      return err(
+        new Error(
+          `Failed to validate access: ${error?.message || String(error)}`,
+        ),
+      );
+    }
+  }
+
+  /**
+   * Get pull requests from repository with pagination
+   */
+  async getPullRequests(
+    owner: string,
+    repo: string,
+    token: string,
+    sinceDate?: Date,
+  ): Promise<Result<PullRequest[]>> {
+    try {
+      logger.info("Fetching pull requests", {
+        owner,
+        repo,
+        sinceDate: sinceDate?.toISOString(),
+      });
+
+      const octokit = new Octokit({ auth: token });
+      const pullRequests: PullRequest[] = [];
+
+      // Fetch all PRs with pagination
+      let page = 1;
+      const perPage = 100; // Max per page
+
+      while (true) {
+        const response = await octokit.rest.pulls.list({
+          owner,
+          repo,
+          state: "all", // Get open, closed, and merged PRs
+          sort: "created",
+          direction: "desc",
+          per_page: perPage,
+          page,
+        });
+
+        if (response.data.length === 0) {
+          break; // No more PRs
+        }
+
+        for (const pr of response.data) {
+          const createdAt = new Date(pr.created_at);
+
+          // Filter by date if provided
+          if (sinceDate && createdAt < sinceDate) {
+            // Since PRs are sorted by created date descending,
+            // we can stop once we hit an older PR
+            logger.info(
+              `Reached PRs older than sinceDate, stopping pagination at page ${page}`,
+            );
+            return ok(pullRequests);
+          }
+
+          // Determine PR state
+          let state: "open" | "closed" | "merged" = "open";
+          if (pr.state === "closed") {
+            state = pr.merged_at ? "merged" : "closed";
+          }
+
+          pullRequests.push({
+            number: pr.number,
+            title: pr.title,
+            author: pr.user?.login || "unknown",
+            createdAt,
+            state,
+            reviewCommentCount: 0, // Will be populated separately
+          });
+        }
+
+        // Check if there are more pages
+        if (response.data.length < perPage) {
+          break; // Last page
+        }
+
+        page++;
+      }
+
+      logger.info(`Fetched ${pullRequests.length} pull requests`);
+      return ok(pullRequests);
+    } catch (error: any) {
+      logger.error("Failed to fetch pull requests", {
+        owner,
+        repo,
+        error: error?.message || String(error),
+        status: error?.status,
+      });
+
+      return err(
+        new Error(
+          `Failed to fetch pull requests: ${error?.message || String(error)}`,
+        ),
+      );
+    }
+  }
+
+  /**
+   * Get review comments for specific pull requests
+   */
+  async getReviewComments(
+    owner: string,
+    repo: string,
+    token: string,
+    pullRequestNumbers: number[],
+  ): Promise<Result<ReviewComment[]>> {
+    try {
+      logger.info("Fetching review comments", {
+        owner,
+        repo,
+        prCount: pullRequestNumbers.length,
+      });
+
+      const octokit = new Octokit({ auth: token });
+      const allComments: ReviewComment[] = [];
+
+      // Fetch comments for each PR
+      for (const prNumber of pullRequestNumbers) {
+        let page = 1;
+        const perPage = 100;
+
+        while (true) {
+          const response = await octokit.rest.pulls.listReviewComments({
+            owner,
+            repo,
+            pull_number: prNumber,
+            per_page: perPage,
+            page,
+          });
+
+          if (response.data.length === 0) {
+            break;
+          }
+
+          for (const comment of response.data) {
+            allComments.push({
+              id: comment.id,
+              author: comment.user?.login || "unknown",
+              createdAt: new Date(comment.created_at),
+              body: comment.body || "",
+              pullRequestNumber: prNumber,
+            });
+          }
+
+          if (response.data.length < perPage) {
+            break;
+          }
+
+          page++;
+        }
+      }
+
+      logger.info(`Fetched ${allComments.length} review comments`);
+      return ok(allComments);
+    } catch (error: any) {
+      logger.error("Failed to fetch review comments", {
+        owner,
+        repo,
+        error: error?.message || String(error),
+        status: error?.status,
+      });
+
+      return err(
+        new Error(
+          `Failed to fetch review comments: ${error?.message || String(error)}`,
+        ),
+      );
+    }
+  }
+
+  /**
+   * Get current rate limit status
+   */
+  async getRateLimitStatus(token: string): Promise<Result<RateLimitInfo>> {
+    try {
+      logger.info("Fetching rate limit status");
+
+      const octokit = new Octokit({ auth: token });
+      const response = await octokit.rest.rateLimit.get();
+
+      const rateLimit = response.data.rate;
+
+      const rateLimitInfo: RateLimitInfo = {
+        limit: rateLimit.limit,
+        remaining: rateLimit.remaining,
+        resetAt: new Date(rateLimit.reset * 1000), // Unix timestamp to Date
+      };
+
+      logger.info("Rate limit status", {
+        remaining: rateLimitInfo.remaining,
+        limit: rateLimitInfo.limit,
+        resetAt: rateLimitInfo.resetAt.toISOString(),
+      });
+
+      return ok(rateLimitInfo);
+    } catch (error: any) {
+      logger.error("Failed to fetch rate limit status", {
+        error: error?.message || String(error),
+        status: error?.status,
+      });
+
+      return err(
+        new Error(
+          `Failed to fetch rate limit status: ${
+            error?.message || String(error)
+          }`,
+        ),
+      );
+    }
+  }
+}
