@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { AnalysisResult } from "@/application/dto/AnalysisResult";
+import { ContributorDto } from "@/application/dto/ContributorDto";
 import {
   Card,
   CardContent,
@@ -10,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { ContributorList } from "./ContributorList";
 import { ImplementationActivityChart } from "./ImplementationActivityChart";
+import { IdentityMerger } from "@/presentation/components/IdentityMerger";
 import { GitBranch, GitPullRequest, MessageSquare, Users } from "lucide-react";
 
 export interface DashboardProps {
@@ -21,19 +24,48 @@ export interface DashboardProps {
  * Shows summary cards, charts, and contributor details
  */
 export function Dashboard({ result }: DashboardProps) {
-  const { analysis, contributors, summary } = result;
+  const { analysis, summary } = result;
+  const [contributors, setContributors] = useState<ContributorDto[]>(
+    result.contributors,
+  );
+
+  /**
+   * Handle merge completion by updating the contributors list
+   */
+  const handleMergeComplete = (mergedContributor: ContributorDto) => {
+    setContributors((prev) => {
+      // Get all emails from the merged contributor
+      const mergedEmails = new Set([
+        mergedContributor.primaryEmail,
+        ...mergedContributor.mergedEmails,
+      ]);
+
+      // Remove all contributors whose primary email is in the merged set
+      const remaining = prev.filter((c) => !mergedEmails.has(c.primaryEmail));
+
+      // Add the merged contributor at the beginning
+      return [mergedContributor, ...remaining];
+    });
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">Repository Analysis</h1>
-        <p className="text-muted-foreground">{analysis.repositoryUrl}</p>
-        <p className="text-sm text-muted-foreground">
-          Analyzed: {new Date(analysis.analyzedAt).toLocaleString()} | Period:{" "}
-          {new Date(analysis.dateRange.start).toLocaleDateString()} -{" "}
-          {new Date(analysis.dateRange.end).toLocaleDateString()}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Repository Analysis</h1>
+          <p className="text-muted-foreground">{analysis.repositoryUrl}</p>
+          <p className="text-sm text-muted-foreground">
+            Analyzed: {new Date(analysis.analyzedAt).toLocaleString()} | Period:{" "}
+            {new Date(analysis.dateRange.start).toLocaleDateString()} -{" "}
+            {new Date(analysis.dateRange.end).toLocaleDateString()}
+          </p>
+        </div>
+        <IdentityMerger
+          contributors={contributors}
+          repositoryUrl={analysis.repositoryUrl}
+          onMergeComplete={handleMergeComplete}
+        />
       </div>
 
       {/* Summary Cards */}

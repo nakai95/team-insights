@@ -201,32 +201,32 @@ description: "Task list for Developer Activity Dashboard implementation"
 
 ### Domain Entities for US3
 
-- [ ] T075 [P] [US3] Create IdentityMerge entity in src/domain/entities/IdentityMerge.ts
-- [ ] T076 [P] [US3] Write unit tests for IdentityMerge in tests/unit/domain/entities/IdentityMerge.test.ts
+- [x] T075 [P] [US3] Create IdentityMerge entity in src/domain/entities/IdentityMerge.ts
+- [x] T076 [P] [US3] Write unit tests for IdentityMerge in tests/unit/domain/entities/IdentityMerge.test.ts
 
 ### Domain Services for US3
 
-- [ ] T077 [US3] Create ContributorService in src/domain/services/ContributorService.ts
-- [ ] T078 [US3] Write unit tests for ContributorService in tests/unit/domain/services/ContributorService.test.ts
+- [x] T077 [US3] Create ContributorService in src/domain/services/ContributorService.ts
+- [x] T078 [US3] Write unit tests for ContributorService in tests/unit/domain/services/ContributorService.test.ts
 
 ### Infrastructure - Storage for US3
 
-- [ ] T079 [US3] Implement LocalStorageAdapter in src/infrastructure/storage/LocalStorageAdapter.ts
+- [x] T079 [US3] Implement LocalStorageAdapter in src/infrastructure/storage/LocalStorageAdapter.ts
 
 ### Application Use Cases for US3
 
-- [ ] T080 [US3] Implement MergeIdentities use case in src/application/use-cases/MergeIdentities.ts
-- [ ] T081 [US3] Write unit tests for MergeIdentities in tests/unit/application/use-cases/MergeIdentities.test.ts
+- [x] T080 [US3] Implement MergeIdentities use case in src/application/use-cases/MergeIdentities.ts
+- [x] T081 [US3] Write unit tests for MergeIdentities in tests/unit/application/use-cases/MergeIdentities.test.ts
 
 ### Server Actions for US3
 
-- [ ] T082 [US3] Implement mergeIdentities Server Action in src/app/actions/mergeIdentities.ts
+- [x] T082 [US3] Implement mergeIdentities Server Action in src/app/actions/mergeIdentities.ts
 
 ### Presentation Components for US3
 
-- [ ] T083 [P] [US3] Create IdentityMerger component in src/presentation/components/IdentityMerger.tsx
-- [ ] T084 [US3] Create useIdentityMerge hook in src/presentation/hooks/useIdentityMerge.ts
-- [ ] T085 [US3] Update Dashboard component to include identity merger UI
+- [x] T083 [P] [US3] Create IdentityMerger component in src/presentation/components/IdentityMerger.tsx
+- [x] T084 [US3] Create useIdentityMerge hook in src/presentation/hooks/useIdentityMerge.ts
+- [x] T085 [US3] Update Dashboard component to include identity merger UI
 
 **Checkpoint**: All user stories 1, 2, and 3 should now work independently. Users can merge duplicate identities.
 
