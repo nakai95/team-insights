@@ -161,9 +161,9 @@ describe("ImplementationActivity", () => {
 
       expect(result.ok).toBe(true);
       if (result.ok) {
-        // Score = commitCount * 10 + totalLineChanges
-        // Score = 10 * 10 + 150 = 250
-        expect(result.value.activityScore).toBe(250);
+        // Score = commitCount * 5 + totalLineChanges * 0.5
+        // Score = 10 * 5 + 150 * 0.5 = 50 + 75 = 125
+        expect(result.value.activityScore).toBe(125);
       }
     });
 

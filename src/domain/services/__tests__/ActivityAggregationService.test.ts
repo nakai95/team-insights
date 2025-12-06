@@ -280,8 +280,8 @@ describe("ActivityAggregationService", () => {
 
       if (previousRangeResult.ok && currentRangeResult.ok) {
         const timeline = [
-          createSnapshot(new Date("2024-01-15"), Period.DAY, 5, 50, 1, 5), // Previous: score = 5*10+50 + 1*5+5*2 = 115
-          createSnapshot(new Date("2024-02-15"), Period.DAY, 10, 100, 2, 10), // Current: score = 10*10+100 + 2*5+10*2 = 230
+          createSnapshot(new Date("2024-01-15"), Period.DAY, 5, 50, 1, 5), // Previous: score = 5*5+50*0.5 + 1*20+5*5 = 95
+          createSnapshot(new Date("2024-02-15"), Period.DAY, 10, 100, 2, 10), // Current: score = 10*5+100*0.5 + 2*20+10*5 = 190
         ];
 
         const contributor = createContributor("c1", timeline);
@@ -294,12 +294,12 @@ describe("ActivityAggregationService", () => {
 
         expect(result.ok).toBe(true);
         if (result.ok) {
-          expect(result.value.previousTotal).toBe(115);
-          expect(result.value.currentTotal).toBe(230);
+          expect(result.value.previousTotal).toBe(95);
+          expect(result.value.currentTotal).toBe(190);
           expect(result.value.percentageChange).toBe(100); // 100% increase
           expect(result.value.topMovers).toHaveLength(1);
           expect(result.value.topMovers[0]!.id).toBe("c1");
-          expect(result.value.topMovers[0]!.change).toBe(115); // +115
+          expect(result.value.topMovers[0]!.change).toBe(95); // +95
         }
       }
     });
@@ -319,8 +319,8 @@ describe("ActivityAggregationService", () => {
 
       if (previousRangeResult.ok && currentRangeResult.ok) {
         const timeline = [
-          createSnapshot(new Date("2024-01-15"), Period.DAY, 10, 100, 2, 10), // Previous: 10*10+100 + 2*5+10*2 = 230
-          createSnapshot(new Date("2024-02-15"), Period.DAY, 2, 20, 0, 0), // Current: 2*10+20 + 0 = 40
+          createSnapshot(new Date("2024-01-15"), Period.DAY, 10, 100, 2, 10), // Previous: 10*5+100*0.5 + 2*20+10*5 = 190
+          createSnapshot(new Date("2024-02-15"), Period.DAY, 2, 20, 0, 0), // Current: 2*5+20*0.5 + 0 = 20
         ];
 
         const contributor = createContributor("c1", timeline);
@@ -333,10 +333,10 @@ describe("ActivityAggregationService", () => {
 
         expect(result.ok).toBe(true);
         if (result.ok) {
-          expect(result.value.previousTotal).toBe(230);
-          expect(result.value.currentTotal).toBe(40);
-          expect(result.value.percentageChange).toBeCloseTo(-82.61, 1); // ~82.6% decrease
-          expect(result.value.topMovers[0]!.change).toBe(-190); // -190
+          expect(result.value.previousTotal).toBe(190);
+          expect(result.value.currentTotal).toBe(20);
+          expect(result.value.percentageChange).toBeCloseTo(-89.47, 1); // ~89.5% decrease
+          expect(result.value.topMovers[0]!.change).toBe(-170); // -170
         }
       }
     });
@@ -356,18 +356,18 @@ describe("ActivityAggregationService", () => {
 
       if (previousRangeResult.ok && currentRangeResult.ok) {
         const contributor1Timeline = [
-          createSnapshot(new Date("2024-01-15"), Period.DAY, 5, 50, 1, 5), // Prev: 5*10+50 + 1*5+5*2 = 115
-          createSnapshot(new Date("2024-02-15"), Period.DAY, 15, 150, 3, 15), // Curr: 15*10+150 + 3*5+15*2 = 345
+          createSnapshot(new Date("2024-01-15"), Period.DAY, 5, 50, 1, 5), // Prev: 5*5+50*0.5 + 1*20+5*5 = 95
+          createSnapshot(new Date("2024-02-15"), Period.DAY, 15, 150, 3, 15), // Curr: 15*5+150*0.5 + 3*20+15*5 = 285
         ];
 
         const contributor2Timeline = [
-          createSnapshot(new Date("2024-01-15"), Period.DAY, 10, 100, 2, 10), // Prev: 10*10+100 + 2*5+10*2 = 230
-          createSnapshot(new Date("2024-02-15"), Period.DAY, 2, 20, 0, 0), // Curr: 2*10+20 + 0 = 40
+          createSnapshot(new Date("2024-01-15"), Period.DAY, 10, 100, 2, 10), // Prev: 10*5+100*0.5 + 2*20+10*5 = 190
+          createSnapshot(new Date("2024-02-15"), Period.DAY, 2, 20, 0, 0), // Curr: 2*5+20*0.5 + 0 = 20
         ];
 
         const contributor3Timeline = [
-          createSnapshot(new Date("2024-01-15"), Period.DAY, 3, 30, 0, 0), // Prev: 3*10+30 + 0 = 60
-          createSnapshot(new Date("2024-02-15"), Period.DAY, 3, 30, 0, 0), // Curr: 3*10+30 + 0 = 60
+          createSnapshot(new Date("2024-01-15"), Period.DAY, 3, 30, 0, 0), // Prev: 3*5+30*0.5 + 0 = 30
+          createSnapshot(new Date("2024-02-15"), Period.DAY, 3, 30, 0, 0), // Curr: 3*5+30*0.5 + 0 = 30
         ];
 
         const contributors = [
@@ -384,17 +384,17 @@ describe("ActivityAggregationService", () => {
 
         expect(result.ok).toBe(true);
         if (result.ok) {
-          expect(result.value.previousTotal).toBe(405); // 115+230+60
-          expect(result.value.currentTotal).toBe(445); // 345+40+60
+          expect(result.value.previousTotal).toBe(315); // 95+190+30
+          expect(result.value.currentTotal).toBe(335); // 285+20+30
           expect(result.value.topMovers).toHaveLength(3);
 
-          // Top mover should be c1 with +230 (345-115)
+          // Top mover should be c1 with +190 (285-95) (biggest absolute change)
           expect(result.value.topMovers[0]!.id).toBe("c1");
-          expect(result.value.topMovers[0]!.change).toBe(230);
+          expect(result.value.topMovers[0]!.change).toBe(190);
 
-          // Second should be c2 with -190 (40-230) (biggest absolute change after c1)
+          // Second should be c2 with -170 (20-190)
           expect(result.value.topMovers[1]!.id).toBe("c2");
-          expect(result.value.topMovers[1]!.change).toBe(-190);
+          expect(result.value.topMovers[1]!.change).toBe(-170);
 
           // Third should be c3 with 0
           expect(result.value.topMovers[2]!.id).toBe("c3");
@@ -418,7 +418,7 @@ describe("ActivityAggregationService", () => {
 
       if (previousRangeResult.ok && currentRangeResult.ok) {
         const timeline = [
-          createSnapshot(new Date("2024-02-15"), Period.DAY, 10, 100, 2, 10), // Only current: 10*10+100 + 2*5+10*2 = 230
+          createSnapshot(new Date("2024-02-15"), Period.DAY, 10, 100, 2, 10), // Only current: 10*5+100*0.5 + 2*20+10*5 = 190
         ];
 
         const contributor = createContributor("c1", timeline);
@@ -432,7 +432,7 @@ describe("ActivityAggregationService", () => {
         expect(result.ok).toBe(true);
         if (result.ok) {
           expect(result.value.previousTotal).toBe(0);
-          expect(result.value.currentTotal).toBe(230);
+          expect(result.value.currentTotal).toBe(190);
           expect(result.value.percentageChange).toBe(100); // 100% from zero
         }
       }

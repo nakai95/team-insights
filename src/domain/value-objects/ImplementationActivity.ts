@@ -70,6 +70,6 @@ export class ImplementationActivity {
   }
 
   get activityScore(): number {
-    return this.commitCount * 10 + this.totalLineChanges;
+    return this.commitCount * 5 + this.totalLineChanges * 0.5;
   }
 }

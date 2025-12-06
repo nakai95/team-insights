@@ -144,6 +144,50 @@ export class GitLogParser {
   }
 
   /**
+   * Check if a file should be excluded from metrics
+   * Excludes generated files, lock files, and build artifacts
+   */
+  private static shouldExcludeFile(filename: string): boolean {
+    const excludePatterns = [
+      // Lock files
+      /^package-lock\.json$/,
+      /^yarn\.lock$/,
+      /^pnpm-lock\.yaml$/,
+      /^Gemfile\.lock$/,
+      /^Cargo\.lock$/,
+      /^poetry\.lock$/,
+      /^composer\.lock$/,
+
+      // Build artifacts and dist directories
+      /^dist\//,
+      /^build\//,
+      /^out\//,
+      /^\.next\//,
+      /^target\//,
+      /^bin\//,
+      /^obj\//,
+
+      // Dependencies
+      /^node_modules\//,
+      /^vendor\//,
+      /^\.venv\//,
+
+      // Generated documentation
+      /^docs\/api\//,
+      /^coverage\//,
+
+      // Minified files
+      /\.min\.js$/,
+      /\.min\.css$/,
+
+      // Source maps
+      /\.map$/,
+    ];
+
+    return excludePatterns.some((pattern) => pattern.test(filename));
+  }
+
+  /**
    * Parse numstat lines to extract file change statistics
    */
   private static parseNumstat(numstatLines: string[]): {
@@ -163,9 +207,15 @@ export class GitLogParser {
 
       const additions = parts[0];
       const deletions = parts[1];
+      const filename = parts.slice(2).join(" "); // Filename might contain spaces
 
       // Skip if parts are undefined (shouldn't happen after length check, but TypeScript requires it)
       if (!additions || !deletions) continue;
+
+      // Skip generated/build files
+      if (this.shouldExcludeFile(filename)) {
+        continue;
+      }
 
       // Handle binary files (marked with -)
       if (additions === "-" || deletions === "-") {

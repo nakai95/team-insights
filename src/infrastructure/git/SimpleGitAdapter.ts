@@ -3,6 +3,7 @@ import { IGitOperations, GitCommit } from "@/domain/interfaces/IGitOperations";
 import { Result, ok, err } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
 import { maskToken } from "@/lib/utils/tokenMasker";
+import { execSync } from "child_process";
 
 /**
  * Adapter for Git operations using simple-git library
@@ -32,16 +33,10 @@ export class SimpleGitAdapter implements IGitOperations {
         sinceDate: sinceDate?.toISOString(),
       });
 
-      const cloneOptions: string[] = [];
-
-      // Note: We don't use --depth 1 because we need full history for accurate metrics
-      // However, we can use --shallow-since if a date is provided
-      if (sinceDate) {
-        const sinceStr = sinceDate.toISOString().split("T")[0]; // YYYY-MM-DD
-        cloneOptions.push(`--shallow-since=${sinceStr}`);
-      }
-
-      await this.git.clone(url, targetPath, cloneOptions);
+      // Always use full clone to ensure accurate git log results
+      // Note: shallow clones (--shallow-since, --depth) can cause git log to miss commits
+      // due to missing parent commit history
+      await this.git.clone(url, targetPath);
 
       logger.info(`Successfully cloned repository to ${targetPath}`);
       return ok(undefined);
@@ -79,13 +74,11 @@ export class SimpleGitAdapter implements IGitOperations {
         untilDate: untilDate?.toISOString(),
       });
 
-      // Create a new git instance for the specific repository
-      const repoGit = simpleGit(repoPath);
-
       // Build git log command
       const logOptions: string[] = [
         "log",
         "--all", // Include all branches
+        "--no-merges", // Exclude merge commits to avoid double-counting
         "--numstat", // Include file change statistics
         "--format=format:COMMIT_START%nHASH:%H%nAUTHOR:%an%nEMAIL:%ae%nDATE:%aI%nMESSAGE:%s%n", // Labeled format for easy parsing
       ];
@@ -94,8 +87,25 @@ export class SimpleGitAdapter implements IGitOperations {
 
       if (untilDate) logOptions.push(`--until=${untilDate.toISOString()}`);
 
-      // Get raw log output
-      const logResult = await repoGit.raw(logOptions);
+      // Build command string
+      const gitCommand = `git ${logOptions.join(" ")}`;
+      logger.info(`Executing git command: ${gitCommand}`);
+
+      // Execute git command directly using execSync to avoid simple-git output truncation
+      const logResult = execSync(gitCommand, {
+        cwd: repoPath,
+        encoding: "utf-8",
+        maxBuffer: 50 * 1024 * 1024, // 50MB buffer for large repos
+      }).toString();
+
+      // Log a sample of the raw output
+      logger.info(`Raw log output length: ${logResult.length} chars`);
+      const commitStartCount = (logResult.match(/COMMIT_START/g) || []).length;
+      logger.info(
+        `COMMIT_START occurrences in raw output: ${commitStartCount}`,
+      );
+      logger.info(`First 1000 chars of raw log:`);
+      logger.info(logResult.substring(0, 1000));
 
       // Parse the log output
       const commits = this.parseGitLog(logResult);
@@ -132,6 +142,8 @@ export class SimpleGitAdapter implements IGitOperations {
       .split("COMMIT_START")
       .filter((block) => block.trim());
 
+    logger.info(`Parsing ${commitBlocks.length} commit blocks`);
+
     for (const block of commitBlocks) {
       const lines = block.trim().split("\n");
 
@@ -163,6 +175,7 @@ export class SimpleGitAdapter implements IGitOperations {
 
       // Skip if essential fields are missing
       if (!hash || !dateStr) {
+        logger.warn("Skipping commit block: missing hash or date");
         continue;
       }
 
@@ -172,6 +185,11 @@ export class SimpleGitAdapter implements IGitOperations {
         logger.warn(`Invalid date in commit ${hash}: ${dateStr}`);
         continue;
       }
+
+      // Log numstat line count for debugging
+      logger.info(
+        `Commit ${hash.substring(0, 7)}: ${numstatLines.length} numstat lines`,
+      );
 
       // Parse numstat lines
       const { filesChanged, linesAdded, linesDeleted } =
@@ -193,6 +211,50 @@ export class SimpleGitAdapter implements IGitOperations {
   }
 
   /**
+   * Check if a file should be excluded from metrics
+   * Excludes generated files, lock files, and build artifacts
+   */
+  private shouldExcludeFile(filename: string): boolean {
+    const excludePatterns = [
+      // Lock files
+      /^package-lock\.json$/,
+      /^yarn\.lock$/,
+      /^pnpm-lock\.yaml$/,
+      /^Gemfile\.lock$/,
+      /^Cargo\.lock$/,
+      /^poetry\.lock$/,
+      /^composer\.lock$/,
+
+      // Build artifacts and dist directories
+      /^dist\//,
+      /^build\//,
+      /^out\//,
+      /^\.next\//,
+      /^target\//,
+      /^bin\//,
+      /^obj\//,
+
+      // Dependencies
+      /^node_modules\//,
+      /^vendor\//,
+      /^\.venv\//,
+
+      // Generated documentation
+      /^docs\/api\//,
+      /^coverage\//,
+
+      // Minified files
+      /\.min\.js$/,
+      /\.min\.css$/,
+
+      // Source maps
+      /\.map$/,
+    ];
+
+    return excludePatterns.some((pattern) => pattern.test(filename));
+  }
+
+  /**
    * Parse numstat lines to extract file change statistics
    */
   private parseNumstat(numstatLines: string[]): {
@@ -203,14 +265,34 @@ export class SimpleGitAdapter implements IGitOperations {
     let filesChanged = 0;
     let linesAdded = 0;
     let linesDeleted = 0;
+    let excludedCount = 0;
+
+    // Log first 10 files for debugging large commits
+    if (numstatLines.length > 100) {
+      logger.info(`Large commit detected: ${numstatLines.length} file changes`);
+      logger.info("First 10 files:");
+      for (let i = 0; i < Math.min(10, numstatLines.length); i++) {
+        const parts = numstatLines[i]?.split("\t");
+        if (parts && parts.length >= 3) {
+          logger.info(`  ${parts[0]}\t${parts[1]}\t${parts[2]}`);
+        }
+      }
+    }
 
     for (const line of numstatLines) {
       const parts = line.split("\t");
       if (parts.length >= 3) {
         const additions = parts[0];
         const deletions = parts[1];
+        const filename = parts[2]; // Third part is filename
 
-        if (!additions || !deletions) continue;
+        if (!additions || !deletions || !filename) continue;
+
+        // Skip generated/build files
+        if (this.shouldExcludeFile(filename)) {
+          excludedCount++;
+          continue;
+        }
 
         // Handle binary files (marked with -)
         if (additions !== "-" && deletions !== "-") {
@@ -227,6 +309,12 @@ export class SimpleGitAdapter implements IGitOperations {
           filesChanged++;
         }
       }
+    }
+
+    if (excludedCount > 0) {
+      logger.info(
+        `Excluded ${excludedCount} files from metrics (generated/build files)`,
+      );
     }
 
     return { filesChanged, linesAdded, linesDeleted };
