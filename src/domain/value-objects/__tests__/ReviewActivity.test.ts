@@ -101,9 +101,9 @@ describe("ReviewActivity", () => {
 
       expect(result.ok).toBe(true);
       if (result.ok) {
-        // Score = pullRequestCount * 5 + reviewCommentCount * 2
-        // Score = 10 * 5 + 50 * 2 = 50 + 100 = 150
-        expect(result.value.reviewScore).toBe(150);
+        // Score = pullRequestCount * 20 + reviewCommentCount * 5 + pullRequestsReviewed * 30
+        // Score = 10 * 20 + 50 * 5 + 20 * 30 = 200 + 250 + 600 = 1050
+        expect(result.value.reviewScore).toBe(1050);
       }
     });
 

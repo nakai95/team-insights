@@ -52,7 +52,11 @@ export class ReviewActivity {
   }
 
   get reviewScore(): number {
-    return this.pullRequestCount * 5 + this.reviewCommentCount * 2;
+    return (
+      this.pullRequestCount * 20 +
+      this.reviewCommentCount * 5 +
+      this.pullRequestsReviewed * 30
+    );
   }
 
   get averageCommentsPerReview(): number {

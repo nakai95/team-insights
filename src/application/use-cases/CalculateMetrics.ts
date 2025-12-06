@@ -40,6 +40,20 @@ export class CalculateMetrics {
         commentCount: input.reviewComments.length,
       });
 
+      // Log commit details for debugging
+      logger.info("=== Detailed Commit Analysis ===");
+      for (const commit of input.commits) {
+        const totalChanges = commit.linesAdded + commit.linesDeleted;
+        logger.info(`Commit ${commit.hash.substring(0, 7)}`, {
+          author: commit.author,
+          email: commit.email,
+          linesAdded: commit.linesAdded,
+          linesDeleted: commit.linesDeleted,
+          filesChanged: commit.filesChanged,
+          totalChanges,
+        });
+      }
+
       // Group commits by email
       const commitsByEmail = this.groupCommitsByEmail(input.commits);
 
@@ -231,17 +245,28 @@ export class CalculateMetrics {
 
   /**
    * Calculate review activity from PRs and comments
+   * Excludes comments on user's own PRs from review metrics
    */
   private calculateReviewActivity(
     prs: PullRequest[],
     comments: ReviewComment[],
   ): Result<ReviewActivity> {
-    // Count unique PRs reviewed (PRs where user left comments)
-    const reviewedPRs = new Set(comments.map((c) => c.pullRequestNumber));
+    // Get PR numbers that this user authored
+    const authoredPRNumbers = new Set(prs.map((pr) => pr.number));
+
+    // Filter out comments on user's own PRs
+    const reviewCommentsOnOthersPRs = comments.filter(
+      (comment) => !authoredPRNumbers.has(comment.pullRequestNumber),
+    );
+
+    // Count unique PRs reviewed (PRs where user left comments, excluding own PRs)
+    const reviewedPRs = new Set(
+      reviewCommentsOnOthersPRs.map((c) => c.pullRequestNumber),
+    );
 
     return ReviewActivity.create({
       pullRequestCount: prs.length,
-      reviewCommentCount: comments.length,
+      reviewCommentCount: reviewCommentsOnOthersPRs.length,
       pullRequestsReviewed: reviewedPRs.size,
     });
   }
