@@ -123,7 +123,7 @@ export class ContributorMapper {
    * Map ImplementationActivity to DTO with derived fields
    */
   private static mapImplementationActivity(
-    activity: any,
+    activity: ImplementationActivity,
   ): ImplementationActivityDto {
     return {
       commitCount: activity.commitCount,
@@ -141,7 +141,9 @@ export class ContributorMapper {
   /**
    * Map ReviewActivity to DTO with derived fields
    */
-  private static mapReviewActivity(activity: any): ReviewActivityDto {
+  private static mapReviewActivity(
+    activity: ReviewActivity,
+  ): ReviewActivityDto {
     return {
       pullRequestCount: activity.pullRequestCount,
       reviewCommentCount: activity.reviewCommentCount,

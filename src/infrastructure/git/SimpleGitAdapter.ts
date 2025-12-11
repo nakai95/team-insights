@@ -3,7 +3,7 @@ import { IGitOperations, GitCommit } from "@/domain/interfaces/IGitOperations";
 import { Result, ok, err } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
 import { maskToken } from "@/lib/utils/tokenMasker";
-import { shouldExcludeFile } from "@/lib/utils/fileExclusion";
+import { parseNumstat } from "@/lib/utils/numstatParser";
 import { getErrorMessage } from "@/lib/utils/errorUtils";
 import { execSync } from "child_process";
 
@@ -187,7 +187,7 @@ export class SimpleGitAdapter implements IGitOperations {
 
       // Parse numstat lines
       const { filesChanged, linesAdded, linesDeleted } =
-        this.parseNumstat(numstatLines);
+        parseNumstat(numstatLines);
 
       commits.push({
         hash,
@@ -202,71 +202,5 @@ export class SimpleGitAdapter implements IGitOperations {
     }
 
     return commits;
-  }
-
-  /**
-   * Parse numstat lines to extract file change statistics
-   */
-  private parseNumstat(numstatLines: string[]): {
-    filesChanged: number;
-    linesAdded: number;
-    linesDeleted: number;
-  } {
-    let filesChanged = 0;
-    let linesAdded = 0;
-    let linesDeleted = 0;
-    let excludedCount = 0;
-
-    // Log first 10 files for debugging large commits
-    if (numstatLines.length > 100) {
-      logger.info(`Large commit detected: ${numstatLines.length} file changes`);
-      logger.info("First 10 files:");
-      for (let i = 0; i < Math.min(10, numstatLines.length); i++) {
-        const parts = numstatLines[i]?.split("\t");
-        if (parts && parts.length >= 3) {
-          logger.info(`  ${parts[0]}\t${parts[1]}\t${parts[2]}`);
-        }
-      }
-    }
-
-    for (const line of numstatLines) {
-      const parts = line.split("\t");
-      if (parts.length >= 3) {
-        const additions = parts[0];
-        const deletions = parts[1];
-        const filename = parts[2]; // Third part is filename
-
-        if (!additions || !deletions || !filename) continue;
-
-        // Skip generated/build files
-        if (shouldExcludeFile(filename)) {
-          excludedCount++;
-          continue;
-        }
-
-        // Handle binary files (marked with -)
-        if (additions !== "-" && deletions !== "-") {
-          const addNum = parseInt(additions, 10);
-          const delNum = parseInt(deletions, 10);
-
-          if (!isNaN(addNum) && !isNaN(delNum)) {
-            linesAdded += addNum;
-            linesDeleted += delNum;
-            filesChanged++;
-          }
-        } else {
-          // Binary file, count as changed but no line stats
-          filesChanged++;
-        }
-      }
-    }
-
-    if (excludedCount > 0) {
-      logger.info(
-        `Excluded ${excludedCount} files from metrics (generated/build files)`,
-      );
-    }
-
-    return { filesChanged, linesAdded, linesDeleted };
   }
 }

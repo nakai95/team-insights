@@ -77,6 +77,98 @@ describe("ContributorService", () => {
   };
 
   describe("mergeContributors", () => {
+    it("aggregates all implementation and review activity metrics correctly", () => {
+      // Create contributors with all metrics specified
+      const impl1Result = ImplementationActivity.create({
+        commitCount: 10,
+        linesAdded: 100,
+        linesDeleted: 20,
+        linesModified: 80,
+        filesChanged: 5,
+      });
+      if (!impl1Result.ok) throw new Error("Failed to create impl1");
+
+      const review1Result = ReviewActivity.create({
+        pullRequestCount: 3,
+        reviewCommentCount: 15,
+        pullRequestsReviewed: 5,
+      });
+      if (!review1Result.ok) throw new Error("Failed to create review1");
+
+      const snapshot1Result = ActivitySnapshot.create(
+        new Date("2024-01-01"),
+        Period.DAY,
+        impl1Result.value,
+        review1Result.value,
+      );
+      if (!snapshot1Result.ok) throw new Error("Failed to create snapshot1");
+
+      const primary = Contributor.create({
+        id: "c1",
+        primaryEmail: email1,
+        mergedEmails: [],
+        displayName: "user1",
+        implementationActivity: impl1Result.value,
+        reviewActivity: review1Result.value,
+        activityTimeline: [snapshot1Result.value],
+      });
+      if (!primary.ok) throw new Error("Failed to create primary");
+
+      const impl2Result = ImplementationActivity.create({
+        commitCount: 20,
+        linesAdded: 200,
+        linesDeleted: 40,
+        linesModified: 160,
+        filesChanged: 10,
+      });
+      if (!impl2Result.ok) throw new Error("Failed to create impl2");
+
+      const review2Result = ReviewActivity.create({
+        pullRequestCount: 7,
+        reviewCommentCount: 25,
+        pullRequestsReviewed: 10,
+      });
+      if (!review2Result.ok) throw new Error("Failed to create review2");
+
+      const snapshot2Result = ActivitySnapshot.create(
+        new Date("2024-01-01"),
+        Period.DAY,
+        impl2Result.value,
+        review2Result.value,
+      );
+      if (!snapshot2Result.ok) throw new Error("Failed to create snapshot2");
+
+      const merged = Contributor.create({
+        id: "c2",
+        primaryEmail: email2,
+        mergedEmails: [],
+        displayName: "user2",
+        implementationActivity: impl2Result.value,
+        reviewActivity: review2Result.value,
+        activityTimeline: [snapshot2Result.value],
+      });
+      if (!merged.ok) throw new Error("Failed to create merged");
+
+      const result = ContributorService.mergeContributors(primary.value, [
+        merged.value,
+      ]);
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        const contributor = result.value;
+        // Verify all 5 implementation activity metrics
+        expect(contributor.implementationActivity.commitCount).toBe(30);
+        expect(contributor.implementationActivity.linesAdded).toBe(300);
+        expect(contributor.implementationActivity.linesDeleted).toBe(60);
+        expect(contributor.implementationActivity.linesModified).toBe(240);
+        expect(contributor.implementationActivity.filesChanged).toBe(15);
+        // Verify all 3 review activity metrics
+        expect(contributor.reviewActivity.pullRequestCount).toBe(10);
+        expect(contributor.reviewActivity.reviewCommentCount).toBe(40);
+        expect(contributor.reviewActivity.pullRequestsReviewed).toBe(15);
+      }
+    });
+
     it("merges two contributors with combined metrics", () => {
       const primary = createContributor("c1", email1, 10, 100, 5);
       const merged = createContributor("c2", email2, 20, 200, 10);
