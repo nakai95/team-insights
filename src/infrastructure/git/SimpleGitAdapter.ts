@@ -138,6 +138,8 @@ export class SimpleGitAdapter implements IGitOperations {
 
     logger.info(`Parsing ${commitBlocks.length} commit blocks`);
 
+    let totalNumstatLines = 0;
+
     for (const block of commitBlocks) {
       const lines = block.trim().split("\n");
 
@@ -180,10 +182,7 @@ export class SimpleGitAdapter implements IGitOperations {
         continue;
       }
 
-      // Log numstat details only in debug mode
-      logger.debug(
-        `Commit ${hash.substring(0, 7)}: ${numstatLines.length} numstat lines`,
-      );
+      totalNumstatLines += numstatLines.length;
 
       // Parse numstat lines
       const { filesChanged, linesAdded, linesDeleted } =
@@ -200,6 +199,14 @@ export class SimpleGitAdapter implements IGitOperations {
         linesDeleted,
       });
     }
+
+    // Log summary statistics instead of per-commit details
+    logger.debug("Numstat parsing summary", {
+      totalCommits: commits.length,
+      totalNumstatLines,
+      avgNumstatLinesPerCommit:
+        commits.length > 0 ? Math.round(totalNumstatLines / commits.length) : 0,
+    });
 
     return commits;
   }

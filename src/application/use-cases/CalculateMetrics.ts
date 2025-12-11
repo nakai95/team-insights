@@ -42,17 +42,25 @@ export class CalculateMetrics {
         commentCount: input.reviewComments.length,
       });
 
-      // Log detailed commit analysis only in debug mode
-      logger.debug("=== Detailed Commit Analysis ===");
-      for (const commit of input.commits) {
-        const totalChanges = commit.linesAdded + commit.linesDeleted;
-        logger.debug(`Commit ${commit.hash.substring(0, 7)}`, {
-          author: commit.author,
-          email: commit.email,
-          linesAdded: commit.linesAdded,
-          linesDeleted: commit.linesDeleted,
-          filesChanged: commit.filesChanged,
-          totalChanges,
+      // Log summary statistics in debug mode instead of per-commit details
+      if (input.commits.length > 0) {
+        const totalLines = input.commits.reduce(
+          (sum, c) => sum + c.linesAdded + c.linesDeleted,
+          0,
+        );
+        const avgLinesPerCommit = Math.round(totalLines / input.commits.length);
+        logger.debug("Commit analysis summary", {
+          totalCommits: input.commits.length,
+          totalLinesChanged: totalLines,
+          avgLinesPerCommit,
+          sampleCommit: input.commits[0]
+            ? {
+                hash: input.commits[0].hash.substring(0, 7),
+                author: input.commits[0].author,
+                linesChanged:
+                  input.commits[0].linesAdded + input.commits[0].linesDeleted,
+              }
+            : null,
         });
       }
 
