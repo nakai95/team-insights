@@ -96,14 +96,14 @@ export class SimpleGitAdapter implements IGitOperations {
         maxBuffer: 50 * 1024 * 1024, // 50MB buffer for large repos
       }).toString();
 
-      // Log a sample of the raw output
-      logger.info(`Raw log output length: ${logResult.length} chars`);
+      // Log raw output details only in debug mode
+      logger.debug(`Raw log output length: ${logResult.length} chars`);
       const commitStartCount = (logResult.match(/COMMIT_START/g) || []).length;
-      logger.info(
+      logger.debug(
         `COMMIT_START occurrences in raw output: ${commitStartCount}`,
       );
-      logger.info(`First 1000 chars of raw log:`);
-      logger.info(logResult.substring(0, 1000));
+      logger.debug(`First 1000 chars of raw log:`);
+      logger.debug(logResult.substring(0, 1000));
 
       // Parse the log output
       const commits = this.parseGitLog(logResult);
@@ -180,8 +180,8 @@ export class SimpleGitAdapter implements IGitOperations {
         continue;
       }
 
-      // Log numstat line count for debugging
-      logger.info(
+      // Log numstat details only in debug mode
+      logger.debug(
         `Commit ${hash.substring(0, 7)}: ${numstatLines.length} numstat lines`,
       );
 

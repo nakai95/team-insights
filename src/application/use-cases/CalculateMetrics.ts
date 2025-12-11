@@ -42,11 +42,11 @@ export class CalculateMetrics {
         commentCount: input.reviewComments.length,
       });
 
-      // Log commit details for debugging
-      logger.info("=== Detailed Commit Analysis ===");
+      // Log detailed commit analysis only in debug mode
+      logger.debug("=== Detailed Commit Analysis ===");
       for (const commit of input.commits) {
         const totalChanges = commit.linesAdded + commit.linesDeleted;
-        logger.info(`Commit ${commit.hash.substring(0, 7)}`, {
+        logger.debug(`Commit ${commit.hash.substring(0, 7)}`, {
           author: commit.author,
           email: commit.email,
           linesAdded: commit.linesAdded,

@@ -17,6 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getTotalActivityScore } from "@/lib/utils/contributorUtils";
 
 export interface ContributorListProps {
   contributors: ContributorDto[];
@@ -29,10 +30,8 @@ export interface ContributorListProps {
 export function ContributorList({ contributors }: ContributorListProps) {
   // Sort by total activity score (implementation + review)
   const sortedContributors = [...contributors].sort((a, b) => {
-    const scoreA =
-      a.implementationActivity.activityScore + a.reviewActivity.reviewScore;
-    const scoreB =
-      b.implementationActivity.activityScore + b.reviewActivity.reviewScore;
+    const scoreA = getTotalActivityScore(a);
+    const scoreB = getTotalActivityScore(b);
     return scoreB - scoreA;
   });
 
@@ -59,9 +58,7 @@ export function ContributorList({ contributors }: ContributorListProps) {
           </TableHeader>
           <TableBody>
             {sortedContributors.map((contributor, index) => {
-              const totalScore =
-                contributor.implementationActivity.activityScore +
-                contributor.reviewActivity.reviewScore;
+              const totalScore = getTotalActivityScore(contributor);
 
               return (
                 <TableRow key={contributor.id}>
