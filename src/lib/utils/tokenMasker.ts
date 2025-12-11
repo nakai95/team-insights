@@ -14,14 +14,3 @@ export function maskToken(token: string): string {
 
   return `${start}****...****${end}`;
 }
-
-/**
- * Redact tokens from text for safe logging
- * Replaces any token-like patterns with masked versions
- */
-export function redactTokens(text: string): string {
-  // Match GitHub token patterns: ghp_, gho_, ghu_, ghs_, ghr_
-  const tokenPattern = /(gh[pousr]_[a-zA-Z0-9_]{20,100})/g;
-
-  return text.replace(tokenPattern, (match) => maskToken(match));
-}

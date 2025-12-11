@@ -8,12 +8,14 @@ import {
 import { Result, ok, err } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
 import { maskToken } from "@/lib/utils/tokenMasker";
+import { RateLimiter } from "./RateLimiter";
 
 /**
  * Adapter for GitHub API operations using Octokit
  * Implements IGitHubAPI interface with rate limiting and pagination
  */
 export class OctokitAdapter implements IGitHubAPI {
+  private rateLimiter = new RateLimiter();
   /**
    * Validate GitHub token has access to repository
    */
@@ -94,6 +96,9 @@ export class OctokitAdapter implements IGitHubAPI {
       const perPage = 100; // Max per page
 
       while (true) {
+        // Wait if rate limit is low
+        await this.rateLimiter.waitIfNeeded();
+
         const response = await octokit.rest.pulls.list({
           owner,
           repo,
@@ -103,6 +108,12 @@ export class OctokitAdapter implements IGitHubAPI {
           per_page: perPage,
           page,
         });
+
+        // Update rate limit info after each request
+        const rateLimitResult = await this.getRateLimitStatus(token);
+        if (rateLimitResult.ok) {
+          this.rateLimiter.updateRateLimit(rateLimitResult.value);
+        }
 
         if (response.data.length === 0) {
           break; // No more PRs
@@ -188,6 +199,9 @@ export class OctokitAdapter implements IGitHubAPI {
         const perPage = 100;
 
         while (true) {
+          // Wait if rate limit is low
+          await this.rateLimiter.waitIfNeeded();
+
           const response = await octokit.rest.pulls.listReviewComments({
             owner,
             repo,
@@ -195,6 +209,12 @@ export class OctokitAdapter implements IGitHubAPI {
             per_page: perPage,
             page,
           });
+
+          // Update rate limit info after each request
+          const rateLimitResult = await this.getRateLimitStatus(token);
+          if (rateLimitResult.ok) {
+            this.rateLimiter.updateRateLimit(rateLimitResult.value);
+          }
 
           if (response.data.length === 0) {
             break;

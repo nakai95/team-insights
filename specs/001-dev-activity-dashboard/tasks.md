@@ -105,8 +105,8 @@ description: "Task list for Developer Activity Dashboard implementation"
 
 ### Domain Services for US1
 
-- [x] T038 [US1] Create ActivityAggregationService in src/domain/services/ActivityAggregationService.ts
-- [x] T039 [US1] Write unit tests for ActivityAggregationService in src/domain/services/**tests**/ActivityAggregationService.test.ts (15 tests passing)
+- [ ] T038 [US1] Create ActivityAggregationService in src/domain/services/ActivityAggregationService.ts (REMOVED - unused)
+- [ ] T039 [US1] Write unit tests for ActivityAggregationService in src/domain/services/**tests**/ActivityAggregationService.test.ts (15 tests passing) (REMOVED - unused)
 
 ### Application Layer DTOs
 
