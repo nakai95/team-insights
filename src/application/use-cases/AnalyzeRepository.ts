@@ -6,6 +6,7 @@ import { FetchGitData, FetchGitDataInput } from "./FetchGitData";
 import { CalculateMetrics, CalculateMetricsInput } from "./CalculateMetrics";
 import { TempDirectoryManager } from "@/infrastructure/filesystem/TempDirectoryManager";
 import { logger } from "@/lib/utils/logger";
+import { getErrorMessage } from "@/lib/utils/errorUtils";
 import { v4 as uuidv4 } from "uuid";
 
 /**
@@ -154,15 +155,11 @@ export class AnalyzeRepository {
       });
     } catch (error) {
       logger.error("AnalyzeRepository use case failed", {
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
 
       return err(
-        new Error(
-          `Failed to analyze repository: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        ),
+        new Error(`Failed to analyze repository: ${getErrorMessage(error)}`),
       );
     } finally {
       // Clean up temporary directory

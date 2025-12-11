@@ -13,6 +13,7 @@ import { ContributorMapper } from "@/application/mappers/ContributorMapper";
 import { Contributor } from "@/domain/entities/Contributor";
 import { Result, ok } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
+import { getErrorMessage } from "@/lib/utils/errorUtils";
 
 /**
  * Server Action for merging contributor identities
@@ -168,7 +169,7 @@ export async function mergeIdentities(
     };
   } catch (error) {
     logger.error("Server Action: mergeIdentities failed", {
-      error: error instanceof Error ? error.message : String(error),
+      error: getErrorMessage(error),
     });
 
     return {

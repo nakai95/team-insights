@@ -13,6 +13,7 @@ import { SimpleGitAdapter } from "@/infrastructure/git/SimpleGitAdapter";
 import { OctokitAdapter } from "@/infrastructure/github/OctokitAdapter";
 import { TempDirectoryManager } from "@/infrastructure/filesystem/TempDirectoryManager";
 import { ContributorMapper } from "@/application/mappers/ContributorMapper";
+import { getErrorMessage } from "@/lib/utils/errorUtils";
 import { Result } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
 
@@ -163,7 +164,7 @@ export async function analyzeRepository(
     };
   } catch (error) {
     logger.error("Server Action: analyzeRepository error", {
-      error: error instanceof Error ? error.message : String(error),
+      error: getErrorMessage(error),
     });
 
     return {

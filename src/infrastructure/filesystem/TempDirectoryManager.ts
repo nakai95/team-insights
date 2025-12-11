@@ -3,6 +3,7 @@ import * as path from "path";
 import * as os from "os";
 import { Result, ok, err } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
+import { getErrorMessage } from "@/lib/utils/errorUtils";
 
 /**
  * Manages temporary directories for repository clones
@@ -41,14 +42,12 @@ export class TempDirectoryManager {
       return ok(dirPath);
     } catch (error) {
       logger.error("Failed to create temporary directory", {
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
 
       return err(
         new Error(
-          `Failed to create temporary directory: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
+          `Failed to create temporary directory: ${getErrorMessage(error)}`,
         ),
       );
     }
@@ -79,14 +78,12 @@ export class TempDirectoryManager {
     } catch (error) {
       logger.error("Failed to remove temporary directory", {
         dirPath,
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
 
       return err(
         new Error(
-          `Failed to remove temporary directory: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
+          `Failed to remove temporary directory: ${getErrorMessage(error)}`,
         ),
       );
     }
@@ -113,14 +110,14 @@ export class TempDirectoryManager {
       return ok(removed);
     } catch (error) {
       logger.error("Failed to remove all temporary directories", {
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
 
       return err(
         new Error(
-          `Failed to remove all temporary directories: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
+          `Failed to remove all temporary directories: ${getErrorMessage(
+            error,
+          )}`,
         ),
       );
     }

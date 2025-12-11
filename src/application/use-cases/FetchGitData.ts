@@ -8,6 +8,7 @@ import {
 import { RepositoryUrl } from "@/domain/value-objects/RepositoryUrl";
 import { DateRange } from "@/domain/value-objects/DateRange";
 import { logger } from "@/lib/utils/logger";
+import { getErrorMessage } from "@/lib/utils/errorUtils";
 
 /**
  * Input for FetchGitData use case
@@ -154,15 +155,11 @@ export class FetchGitData {
       });
     } catch (error) {
       logger.error("FetchGitData use case failed", {
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
 
       return err(
-        new Error(
-          `Failed to fetch Git data: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        ),
+        new Error(`Failed to fetch Git data: ${getErrorMessage(error)}`),
       );
     }
   }
