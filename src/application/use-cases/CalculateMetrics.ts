@@ -8,6 +8,8 @@ import { ReviewActivity } from "@/domain/value-objects/ReviewActivity";
 import { ActivitySnapshot } from "@/domain/value-objects/ActivitySnapshot";
 import { Period } from "@/domain/types";
 import { logger } from "@/lib/utils/logger";
+import { getErrorMessage } from "@/lib/utils/errorUtils";
+import { groupBy } from "@/lib/utils/collection";
 
 /**
  * Input for CalculateMetrics use case
@@ -40,28 +42,42 @@ export class CalculateMetrics {
         commentCount: input.reviewComments.length,
       });
 
-      // Log commit details for debugging
-      logger.info("=== Detailed Commit Analysis ===");
-      for (const commit of input.commits) {
-        const totalChanges = commit.linesAdded + commit.linesDeleted;
-        logger.info(`Commit ${commit.hash.substring(0, 7)}`, {
-          author: commit.author,
-          email: commit.email,
-          linesAdded: commit.linesAdded,
-          linesDeleted: commit.linesDeleted,
-          filesChanged: commit.filesChanged,
-          totalChanges,
+      // Log summary statistics in debug mode instead of per-commit details
+      if (input.commits.length > 0) {
+        const totalLines = input.commits.reduce(
+          (sum, c) => sum + c.linesAdded + c.linesDeleted,
+          0,
+        );
+        const avgLinesPerCommit = Math.round(totalLines / input.commits.length);
+        logger.debug("Commit analysis summary", {
+          totalCommits: input.commits.length,
+          totalLinesChanged: totalLines,
+          avgLinesPerCommit,
+          sampleCommit: input.commits[0]
+            ? {
+                hash: input.commits[0].hash.substring(0, 7),
+                author: input.commits[0].author,
+                linesChanged:
+                  input.commits[0].linesAdded + input.commits[0].linesDeleted,
+              }
+            : null,
         });
       }
 
       // Group commits by email
-      const commitsByEmail = this.groupCommitsByEmail(input.commits);
+      const commitsByEmail = groupBy(input.commits, (commit) =>
+        commit.email.toLowerCase(),
+      );
 
       // Group PRs by author
-      const prsByAuthor = this.groupPRsByAuthor(input.pullRequests);
+      const prsByAuthor = groupBy(input.pullRequests, (pr) =>
+        pr.author.toLowerCase(),
+      );
 
       // Group review comments by author
-      const commentsByAuthor = this.groupCommentsByAuthor(input.reviewComments);
+      const commentsByAuthor = groupBy(input.reviewComments, (comment) =>
+        comment.author.toLowerCase(),
+      );
 
       // Get all unique contributors (emails from commits + GitHub usernames)
       const contributorKeys = new Set([
@@ -97,79 +113,13 @@ export class CalculateMetrics {
       return ok({ contributors });
     } catch (error) {
       logger.error("CalculateMetrics use case failed", {
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
 
       return err(
-        new Error(
-          `Failed to calculate metrics: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        ),
+        new Error(`Failed to calculate metrics: ${getErrorMessage(error)}`),
       );
     }
-  }
-
-  /**
-   * Group commits by email address
-   */
-  private groupCommitsByEmail(commits: GitCommit[]): Map<string, GitCommit[]> {
-    const grouped = new Map<string, GitCommit[]>();
-
-    for (const commit of commits) {
-      const email = commit.email.toLowerCase();
-      const existing = grouped.get(email);
-
-      if (existing) {
-        existing.push(commit);
-      } else {
-        grouped.set(email, [commit]);
-      }
-    }
-
-    return grouped;
-  }
-
-  /**
-   * Group PRs by author username
-   */
-  private groupPRsByAuthor(prs: PullRequest[]): Map<string, PullRequest[]> {
-    const grouped = new Map<string, PullRequest[]>();
-
-    for (const pr of prs) {
-      const author = pr.author.toLowerCase();
-      const existing = grouped.get(author);
-
-      if (existing) {
-        existing.push(pr);
-      } else {
-        grouped.set(author, [pr]);
-      }
-    }
-
-    return grouped;
-  }
-
-  /**
-   * Group review comments by author username
-   */
-  private groupCommentsByAuthor(
-    comments: ReviewComment[],
-  ): Map<string, ReviewComment[]> {
-    const grouped = new Map<string, ReviewComment[]>();
-
-    for (const comment of comments) {
-      const author = comment.author.toLowerCase();
-      const existing = grouped.get(author);
-
-      if (existing) {
-        existing.push(comment);
-      } else {
-        grouped.set(author, [comment]);
-      }
-    }
-
-    return grouped;
   }
 
   /**

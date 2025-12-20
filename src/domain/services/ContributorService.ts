@@ -51,7 +51,47 @@ export class ContributorService {
       (e) => e.value !== primaryEmail.value,
     );
 
-    // Merge implementation activity
+    // Merge implementation activity using helper
+    const implementationResult = this.aggregateImplementationActivity(
+      primary,
+      merged,
+    );
+    if (!implementationResult.ok) {
+      return err(implementationResult.error);
+    }
+
+    // Merge review activity using helper
+    const reviewResult = this.aggregateReviewActivity(primary, merged);
+    if (!reviewResult.ok) {
+      return err(reviewResult.error);
+    }
+
+    // Merge activity timelines using helper
+    const timelineResult = this.mergeActivitySnapshots(primary, merged);
+    if (!timelineResult.ok) {
+      return err(timelineResult.error);
+    }
+
+    // Create merged contributor
+    return Contributor.create({
+      id: primary.id,
+      primaryEmail,
+      mergedEmails,
+      displayName: primary.displayName,
+      implementationActivity: implementationResult.value,
+      reviewActivity: reviewResult.value,
+      activityTimeline: timelineResult.value,
+    });
+  }
+
+  /**
+   * Aggregate implementation activity metrics from primary and merged contributors
+   * @private
+   */
+  private static aggregateImplementationActivity(
+    primary: Contributor,
+    merged: Contributor[],
+  ): Result<ImplementationActivity> {
     const totalCommits =
       primary.implementationActivity.commitCount +
       merged.reduce((sum, c) => sum + c.implementationActivity.commitCount, 0);
@@ -71,19 +111,23 @@ export class ContributorService {
       primary.implementationActivity.filesChanged +
       merged.reduce((sum, c) => sum + c.implementationActivity.filesChanged, 0);
 
-    const implementationResult = ImplementationActivity.create({
+    return ImplementationActivity.create({
       commitCount: totalCommits,
       linesAdded: totalLinesAdded,
       linesDeleted: totalLinesDeleted,
       linesModified: totalLinesModified,
       filesChanged: totalFilesChanged,
     });
+  }
 
-    if (!implementationResult.ok) {
-      return err(implementationResult.error);
-    }
-
-    // Merge review activity
+  /**
+   * Aggregate review activity metrics from primary and merged contributors
+   * @private
+   */
+  private static aggregateReviewActivity(
+    primary: Contributor,
+    merged: Contributor[],
+  ): Result<ReviewActivity> {
     const totalPRCount =
       primary.reviewActivity.pullRequestCount +
       merged.reduce((sum, c) => sum + c.reviewActivity.pullRequestCount, 0);
@@ -94,17 +138,21 @@ export class ContributorService {
       primary.reviewActivity.pullRequestsReviewed +
       merged.reduce((sum, c) => sum + c.reviewActivity.pullRequestsReviewed, 0);
 
-    const reviewResult = ReviewActivity.create({
+    return ReviewActivity.create({
       pullRequestCount: totalPRCount,
       reviewCommentCount: totalReviewCommentCount,
       pullRequestsReviewed: totalPRsReviewed,
     });
+  }
 
-    if (!reviewResult.ok) {
-      return err(reviewResult.error);
-    }
-
-    // Merge activity timelines
+  /**
+   * Merge activity snapshots from all contributors, combining snapshots with the same date
+   * @private
+   */
+  private static mergeActivitySnapshots(
+    primary: Contributor,
+    merged: Contributor[],
+  ): Result<ActivitySnapshot[]> {
     const allSnapshots = [
       ...primary.activityTimeline,
       ...merged.flatMap((c) => c.activityTimeline),
@@ -118,59 +166,12 @@ export class ContributorService {
       const existing = snapshotMap.get(dateKey);
 
       if (existing) {
-        // Merge implementation activities
-        const mergedImplResult = ImplementationActivity.create({
-          commitCount:
-            existing.implementationActivity.commitCount +
-            snapshot.implementationActivity.commitCount,
-          linesAdded:
-            existing.implementationActivity.linesAdded +
-            snapshot.implementationActivity.linesAdded,
-          linesDeleted:
-            existing.implementationActivity.linesDeleted +
-            snapshot.implementationActivity.linesDeleted,
-          linesModified:
-            existing.implementationActivity.linesModified +
-            snapshot.implementationActivity.linesModified,
-          filesChanged:
-            existing.implementationActivity.filesChanged +
-            snapshot.implementationActivity.filesChanged,
-        });
-
-        if (!mergedImplResult.ok) {
-          return err(mergedImplResult.error);
+        // Combine this snapshot with the existing one
+        const combinedResult = this.combineSnapshots(existing, snapshot);
+        if (!combinedResult.ok) {
+          return err(combinedResult.error);
         }
-
-        // Merge review activities
-        const mergedReviewResult = ReviewActivity.create({
-          pullRequestCount:
-            existing.reviewActivity.pullRequestCount +
-            snapshot.reviewActivity.pullRequestCount,
-          reviewCommentCount:
-            existing.reviewActivity.reviewCommentCount +
-            snapshot.reviewActivity.reviewCommentCount,
-          pullRequestsReviewed:
-            existing.reviewActivity.pullRequestsReviewed +
-            snapshot.reviewActivity.pullRequestsReviewed,
-        });
-
-        if (!mergedReviewResult.ok) {
-          return err(mergedReviewResult.error);
-        }
-
-        // Create merged snapshot
-        const mergedSnapshotResult = ActivitySnapshot.create(
-          snapshot.date,
-          snapshot.period,
-          mergedImplResult.value,
-          mergedReviewResult.value,
-        );
-
-        if (!mergedSnapshotResult.ok) {
-          return err(mergedSnapshotResult.error);
-        }
-
-        snapshotMap.set(dateKey, mergedSnapshotResult.value);
+        snapshotMap.set(dateKey, combinedResult.value);
       } else {
         snapshotMap.set(dateKey, snapshot);
       }
@@ -181,16 +182,64 @@ export class ContributorService {
       (a, b) => a.date.getTime() - b.date.getTime(),
     );
 
-    // Create merged contributor
-    return Contributor.create({
-      id: primary.id,
-      primaryEmail,
-      mergedEmails,
-      displayName: primary.displayName,
-      implementationActivity: implementationResult.value,
-      reviewActivity: reviewResult.value,
-      activityTimeline: mergedTimeline,
+    return ok(mergedTimeline);
+  }
+
+  /**
+   * Combine two activity snapshots by summing their metrics
+   * @private
+   */
+  private static combineSnapshots(
+    existing: ActivitySnapshot,
+    snapshot: ActivitySnapshot,
+  ): Result<ActivitySnapshot> {
+    // Merge implementation activities
+    const mergedImplResult = ImplementationActivity.create({
+      commitCount:
+        existing.implementationActivity.commitCount +
+        snapshot.implementationActivity.commitCount,
+      linesAdded:
+        existing.implementationActivity.linesAdded +
+        snapshot.implementationActivity.linesAdded,
+      linesDeleted:
+        existing.implementationActivity.linesDeleted +
+        snapshot.implementationActivity.linesDeleted,
+      linesModified:
+        existing.implementationActivity.linesModified +
+        snapshot.implementationActivity.linesModified,
+      filesChanged:
+        existing.implementationActivity.filesChanged +
+        snapshot.implementationActivity.filesChanged,
     });
+
+    if (!mergedImplResult.ok) {
+      return err(mergedImplResult.error);
+    }
+
+    // Merge review activities
+    const mergedReviewResult = ReviewActivity.create({
+      pullRequestCount:
+        existing.reviewActivity.pullRequestCount +
+        snapshot.reviewActivity.pullRequestCount,
+      reviewCommentCount:
+        existing.reviewActivity.reviewCommentCount +
+        snapshot.reviewActivity.reviewCommentCount,
+      pullRequestsReviewed:
+        existing.reviewActivity.pullRequestsReviewed +
+        snapshot.reviewActivity.pullRequestsReviewed,
+    });
+
+    if (!mergedReviewResult.ok) {
+      return err(mergedReviewResult.error);
+    }
+
+    // Create merged snapshot
+    return ActivitySnapshot.create(
+      snapshot.date,
+      snapshot.period,
+      mergedImplResult.value,
+      mergedReviewResult.value,
+    );
   }
 
   /**

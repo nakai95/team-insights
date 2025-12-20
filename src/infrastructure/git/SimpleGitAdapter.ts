@@ -3,6 +3,8 @@ import { IGitOperations, GitCommit } from "@/domain/interfaces/IGitOperations";
 import { Result, ok, err } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
 import { maskToken } from "@/lib/utils/tokenMasker";
+import { parseNumstat } from "@/lib/utils/numstatParser";
+import { getErrorMessage } from "@/lib/utils/errorUtils";
 import { execSync } from "child_process";
 
 /**
@@ -28,7 +30,7 @@ export class SimpleGitAdapter implements IGitOperations {
     sinceDate?: Date,
   ): Promise<Result<void>> {
     try {
-      logger.info(`Cloning repository to ${targetPath}`, {
+      logger.debug(`Cloning repository to ${targetPath}`, {
         url: maskToken(url),
         sinceDate: sinceDate?.toISOString(),
       });
@@ -44,15 +46,11 @@ export class SimpleGitAdapter implements IGitOperations {
       logger.error("Failed to clone repository", {
         url: maskToken(url),
         targetPath,
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
 
       return err(
-        new Error(
-          `Failed to clone repository: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        ),
+        new Error(`Failed to clone repository: ${getErrorMessage(error)}`),
       );
     }
   }
@@ -69,7 +67,7 @@ export class SimpleGitAdapter implements IGitOperations {
     untilDate?: Date,
   ): Promise<Result<GitCommit[]>> {
     try {
-      logger.info(`Fetching git log from ${repoPath}`, {
+      logger.debug(`Fetching git log from ${repoPath}`, {
         sinceDate: sinceDate?.toISOString(),
         untilDate: untilDate?.toISOString(),
       });
@@ -89,7 +87,7 @@ export class SimpleGitAdapter implements IGitOperations {
 
       // Build command string
       const gitCommand = `git ${logOptions.join(" ")}`;
-      logger.info(`Executing git command: ${gitCommand}`);
+      logger.debug(`Executing git command: ${gitCommand}`);
 
       // Execute git command directly using execSync to avoid simple-git output truncation
       const logResult = execSync(gitCommand, {
@@ -98,14 +96,14 @@ export class SimpleGitAdapter implements IGitOperations {
         maxBuffer: 50 * 1024 * 1024, // 50MB buffer for large repos
       }).toString();
 
-      // Log a sample of the raw output
-      logger.info(`Raw log output length: ${logResult.length} chars`);
+      // Log raw output details only in debug mode
+      logger.debug(`Raw log output length: ${logResult.length} chars`);
       const commitStartCount = (logResult.match(/COMMIT_START/g) || []).length;
-      logger.info(
+      logger.debug(
         `COMMIT_START occurrences in raw output: ${commitStartCount}`,
       );
-      logger.info(`First 1000 chars of raw log:`);
-      logger.info(logResult.substring(0, 1000));
+      logger.debug(`First 1000 chars of raw log:`);
+      logger.debug(logResult.substring(0, 1000));
 
       // Parse the log output
       const commits = this.parseGitLog(logResult);
@@ -117,15 +115,11 @@ export class SimpleGitAdapter implements IGitOperations {
     } catch (error) {
       logger.error("Failed to fetch git log", {
         repoPath,
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
 
       return err(
-        new Error(
-          `Failed to fetch git log: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        ),
+        new Error(`Failed to fetch git log: ${getErrorMessage(error)}`),
       );
     }
   }
@@ -143,6 +137,8 @@ export class SimpleGitAdapter implements IGitOperations {
       .filter((block) => block.trim());
 
     logger.info(`Parsing ${commitBlocks.length} commit blocks`);
+
+    let totalNumstatLines = 0;
 
     for (const block of commitBlocks) {
       const lines = block.trim().split("\n");
@@ -186,14 +182,11 @@ export class SimpleGitAdapter implements IGitOperations {
         continue;
       }
 
-      // Log numstat line count for debugging
-      logger.info(
-        `Commit ${hash.substring(0, 7)}: ${numstatLines.length} numstat lines`,
-      );
+      totalNumstatLines += numstatLines.length;
 
       // Parse numstat lines
       const { filesChanged, linesAdded, linesDeleted } =
-        this.parseNumstat(numstatLines);
+        parseNumstat(numstatLines);
 
       commits.push({
         hash,
@@ -207,116 +200,14 @@ export class SimpleGitAdapter implements IGitOperations {
       });
     }
 
+    // Log summary statistics instead of per-commit details
+    logger.debug("Numstat parsing summary", {
+      totalCommits: commits.length,
+      totalNumstatLines,
+      avgNumstatLinesPerCommit:
+        commits.length > 0 ? Math.round(totalNumstatLines / commits.length) : 0,
+    });
+
     return commits;
-  }
-
-  /**
-   * Check if a file should be excluded from metrics
-   * Excludes generated files, lock files, and build artifacts
-   */
-  private shouldExcludeFile(filename: string): boolean {
-    const excludePatterns = [
-      // Lock files
-      /^package-lock\.json$/,
-      /^yarn\.lock$/,
-      /^pnpm-lock\.yaml$/,
-      /^Gemfile\.lock$/,
-      /^Cargo\.lock$/,
-      /^poetry\.lock$/,
-      /^composer\.lock$/,
-
-      // Build artifacts and dist directories
-      /^dist\//,
-      /^build\//,
-      /^out\//,
-      /^\.next\//,
-      /^target\//,
-      /^bin\//,
-      /^obj\//,
-
-      // Dependencies
-      /^node_modules\//,
-      /^vendor\//,
-      /^\.venv\//,
-
-      // Generated documentation
-      /^docs\/api\//,
-      /^coverage\//,
-
-      // Minified files
-      /\.min\.js$/,
-      /\.min\.css$/,
-
-      // Source maps
-      /\.map$/,
-    ];
-
-    return excludePatterns.some((pattern) => pattern.test(filename));
-  }
-
-  /**
-   * Parse numstat lines to extract file change statistics
-   */
-  private parseNumstat(numstatLines: string[]): {
-    filesChanged: number;
-    linesAdded: number;
-    linesDeleted: number;
-  } {
-    let filesChanged = 0;
-    let linesAdded = 0;
-    let linesDeleted = 0;
-    let excludedCount = 0;
-
-    // Log first 10 files for debugging large commits
-    if (numstatLines.length > 100) {
-      logger.info(`Large commit detected: ${numstatLines.length} file changes`);
-      logger.info("First 10 files:");
-      for (let i = 0; i < Math.min(10, numstatLines.length); i++) {
-        const parts = numstatLines[i]?.split("\t");
-        if (parts && parts.length >= 3) {
-          logger.info(`  ${parts[0]}\t${parts[1]}\t${parts[2]}`);
-        }
-      }
-    }
-
-    for (const line of numstatLines) {
-      const parts = line.split("\t");
-      if (parts.length >= 3) {
-        const additions = parts[0];
-        const deletions = parts[1];
-        const filename = parts[2]; // Third part is filename
-
-        if (!additions || !deletions || !filename) continue;
-
-        // Skip generated/build files
-        if (this.shouldExcludeFile(filename)) {
-          excludedCount++;
-          continue;
-        }
-
-        // Handle binary files (marked with -)
-        if (additions !== "-" && deletions !== "-") {
-          const addNum = parseInt(additions, 10);
-          const delNum = parseInt(deletions, 10);
-
-          if (!isNaN(addNum) && !isNaN(delNum)) {
-            linesAdded += addNum;
-            linesDeleted += delNum;
-            filesChanged++;
-          }
-        } else {
-          // Binary file, count as changed but no line stats
-          filesChanged++;
-        }
-      }
-    }
-
-    if (excludedCount > 0) {
-      logger.info(
-        `Excluded ${excludedCount} files from metrics (generated/build files)`,
-      );
-    }
-
-    return { filesChanged, linesAdded, linesDeleted };
   }
 }

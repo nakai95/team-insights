@@ -13,8 +13,10 @@ import { SimpleGitAdapter } from "@/infrastructure/git/SimpleGitAdapter";
 import { OctokitAdapter } from "@/infrastructure/github/OctokitAdapter";
 import { TempDirectoryManager } from "@/infrastructure/filesystem/TempDirectoryManager";
 import { ContributorMapper } from "@/application/mappers/ContributorMapper";
+import { getErrorMessage } from "@/lib/utils/errorUtils";
 import { Result } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
+import { mapErrorCode } from "./errorMapping";
 
 /**
  * Server Action for analyzing a GitHub repository
@@ -163,7 +165,7 @@ export async function analyzeRepository(
     };
   } catch (error) {
     logger.error("Server Action: analyzeRepository error", {
-      error: error instanceof Error ? error.message : String(error),
+      error: getErrorMessage(error),
     });
 
     return {
@@ -178,41 +180,4 @@ export async function analyzeRepository(
       },
     };
   }
-}
-
-/**
- * Map domain error messages to API error codes
- */
-function mapErrorCode(errorMessage: string): AnalysisErrorCode {
-  const msg = errorMessage.toLowerCase();
-
-  if (msg.includes("invalid") && msg.includes("url")) {
-    return AnalysisErrorCode.INVALID_URL;
-  }
-
-  if (msg.includes("invalid") && msg.includes("token")) {
-    return AnalysisErrorCode.INVALID_TOKEN;
-  }
-
-  if (msg.includes("not found") || msg.includes("404")) {
-    return AnalysisErrorCode.REPO_NOT_FOUND;
-  }
-
-  if (msg.includes("permission") || msg.includes("403")) {
-    return AnalysisErrorCode.INSUFFICIENT_PERMISSIONS;
-  }
-
-  if (msg.includes("rate limit")) {
-    return AnalysisErrorCode.RATE_LIMIT_EXCEEDED;
-  }
-
-  if (msg.includes("clone")) {
-    return AnalysisErrorCode.CLONE_FAILED;
-  }
-
-  if (msg.includes("timeout")) {
-    return AnalysisErrorCode.ANALYSIS_TIMEOUT;
-  }
-
-  return AnalysisErrorCode.INTERNAL_ERROR;
 }

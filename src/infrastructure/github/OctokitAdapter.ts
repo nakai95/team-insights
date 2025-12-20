@@ -8,12 +8,14 @@ import {
 import { Result, ok, err } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
 import { maskToken } from "@/lib/utils/tokenMasker";
+import { RateLimiter } from "./RateLimiter";
 
 /**
  * Adapter for GitHub API operations using Octokit
  * Implements IGitHubAPI interface with rate limiting and pagination
  */
 export class OctokitAdapter implements IGitHubAPI {
+  private rateLimiter = new RateLimiter();
   /**
    * Validate GitHub token has access to repository
    */
@@ -23,7 +25,7 @@ export class OctokitAdapter implements IGitHubAPI {
     token: string,
   ): Promise<Result<boolean>> {
     try {
-      logger.info("Validating GitHub token access", {
+      logger.debug("Validating GitHub token access", {
         owner,
         repo,
         token: maskToken(token),
@@ -80,7 +82,7 @@ export class OctokitAdapter implements IGitHubAPI {
     sinceDate?: Date,
   ): Promise<Result<PullRequest[]>> {
     try {
-      logger.info("Fetching pull requests", {
+      logger.debug("Fetching pull requests", {
         owner,
         repo,
         sinceDate: sinceDate?.toISOString(),
@@ -94,6 +96,9 @@ export class OctokitAdapter implements IGitHubAPI {
       const perPage = 100; // Max per page
 
       while (true) {
+        // Wait if rate limit is low
+        await this.rateLimiter.waitIfNeeded();
+
         const response = await octokit.rest.pulls.list({
           owner,
           repo,
@@ -103,6 +108,12 @@ export class OctokitAdapter implements IGitHubAPI {
           per_page: perPage,
           page,
         });
+
+        // Update rate limit info after each request
+        const rateLimitResult = await this.getRateLimitStatus(token);
+        if (rateLimitResult.ok) {
+          this.rateLimiter.updateRateLimit(rateLimitResult.value);
+        }
 
         if (response.data.length === 0) {
           break; // No more PRs
@@ -173,7 +184,7 @@ export class OctokitAdapter implements IGitHubAPI {
     pullRequestNumbers: number[],
   ): Promise<Result<ReviewComment[]>> {
     try {
-      logger.info("Fetching review comments", {
+      logger.debug("Fetching review comments", {
         owner,
         repo,
         prCount: pullRequestNumbers.length,
@@ -188,6 +199,9 @@ export class OctokitAdapter implements IGitHubAPI {
         const perPage = 100;
 
         while (true) {
+          // Wait if rate limit is low
+          await this.rateLimiter.waitIfNeeded();
+
           const response = await octokit.rest.pulls.listReviewComments({
             owner,
             repo,
@@ -195,6 +209,12 @@ export class OctokitAdapter implements IGitHubAPI {
             per_page: perPage,
             page,
           });
+
+          // Update rate limit info after each request
+          const rateLimitResult = await this.getRateLimitStatus(token);
+          if (rateLimitResult.ok) {
+            this.rateLimiter.updateRateLimit(rateLimitResult.value);
+          }
 
           if (response.data.length === 0) {
             break;
@@ -241,8 +261,6 @@ export class OctokitAdapter implements IGitHubAPI {
    */
   async getRateLimitStatus(token: string): Promise<Result<RateLimitInfo>> {
     try {
-      logger.info("Fetching rate limit status");
-
       const octokit = new Octokit({ auth: token });
       const response = await octokit.rest.rateLimit.get();
 
@@ -254,7 +272,7 @@ export class OctokitAdapter implements IGitHubAPI {
         resetAt: new Date(rateLimit.reset * 1000), // Unix timestamp to Date
       };
 
-      logger.info("Rate limit status", {
+      logger.debug("Rate limit status", {
         remaining: rateLimitInfo.remaining,
         limit: rateLimitInfo.limit,
         resetAt: rateLimitInfo.resetAt.toISOString(),

@@ -5,6 +5,7 @@ import { RepositoryUrl } from "@/domain/value-objects/RepositoryUrl";
 import { ContributorService } from "@/domain/services/ContributorService";
 import { IStoragePort } from "@/domain/interfaces/IStoragePort";
 import { logger } from "@/lib/utils/logger";
+import { getErrorMessage } from "@/lib/utils/errorUtils";
 
 /**
  * Input for MergeIdentities use case
@@ -122,7 +123,7 @@ export class MergeIdentities {
       });
     } catch (error) {
       logger.error("MergeIdentities use case failed", {
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
 
       return err(

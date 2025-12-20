@@ -8,6 +8,7 @@ import {
 import { RepositoryUrl } from "@/domain/value-objects/RepositoryUrl";
 import { DateRange } from "@/domain/value-objects/DateRange";
 import { logger } from "@/lib/utils/logger";
+import { getErrorMessage } from "@/lib/utils/errorUtils";
 
 /**
  * Input for FetchGitData use case
@@ -59,7 +60,7 @@ export class FetchGitData {
       const repo = repoUrl.repo;
 
       // Step 1: Validate GitHub token access
-      logger.info("Validating GitHub access");
+      logger.debug("Validating GitHub access");
       const accessResult = await this.githubAPI.validateAccess(
         owner,
         repo,
@@ -71,7 +72,9 @@ export class FetchGitData {
       }
 
       // Step 2: Clone repository
-      logger.info("Cloning repository", { tempDirectory: input.tempDirectory });
+      logger.debug("Cloning repository", {
+        tempDirectory: input.tempDirectory,
+      });
       const cloneUrl = this.buildCloneUrl(
         input.repositoryUrl,
         input.githubToken,
@@ -87,7 +90,7 @@ export class FetchGitData {
       }
 
       // Step 3: Fetch commit log
-      logger.info("Fetching commit log");
+      logger.debug("Fetching commit log");
       const logResult = await this.gitOperations.getLog(
         input.tempDirectory,
         input.dateRange.start,
@@ -102,7 +105,7 @@ export class FetchGitData {
       logger.info(`Fetched ${commits.length} commits`);
 
       // Step 4: Fetch pull requests
-      logger.info("Fetching pull requests");
+      logger.debug("Fetching pull requests");
       const prsResult = await this.githubAPI.getPullRequests(
         owner,
         repo,
@@ -118,7 +121,7 @@ export class FetchGitData {
       logger.info(`Fetched ${pullRequests.length} pull requests`);
 
       // Step 5: Fetch review comments for all PRs
-      logger.info("Fetching review comments");
+      logger.debug("Fetching review comments");
       const prNumbers = pullRequests.map((pr) => pr.number);
       const commentsResult = await this.githubAPI.getReviewComments(
         owner,
@@ -154,15 +157,11 @@ export class FetchGitData {
       });
     } catch (error) {
       logger.error("FetchGitData use case failed", {
-        error: error instanceof Error ? error.message : String(error),
+        error: getErrorMessage(error),
       });
 
       return err(
-        new Error(
-          `Failed to fetch Git data: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        ),
+        new Error(`Failed to fetch Git data: ${getErrorMessage(error)}`),
       );
     }
   }

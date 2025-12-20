@@ -1,5 +1,6 @@
 import { Result, ok, err } from "@/lib/result";
 import { IStoragePort } from "@/domain/interfaces/IStoragePort";
+import { getErrorMessage } from "@/lib/utils/errorUtils";
 
 /**
  * LocalStorage adapter for browser-based storage
@@ -50,9 +51,7 @@ export class LocalStorageAdapter implements IStoragePort {
       return ok(undefined);
     } catch (error) {
       return err(
-        new Error(
-          `Failed to save to localStorage: ${error instanceof Error ? error.message : String(error)}`,
-        ),
+        new Error(`Failed to save to localStorage: ${getErrorMessage(error)}`),
       );
     }
   }
@@ -75,7 +74,7 @@ export class LocalStorageAdapter implements IStoragePort {
     } catch (error) {
       return err(
         new Error(
-          `Failed to load from localStorage: ${error instanceof Error ? error.message : String(error)}`,
+          `Failed to load from localStorage: ${getErrorMessage(error)}`,
         ),
       );
     }
@@ -94,7 +93,7 @@ export class LocalStorageAdapter implements IStoragePort {
     } catch (error) {
       return err(
         new Error(
-          `Failed to remove from localStorage: ${error instanceof Error ? error.message : String(error)}`,
+          `Failed to remove from localStorage: ${getErrorMessage(error)}`,
         ),
       );
     }
@@ -112,9 +111,7 @@ export class LocalStorageAdapter implements IStoragePort {
       return ok(exists);
     } catch (error) {
       return err(
-        new Error(
-          `Failed to check localStorage: ${error instanceof Error ? error.message : String(error)}`,
-        ),
+        new Error(`Failed to check localStorage: ${getErrorMessage(error)}`),
       );
     }
   }
