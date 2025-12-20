@@ -34,8 +34,8 @@
 
 - [x] T007 Create ISessionProvider domain interface in `src/domain/interfaces/ISessionProvider.ts`
 - [x] T008 Create NextAuth v5 configuration in `src/infrastructure/auth/auth.config.ts` with GitHub provider, JWT strategy, 7-day maxAge, and session/jwt callbacks
-- [ ] T009 [P] Create NextAuthAdapter implementing ISessionProvider in `src/infrastructure/auth/NextAuthAdapter.ts`
-- [ ] T010 [P] Create environment validation schema with Zod in `src/infrastructure/auth/env.schema.ts`
+- [x] T009 [P] Create NextAuthAdapter implementing ISessionProvider in `src/infrastructure/auth/NextAuthAdapter.ts`
+- [x] T010 [P] Create environment validation schema with Zod in `src/infrastructure/auth/env.schema.ts`
 - [ ] T011 Create NextAuth v5 catch-all route handler in `src/app/api/auth/[...nextauth]/route.ts` that exports GET and POST from handlers
 - [ ] T012 Create middleware for route protection in `middleware.ts` (project root) with auth checks, redirects, and error handling
 - [ ] T013 [P] Create SessionProvider wrapper component in `src/app/providers.tsx` for client-side session access
