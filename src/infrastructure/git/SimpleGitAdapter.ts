@@ -30,7 +30,7 @@ export class SimpleGitAdapter implements IGitOperations {
     sinceDate?: Date,
   ): Promise<Result<void>> {
     try {
-      logger.info(`Cloning repository to ${targetPath}`, {
+      logger.debug(`Cloning repository to ${targetPath}`, {
         url: maskToken(url),
         sinceDate: sinceDate?.toISOString(),
       });
@@ -67,7 +67,7 @@ export class SimpleGitAdapter implements IGitOperations {
     untilDate?: Date,
   ): Promise<Result<GitCommit[]>> {
     try {
-      logger.info(`Fetching git log from ${repoPath}`, {
+      logger.debug(`Fetching git log from ${repoPath}`, {
         sinceDate: sinceDate?.toISOString(),
         untilDate: untilDate?.toISOString(),
       });
@@ -87,7 +87,7 @@ export class SimpleGitAdapter implements IGitOperations {
 
       // Build command string
       const gitCommand = `git ${logOptions.join(" ")}`;
-      logger.info(`Executing git command: ${gitCommand}`);
+      logger.debug(`Executing git command: ${gitCommand}`);
 
       // Execute git command directly using execSync to avoid simple-git output truncation
       const logResult = execSync(gitCommand, {

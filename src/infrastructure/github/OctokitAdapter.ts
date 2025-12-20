@@ -25,7 +25,7 @@ export class OctokitAdapter implements IGitHubAPI {
     token: string,
   ): Promise<Result<boolean>> {
     try {
-      logger.info("Validating GitHub token access", {
+      logger.debug("Validating GitHub token access", {
         owner,
         repo,
         token: maskToken(token),
@@ -82,7 +82,7 @@ export class OctokitAdapter implements IGitHubAPI {
     sinceDate?: Date,
   ): Promise<Result<PullRequest[]>> {
     try {
-      logger.info("Fetching pull requests", {
+      logger.debug("Fetching pull requests", {
         owner,
         repo,
         sinceDate: sinceDate?.toISOString(),
@@ -184,7 +184,7 @@ export class OctokitAdapter implements IGitHubAPI {
     pullRequestNumbers: number[],
   ): Promise<Result<ReviewComment[]>> {
     try {
-      logger.info("Fetching review comments", {
+      logger.debug("Fetching review comments", {
         owner,
         repo,
         prCount: pullRequestNumbers.length,
@@ -261,8 +261,6 @@ export class OctokitAdapter implements IGitHubAPI {
    */
   async getRateLimitStatus(token: string): Promise<Result<RateLimitInfo>> {
     try {
-      logger.info("Fetching rate limit status");
-
       const octokit = new Octokit({ auth: token });
       const response = await octokit.rest.rateLimit.get();
 
@@ -274,7 +272,7 @@ export class OctokitAdapter implements IGitHubAPI {
         resetAt: new Date(rateLimit.reset * 1000), // Unix timestamp to Date
       };
 
-      logger.info("Rate limit status", {
+      logger.debug("Rate limit status", {
         remaining: rateLimitInfo.remaining,
         limit: rateLimitInfo.limit,
         resetAt: rateLimitInfo.resetAt.toISOString(),
