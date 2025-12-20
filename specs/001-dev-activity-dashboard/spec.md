@@ -5,7 +5,7 @@
 **Status**: Draft
 **Input**: User description: "リポジトリの開発者活動を可視化するWebアプリケーションを作ります。ユーザーがリポジトリURLとGitHubトークンと任意で分析期間を入力すると、サーバー側でgit log解析とgithub apiからデータを取得して、コミット数、コード変更量、PRの回数、PRレビューのコメントの回数などを可視化します。開発者は同じアカウントでもorganizationなどに所属しているとメールアドレスを複数登録していることで別アカウントとしてカウントされる可能性があるため、ユーザー判断による統合ができるような機能が必要です。可視化するダッシュボードでは、実装活動のグラフ、レビュー活動のグラフ、ランキングなどが表示されると良いです。"
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Basic Activity Visualization (Priority: P1)
 
@@ -87,7 +87,7 @@ A product manager wants to analyze activity during a specific sprint or project 
 - How does the system handle repositories with protected branches and limited access?
 - What happens when analyzing a completely empty repository?
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -128,7 +128,7 @@ A product manager wants to analyze activity during a specific sprint or project 
 - **Identity Merge**: Represents the user's decision to combine multiple email addresses/identities into a single contributor view, persisted for future analyses
 - **Activity Snapshot**: Time-series data point containing activity metrics for a specific time period, used for trend visualization
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

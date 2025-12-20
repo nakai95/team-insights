@@ -15,6 +15,7 @@ This document defines the domain model for the Developer Activity Dashboard. All
 **Purpose**: Represents a single analysis session for a GitHub repository
 
 **Attributes**:
+
 - `id`: string (unique identifier, generated)
 - `repositoryUrl`: RepositoryUrl (value object)
 - `analyzedAt`: Date (timestamp when analysis was performed)
@@ -24,6 +25,7 @@ This document defines the domain model for the Developer Activity Dashboard. All
 - `errorMessage`: string | null (if status is 'failed')
 
 **Business Rules**:
+
 - Analysis ID must be unique
 - Repository URL must be valid GitHub HTTPS URL
 - Date range end must be after start
@@ -31,12 +33,14 @@ This document defines the domain model for the Developer Activity Dashboard. All
 - Error message required if status is 'failed'
 
 **State Transitions**:
+
 - Initial: 'in_progress'
 - Success: 'in_progress' → 'completed'
 - Failure: 'in_progress' → 'failed'
 - No transitions allowed from 'completed' or 'failed'
 
 **Relationships**:
+
 - Has many: Contributor
 - Contains: DateRange (composition)
 
@@ -47,6 +51,7 @@ This document defines the domain model for the Developer Activity Dashboard. All
 **Purpose**: Represents a developer who has contributed to the repository
 
 **Attributes**:
+
 - `id`: string (unique identifier, generated)
 - `primaryEmail`: Email (value object)
 - `mergedEmails`: Email[] (additional emails merged into this identity)
@@ -56,6 +61,7 @@ This document defines the domain model for the Developer Activity Dashboard. All
 - `activityTimeline`: ActivitySnapshot[] (time-series data)
 
 **Business Rules**:
+
 - At least one email (primary) required
 - Merged emails must not duplicate primary email
 - Display name defaults to email username if not provided
@@ -63,10 +69,12 @@ This document defines the domain model for the Developer Activity Dashboard. All
 - Activity timeline must be sorted chronologically
 
 **Invariants**:
+
 - All emails (primary + merged) must be unique within a contributor
 - Sum of timeline snapshots must equal total activity metrics
 
 **Relationships**:
+
 - Belongs to: RepositoryAnalysis
 - Contains: Email (value objects)
 - Contains: ImplementationActivity (composition)
@@ -80,6 +88,7 @@ This document defines the domain model for the Developer Activity Dashboard. All
 **Purpose**: Represents a user's decision to merge multiple email identities
 
 **Attributes**:
+
 - `id`: string (unique identifier)
 - `repositoryUrl`: RepositoryUrl (value object)
 - `primaryContributorId`: string (ID of primary contributor)
@@ -88,6 +97,7 @@ This document defines the domain model for the Developer Activity Dashboard. All
 - `lastAppliedAt`: Date
 
 **Business Rules**:
+
 - Repository URL must match the analysis being merged
 - Primary contributor must exist
 - Merged contributors must exist and be distinct from primary
@@ -95,6 +105,7 @@ This document defines the domain model for the Developer Activity Dashboard. All
 - Merge is permanent (no undo in MVP)
 
 **Relationships**:
+
 - References: RepositoryAnalysis (via repositoryUrl)
 - References: Contributor (via IDs)
 
@@ -107,9 +118,11 @@ This document defines the domain model for the Developer Activity Dashboard. All
 **Purpose**: Represents a validated email address
 
 **Attributes**:
+
 - `value`: string (immutable)
 
 **Validation Rules**:
+
 - Must match email format regex: `/^[^\s@]+@[^\s@]+\.[^\s@]+$/`
 - Must be lowercase
 - Maximum length: 254 characters (RFC 5321)
@@ -118,6 +131,7 @@ This document defines the domain model for the Developer Activity Dashboard. All
 **Equality**: Two emails are equal if their values are equal (case-insensitive)
 
 **Factory Method**:
+
 ```typescript
 static create(value: string): Result<Email> {
   // Validation logic
@@ -132,22 +146,26 @@ static create(value: string): Result<Email> {
 **Purpose**: Represents a validated GitHub repository URL
 
 **Attributes**:
+
 - `value`: string (immutable, full URL)
 - `owner`: string (extracted from URL)
 - `repo`: string (extracted from URL)
 
 **Validation Rules**:
+
 - Must match GitHub HTTPS format: `https://github.com/{owner}/{repo}`
 - Owner and repo must be alphanumeric + hyphens/underscores
 - No query parameters or fragments allowed
 - Maximum length: 500 characters
 
 **Derived Properties**:
+
 - `owner`: Extracted from URL path
 - `repo`: Extracted from URL path
 - `apiBase`: Computed GitHub API base URL
 
 **Factory Method**:
+
 ```typescript
 static create(url: string): Result<RepositoryUrl> {
   // Parse and validate
@@ -163,20 +181,24 @@ static create(url: string): Result<RepositoryUrl> {
 **Purpose**: Represents a time period for analysis
 
 **Attributes**:
+
 - `start`: Date (immutable)
 - `end`: Date (immutable)
 
 **Validation Rules**:
+
 - Start must be before end
 - Both dates must be in the past (cannot analyze future)
 - Maximum range: 10 years (prevent abuse)
 - Dates are UTC-based (no timezone confusion)
 
 **Derived Properties**:
+
 - `durationInDays`: Computed difference between start and end
 - `durationInMonths`: Approximation for display purposes
 
 **Factory Methods**:
+
 ```typescript
 static create(start: Date, end: Date): Result<DateRange>
 static defaultRange(): DateRange // 6 months ago to now
@@ -190,6 +212,7 @@ static fromMonths(months: number): DateRange // N months ago to now
 **Purpose**: Metrics related to code contribution
 
 **Attributes**:
+
 - `commitCount`: number (≥ 0)
 - `linesAdded`: number (≥ 0)
 - `linesDeleted`: number (≥ 0)
@@ -197,15 +220,18 @@ static fromMonths(months: number): DateRange // N months ago to now
 - `filesChanged`: number (≥ 0)
 
 **Validation Rules**:
+
 - All values must be non-negative integers
 - Lines modified = min(linesAdded, linesDeleted) conceptually
 
 **Derived Properties**:
+
 - `totalLineChanges`: linesAdded + linesDeleted
 - `netLineChanges`: linesAdded - linesDeleted
-- `activityScore`: Weighted combination for ranking (commitCount * 10 + totalLineChanges)
+- `activityScore`: Weighted combination for ranking (commitCount \* 10 + totalLineChanges)
 
 **Factory Method**:
+
 ```typescript
 static zero(): ImplementationActivity // All metrics set to 0
 static create(metrics: Partial<ImplementationActivity>): Result<ImplementationActivity>
@@ -218,19 +244,23 @@ static create(metrics: Partial<ImplementationActivity>): Result<ImplementationAc
 **Purpose**: Metrics related to code review participation
 
 **Attributes**:
+
 - `pullRequestCount`: number (≥ 0)
 - `reviewCommentCount`: number (≥ 0)
 - `pullRequestsReviewed`: number (≥ 0)
 
 **Validation Rules**:
+
 - All values must be non-negative integers
 - pullRequestsReviewed ≤ total PRs in repository
 
 **Derived Properties**:
-- `reviewScore`: Weighted combination for ranking (pullRequestCount * 5 + reviewCommentCount * 2)
+
+- `reviewScore`: Weighted combination for ranking (pullRequestCount _ 5 + reviewCommentCount _ 2)
 - `averageCommentsPerReview`: reviewCommentCount / pullRequestsReviewed (handle divide by zero)
 
 **Factory Method**:
+
 ```typescript
 static zero(): ReviewActivity // All metrics set to 0
 static create(metrics: Partial<ReviewActivity>): Result<ReviewActivity>
@@ -243,17 +273,20 @@ static create(metrics: Partial<ReviewActivity>): Result<ReviewActivity>
 **Purpose**: Time-series data point for activity trends
 
 **Attributes**:
+
 - `date`: Date (immutable, represents start of period)
 - `period`: Period
 - `implementationActivity`: ImplementationActivity
 - `reviewActivity`: ReviewActivity
 
 **Validation Rules**:
+
 - Date must be within analysis date range
 - Activities must be non-null
 - Period must match analysis granularity
 
 **Relationships**:
+
 - Belongs to: Contributor (via composition)
 
 ---
@@ -263,6 +296,7 @@ static create(metrics: Partial<ReviewActivity>): Result<ReviewActivity>
 **Purpose**: Common metrics calculations and comparisons
 
 **Static Methods**:
+
 ```typescript
 static calculatePercentile(value: number, allValues: number[]): number
 static rankContributors(contributors: Contributor[], by: RankingCriteria): Contributor[]
@@ -274,36 +308,41 @@ static aggregateByPeriod(snapshots: ActivitySnapshot[], period: Period): Activit
 ## Type Definitions
 
 ### AnalysisStatus
+
 ```typescript
 export const AnalysisStatus = {
-  IN_PROGRESS: 'in_progress',
-  COMPLETED: 'completed',
-  FAILED: 'failed',
+  IN_PROGRESS: "in_progress",
+  COMPLETED: "completed",
+  FAILED: "failed",
 } as const;
-export type AnalysisStatus = (typeof AnalysisStatus)[keyof typeof AnalysisStatus];
+export type AnalysisStatus =
+  (typeof AnalysisStatus)[keyof typeof AnalysisStatus];
 ```
 
 ### Period
+
 ```typescript
 export const Period = {
-  DAY: 'day',
-  WEEK: 'week',
-  MONTH: 'month',
+  DAY: "day",
+  WEEK: "week",
+  MONTH: "month",
 } as const;
 export type Period = (typeof Period)[keyof typeof Period];
 ```
 
 ### RankingCriteria
+
 ```typescript
 export const RankingCriteria = {
-  COMMITS: 'commits',
-  LINE_CHANGES: 'lineChanges',
-  PULL_REQUESTS: 'pullRequests',
-  REVIEW_COMMENTS: 'reviewComments',
-  IMPLEMENTATION_SCORE: 'implementationScore',
-  REVIEW_SCORE: 'reviewScore',
+  COMMITS: "commits",
+  LINE_CHANGES: "lineChanges",
+  PULL_REQUESTS: "pullRequests",
+  REVIEW_COMMENTS: "reviewComments",
+  IMPLEMENTATION_SCORE: "implementationScore",
+  REVIEW_SCORE: "reviewScore",
 } as const;
-export type RankingCriteria = (typeof RankingCriteria)[keyof typeof RankingCriteria];
+export type RankingCriteria =
+  (typeof RankingCriteria)[keyof typeof RankingCriteria];
 ```
 
 ---
@@ -399,17 +438,17 @@ IdentityMerge (separate aggregate)
 
 ## Data Validation Rules Summary
 
-| Entity/Value Object | Key Validations |
-|---------------------|-----------------|
-| RepositoryAnalysis | URL format, date range logic, status transitions |
-| Contributor | At least one email, unique emails, non-null activities |
-| IdentityMerge | Valid contributor IDs, no duplicate merges |
-| Email | RFC 5321 format, lowercase, max 254 chars |
-| RepositoryUrl | GitHub HTTPS format, valid owner/repo |
-| DateRange | Start < end, both in past, max 10 years |
-| ImplementationActivity | All values ≥ 0 |
-| ReviewActivity | All values ≥ 0, pullRequestsReviewed ≤ total PRs |
-| ActivitySnapshot | Date within range, valid period enum |
+| Entity/Value Object    | Key Validations                                        |
+| ---------------------- | ------------------------------------------------------ |
+| RepositoryAnalysis     | URL format, date range logic, status transitions       |
+| Contributor            | At least one email, unique emails, non-null activities |
+| IdentityMerge          | Valid contributor IDs, no duplicate merges             |
+| Email                  | RFC 5321 format, lowercase, max 254 chars              |
+| RepositoryUrl          | GitHub HTTPS format, valid owner/repo                  |
+| DateRange              | Start < end, both in past, max 10 years                |
+| ImplementationActivity | All values ≥ 0                                         |
+| ReviewActivity         | All values ≥ 0, pullRequestsReviewed ≤ total PRs       |
+| ActivitySnapshot       | Date within range, valid period enum                   |
 
 ---
 
@@ -418,21 +457,25 @@ IdentityMerge (separate aggregate)
 **Domain entities are persistence-agnostic.** The following notes are for infrastructure layer implementation:
 
 ### RepositoryAnalysis
+
 - **Storage**: Transient (not persisted in MVP)
 - **Rationale**: Each analysis is ephemeral; user triggers new analysis each time
 - **Future**: Consider caching in Redis if repeated analyses become common
 
 ### Contributor
+
 - **Storage**: Transient (part of RepositoryAnalysis)
 - **Rationale**: Derived data, recalculated on each analysis
 
 ### IdentityMerge
+
 - **Storage**: Persistent (browser localStorage)
 - **Key Format**: `team-insights:merge:${sha256(repositoryUrl)}`
 - **Serialization**: JSON with ISO date strings
 - **Rationale**: User preferences must persist across sessions
 
 ### ActivitySnapshot
+
 - **Storage**: Transient (part of Contributor)
 - **Rationale**: Aggregated data, can be recalculated from raw commits
 
@@ -455,6 +498,7 @@ These events are **not implemented in MVP** but are documented for future refere
 ## Summary
 
 The domain model prioritizes:
+
 - **Immutability**: Value objects are immutable
 - **Validation**: Business rules enforced at entity boundaries
 - **Testability**: Pure domain logic, no infrastructure dependencies
@@ -463,6 +507,7 @@ The domain model prioritizes:
 All entities follow the Result type pattern for error handling, ensuring explicit error cases and type-safe domain logic.
 
 **Constitutional Compliance**:
+
 - ✅ Domain layer is pure TypeScript (no external dependencies)
 - ✅ Business logic encapsulated in entities and domain services
 - ✅ Validation rules clearly defined and testable

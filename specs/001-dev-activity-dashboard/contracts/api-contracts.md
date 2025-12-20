@@ -11,11 +11,13 @@ This document defines all API contracts for the Developer Activity Dashboard. Th
 ## Authentication
 
 **Token Handling**:
+
 - GitHub tokens are provided per-request (no persistent authentication)
 - Tokens are validated on the server-side before processing
 - Tokens are never stored or logged
 
 **Security Headers**:
+
 - All responses include `X-Content-Type-Options: nosniff`
 - HTTPS enforced for all communications
 
@@ -28,36 +30,39 @@ This document defines all API contracts for the Developer Activity Dashboard. Th
 **Purpose**: Analyze a GitHub repository and return activity metrics
 
 **Function Signature**:
+
 ```typescript
 async function analyzeRepository(
-  request: AnalysisRequest
-): Promise<Result<AnalysisResult, AnalysisError>>
+  request: AnalysisRequest,
+): Promise<Result<AnalysisResult, AnalysisError>>;
 ```
 
 **Request Type**:
+
 ```typescript
 interface AnalysisRequest {
-  repositoryUrl: string;      // GitHub HTTPS URL
-  githubToken: string;         // Personal access token
+  repositoryUrl: string; // GitHub HTTPS URL
+  githubToken: string; // Personal access token
   dateRange?: {
-    start: string;             // ISO 8601 date string
-    end: string;               // ISO 8601 date string
+    start: string; // ISO 8601 date string
+    end: string; // ISO 8601 date string
   };
 }
 ```
 
 **Response Type (Success)**:
+
 ```typescript
 interface AnalysisResult {
   analysis: {
     id: string;
     repositoryUrl: string;
-    analyzedAt: string;        // ISO 8601 timestamp
+    analyzedAt: string; // ISO 8601 timestamp
     dateRange: {
       start: string;
       end: string;
     };
-    status: 'completed';
+    status: "completed";
   };
   contributors: ContributorDto[];
   summary: {
@@ -71,21 +76,24 @@ interface AnalysisResult {
 ```
 
 **Error Codes**:
+
 ```typescript
 export const AnalysisErrorCode = {
-  INVALID_URL: 'INVALID_URL',
-  INVALID_TOKEN: 'INVALID_TOKEN',
-  REPO_NOT_FOUND: 'REPO_NOT_FOUND',
-  INSUFFICIENT_PERMISSIONS: 'INSUFFICIENT_PERMISSIONS',
-  RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
-  CLONE_FAILED: 'CLONE_FAILED',
-  ANALYSIS_TIMEOUT: 'ANALYSIS_TIMEOUT',
-  INTERNAL_ERROR: 'INTERNAL_ERROR',
+  INVALID_URL: "INVALID_URL",
+  INVALID_TOKEN: "INVALID_TOKEN",
+  REPO_NOT_FOUND: "REPO_NOT_FOUND",
+  INSUFFICIENT_PERMISSIONS: "INSUFFICIENT_PERMISSIONS",
+  RATE_LIMIT_EXCEEDED: "RATE_LIMIT_EXCEEDED",
+  CLONE_FAILED: "CLONE_FAILED",
+  ANALYSIS_TIMEOUT: "ANALYSIS_TIMEOUT",
+  INTERNAL_ERROR: "INTERNAL_ERROR",
 } as const;
-export type AnalysisErrorCode = (typeof AnalysisErrorCode)[keyof typeof AnalysisErrorCode];
+export type AnalysisErrorCode =
+  (typeof AnalysisErrorCode)[keyof typeof AnalysisErrorCode];
 ```
 
 **Response Type (Error)**:
+
 ```typescript
 interface AnalysisError {
   code: AnalysisErrorCode;
@@ -95,6 +103,7 @@ interface AnalysisError {
 ```
 
 **Validation Rules**:
+
 - `repositoryUrl`: Must match `https://github.com/{owner}/{repo}` format
 - `githubToken`: Must be 20-100 characters, alphanumeric + underscores
 - `dateRange.start`: Must be before `dateRange.end`
@@ -102,6 +111,7 @@ interface AnalysisError {
 - Date range: Maximum 10 years
 
 **Business Logic**:
+
 1. Validate input using Zod schema
 2. Validate GitHub token permissions (read access to repo)
 3. Clone repository to temporary directory
@@ -113,11 +123,13 @@ interface AnalysisError {
 9. Return aggregated results
 
 **Performance**:
+
 - Expected: < 2 minutes for typical repositories (<1000 commits)
 - Timeout: 60 seconds (Vercel limit)
 - Progress updates: Via Server-Sent Events every 5 seconds
 
 **Error Handling**:
+
 - Invalid input → Return validation error with field details
 - GitHub API errors → Map to user-friendly messages
 - Timeout → Suggest reducing date range
@@ -130,13 +142,15 @@ interface AnalysisError {
 **Purpose**: Merge multiple contributor identities into one
 
 **Function Signature**:
+
 ```typescript
 async function mergeIdentities(
-  request: MergeRequest
-): Promise<Result<MergeResult, MergeError>>
+  request: MergeRequest,
+): Promise<Result<MergeResult, MergeError>>;
 ```
 
 **Request Type**:
+
 ```typescript
 interface MergeRequest {
   repositoryUrl: string;
@@ -146,6 +160,7 @@ interface MergeRequest {
 ```
 
 **Response Type (Success)**:
+
 ```typescript
 interface MergeResult {
   merge: {
@@ -159,17 +174,20 @@ interface MergeResult {
 ```
 
 **Error Codes**:
+
 ```typescript
 export const MergeErrorCode = {
-  CONTRIBUTOR_NOT_FOUND: 'CONTRIBUTOR_NOT_FOUND',
-  DUPLICATE_MERGE: 'DUPLICATE_MERGE',
-  INVALID_MERGE: 'INVALID_MERGE',
-  STORAGE_ERROR: 'STORAGE_ERROR',
+  CONTRIBUTOR_NOT_FOUND: "CONTRIBUTOR_NOT_FOUND",
+  DUPLICATE_MERGE: "DUPLICATE_MERGE",
+  INVALID_MERGE: "INVALID_MERGE",
+  STORAGE_ERROR: "STORAGE_ERROR",
 } as const;
-export type MergeErrorCode = (typeof MergeErrorCode)[keyof typeof MergeErrorCode];
+export type MergeErrorCode =
+  (typeof MergeErrorCode)[keyof typeof MergeErrorCode];
 ```
 
 **Response Type (Error)**:
+
 ```typescript
 interface MergeError {
   code: MergeErrorCode;
@@ -179,12 +197,14 @@ interface MergeError {
 ```
 
 **Validation Rules**:
+
 - `repositoryUrl`: Must be valid GitHub URL
 - `primaryContributorId`: Must exist in current analysis
 - `mergedContributorIds`: Must be non-empty array of existing contributor IDs
 - No duplicates between primary and merged IDs
 
 **Business Logic**:
+
 1. Validate request
 2. Retrieve contributor data from current analysis (in-memory or passed from client)
 3. Merge metrics (sum all activities)
@@ -193,6 +213,7 @@ interface MergeError {
 6. Return updated contributor
 
 **Performance**:
+
 - Expected: < 1 second (simple aggregation)
 - No external API calls required
 
@@ -205,6 +226,7 @@ interface MergeError {
 **Purpose**: Alternative endpoint for repository analysis (if Server Actions not suitable)
 
 **Request**:
+
 ```http
 POST /api/analyze
 Content-Type: application/json
@@ -220,6 +242,7 @@ Content-Type: application/json
 ```
 
 **Response (Success - 200 OK)**:
+
 ```json
 {
   "analysis": {
@@ -244,6 +267,7 @@ Content-Type: application/json
 ```
 
 **Response (Error - 4xx/5xx)**:
+
 ```json
 {
   "error": {
@@ -258,6 +282,7 @@ Content-Type: application/json
 ```
 
 **Status Codes**:
+
 - `200`: Success
 - `400`: Invalid request (validation error)
 - `401`: Invalid or expired GitHub token
@@ -274,6 +299,7 @@ Content-Type: application/json
 **Purpose**: Alternative endpoint for identity merging
 
 **Request**:
+
 ```http
 POST /api/merge-identities
 Content-Type: application/json
@@ -286,6 +312,7 @@ Content-Type: application/json
 ```
 
 **Response (Success - 200 OK)**:
+
 ```json
 {
   "merge": {
@@ -316,6 +343,7 @@ Content-Type: application/json
 ```
 
 **Response (Error - 4xx)**:
+
 ```json
 {
   "error": {
@@ -342,7 +370,7 @@ interface ContributorDto {
   displayName: string;
   implementationActivity: ImplementationActivityDto;
   reviewActivity: ReviewActivityDto;
-  activityTimeline?: ActivitySnapshotDto[];  // Optional for summary views
+  activityTimeline?: ActivitySnapshotDto[]; // Optional for summary views
 }
 ```
 
@@ -379,16 +407,16 @@ interface ReviewActivityDto {
 
 ```typescript
 interface ActivitySnapshotDto {
-  date: string;  // ISO 8601
+  date: string; // ISO 8601
   period: Period;
   implementationActivity: ImplementationActivityDto;
   reviewActivity: ReviewActivityDto;
 }
 
 export const Period = {
-  DAY: 'day',
-  WEEK: 'week',
-  MONTH: 'month',
+  DAY: "day",
+  WEEK: "week",
+  MONTH: "month",
 } as const;
 export type Period = (typeof Period)[keyof typeof Period];
 ```
@@ -402,21 +430,23 @@ export type Period = (typeof Period)[keyof typeof Period];
 **Purpose**: Stream analysis progress updates
 
 **Progress Stages**:
+
 ```typescript
 export const ProgressStage = {
-  VALIDATING: 'validating',
-  CLONING: 'cloning',
-  PARSING: 'parsing',
-  FETCHING: 'fetching',
-  CALCULATING: 'calculating',
-  FINALIZING: 'finalizing',
-  COMPLETE: 'complete',
-  FAILED: 'failed',
+  VALIDATING: "validating",
+  CLONING: "cloning",
+  PARSING: "parsing",
+  FETCHING: "fetching",
+  CALCULATING: "calculating",
+  FINALIZING: "finalizing",
+  COMPLETE: "complete",
+  FAILED: "failed",
 } as const;
 export type ProgressStage = (typeof ProgressStage)[keyof typeof ProgressStage];
 ```
 
 **Response** (Server-Sent Events):
+
 ```
 event: progress
 data: {"stage": "cloning", "progress": 0, "message": "Cloning repository..."}
@@ -438,6 +468,7 @@ data: {"stage": "failed", "error": {"code": "CLONE_FAILED", "message": "..."}}
 ```
 
 **Progress Stage Percentages**:
+
 - `validating`: 0%
 - `cloning`: 10%
 - `parsing`: 25-50%
@@ -452,6 +483,7 @@ data: {"stage": "failed", "error": {"code": "CLONE_FAILED", "message": "..."}}
 ## Error Response Format
 
 **Standard Error Response**:
+
 ```typescript
 interface ErrorResponse {
   error: {
@@ -466,60 +498,72 @@ interface ErrorResponse {
 **Error Code Categories**:
 
 **Validation Errors (400)**:
+
 ```typescript
 export const ValidationErrorCode = {
-  INVALID_URL: 'INVALID_URL',
-  INVALID_TOKEN: 'INVALID_TOKEN',
-  INVALID_DATE_RANGE: 'INVALID_DATE_RANGE',
-  MISSING_FIELD: 'MISSING_FIELD',
+  INVALID_URL: "INVALID_URL",
+  INVALID_TOKEN: "INVALID_TOKEN",
+  INVALID_DATE_RANGE: "INVALID_DATE_RANGE",
+  MISSING_FIELD: "MISSING_FIELD",
 } as const;
-export type ValidationErrorCode = (typeof ValidationErrorCode)[keyof typeof ValidationErrorCode];
+export type ValidationErrorCode =
+  (typeof ValidationErrorCode)[keyof typeof ValidationErrorCode];
 ```
 
 **Authentication Errors (401)**:
+
 ```typescript
 export const AuthenticationErrorCode = {
-  TOKEN_EXPIRED: 'TOKEN_EXPIRED',
-  TOKEN_REVOKED: 'TOKEN_REVOKED',
+  TOKEN_EXPIRED: "TOKEN_EXPIRED",
+  TOKEN_REVOKED: "TOKEN_REVOKED",
 } as const;
-export type AuthenticationErrorCode = (typeof AuthenticationErrorCode)[keyof typeof AuthenticationErrorCode];
+export type AuthenticationErrorCode =
+  (typeof AuthenticationErrorCode)[keyof typeof AuthenticationErrorCode];
 ```
 
 **Authorization Errors (403)**:
+
 ```typescript
 export const AuthorizationErrorCode = {
-  INSUFFICIENT_PERMISSIONS: 'INSUFFICIENT_PERMISSIONS',
-  REPO_PRIVATE: 'REPO_PRIVATE',
+  INSUFFICIENT_PERMISSIONS: "INSUFFICIENT_PERMISSIONS",
+  REPO_PRIVATE: "REPO_PRIVATE",
 } as const;
-export type AuthorizationErrorCode = (typeof AuthorizationErrorCode)[keyof typeof AuthorizationErrorCode];
+export type AuthorizationErrorCode =
+  (typeof AuthorizationErrorCode)[keyof typeof AuthorizationErrorCode];
 ```
 
 **Not Found Errors (404)**:
+
 ```typescript
 export const NotFoundErrorCode = {
-  REPO_NOT_FOUND: 'REPO_NOT_FOUND',
-  CONTRIBUTOR_NOT_FOUND: 'CONTRIBUTOR_NOT_FOUND',
+  REPO_NOT_FOUND: "REPO_NOT_FOUND",
+  CONTRIBUTOR_NOT_FOUND: "CONTRIBUTOR_NOT_FOUND",
 } as const;
-export type NotFoundErrorCode = (typeof NotFoundErrorCode)[keyof typeof NotFoundErrorCode];
+export type NotFoundErrorCode =
+  (typeof NotFoundErrorCode)[keyof typeof NotFoundErrorCode];
 ```
 
 **Rate Limiting Errors (429)**:
+
 ```typescript
 export const RateLimitErrorCode = {
-  RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
-  ANALYSIS_QUOTA_EXCEEDED: 'ANALYSIS_QUOTA_EXCEEDED',
+  RATE_LIMIT_EXCEEDED: "RATE_LIMIT_EXCEEDED",
+  ANALYSIS_QUOTA_EXCEEDED: "ANALYSIS_QUOTA_EXCEEDED",
 } as const;
-export type RateLimitErrorCode = (typeof RateLimitErrorCode)[keyof typeof RateLimitErrorCode];
+export type RateLimitErrorCode =
+  (typeof RateLimitErrorCode)[keyof typeof RateLimitErrorCode];
 ```
 
 **Server Errors (500)**:
+
 ```typescript
 export const ServerErrorCode = {
-  CLONE_FAILED: 'CLONE_FAILED',
-  ANALYSIS_TIMEOUT: 'ANALYSIS_TIMEOUT',
-  INTERNAL_ERROR: 'INTERNAL_ERROR',
+  CLONE_FAILED: "CLONE_FAILED",
+  ANALYSIS_TIMEOUT: "ANALYSIS_TIMEOUT",
+  INTERNAL_ERROR: "INTERNAL_ERROR",
 } as const;
-export type ServerErrorCode = (typeof ServerErrorCode)[keyof typeof ServerErrorCode];
+export type ServerErrorCode =
+  (typeof ServerErrorCode)[keyof typeof ServerErrorCode];
 ```
 
 ---
@@ -529,7 +573,7 @@ export type ServerErrorCode = (typeof ServerErrorCode)[keyof typeof ServerErrorC
 ### AnalysisRequestSchema
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 export const AnalysisRequestSchema = z.object({
   repositoryUrl: z
@@ -537,13 +581,13 @@ export const AnalysisRequestSchema = z.object({
     .url()
     .regex(
       /^https:\/\/github\.com\/[\w-]+\/[\w-]+$/,
-      'Must be a valid GitHub repository URL'
+      "Must be a valid GitHub repository URL",
     ),
   githubToken: z
     .string()
-    .min(20, 'Token is too short')
-    .max(100, 'Token is too long')
-    .regex(/^[a-zA-Z0-9_]+$/, 'Token contains invalid characters'),
+    .min(20, "Token is too short")
+    .max(100, "Token is too long")
+    .regex(/^[a-zA-Z0-9_]+$/, "Token contains invalid characters"),
   dateRange: z
     .object({
       start: z.coerce.date(),
@@ -552,11 +596,11 @@ export const AnalysisRequestSchema = z.object({
     .optional()
     .refine(
       (range) => !range || range.start < range.end,
-      'Start date must be before end date'
+      "Start date must be before end date",
     )
     .refine(
       (range) => !range || range.end <= new Date(),
-      'End date cannot be in the future'
+      "End date cannot be in the future",
     ),
 });
 
@@ -574,10 +618,10 @@ export const MergeRequestSchema = z.object({
   primaryContributorId: z.string().uuid(),
   mergedContributorIds: z
     .array(z.string().uuid())
-    .min(1, 'Must merge at least one contributor')
+    .min(1, "Must merge at least one contributor")
     .refine(
       (ids) => new Set(ids).size === ids.length,
-      'Duplicate contributor IDs not allowed'
+      "Duplicate contributor IDs not allowed",
     ),
 });
 
@@ -589,14 +633,17 @@ export type MergeRequest = z.infer<typeof MergeRequestSchema>;
 ## Rate Limiting
 
 **Client-Side Rate Limiting** (prevent abuse):
+
 - Max 10 analyses per hour per client IP
 - Max 50 identity merges per hour per client IP
 
 **Implementation**:
+
 - In-memory rate limiter for MVP
 - Redis-based for production (future)
 
 **Rate Limit Headers**:
+
 ```http
 X-RateLimit-Limit: 10
 X-RateLimit-Remaining: 7
@@ -608,6 +655,7 @@ X-RateLimit-Reset: 1732790400
 ## CORS Configuration
 
 **Allowed Origins**:
+
 - Same origin only (Next.js app)
 - No cross-origin requests for MVP
 
@@ -618,32 +666,38 @@ X-RateLimit-Reset: 1732790400
 ## Summary
 
 **Server Actions** (Primary):
+
 - `analyzeRepository`: Main analysis endpoint
 - `mergeIdentities`: Identity merging endpoint
 
 **API Routes** (Fallback):
+
 - `POST /api/analyze`: HTTP alternative for analysis
 - `POST /api/merge-identities`: HTTP alternative for merging
 - `GET /api/analyze/progress/:id`: SSE progress updates
 
 **Type Definitions Pattern**:
+
 - All enum-like types use `as const` pattern
 - Example: `AnalysisErrorCode`, `Period`, `ProgressStage`
 - Consistent with project's TypeScript conventions
 
 **Security**:
+
 - All GitHub tokens handled server-side
 - Zod validation at all boundaries
 - Rate limiting to prevent abuse
 - HTTPS required
 
 **Performance**:
+
 - 2-minute target for typical analysis
 - 60-second hard timeout (Vercel)
 - Progress updates every 5 seconds
 - Identity merges complete in < 1 second
 
 **Constitutional Compliance**:
+
 - ✅ Tokens never exposed to client
 - ✅ Input validation with Zod
 - ✅ User-friendly error messages

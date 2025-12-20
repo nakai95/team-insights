@@ -13,12 +13,14 @@ This quickstart guide helps developers quickly understand and work with the Deve
 ## Prerequisites
 
 **Required**:
+
 - Node.js 20+ (LTS recommended)
 - pnpm 8+
 - Git
 - GitHub account with personal access token
 
 **Recommended**:
+
 - VS Code with recommended extensions
 - GitHub CLI (`gh`)
 
@@ -34,6 +36,7 @@ pnpm create next-app@latest . --typescript --tailwind --eslint --app --src-dir -
 ```
 
 **Configuration options selected**:
+
 - ✅ TypeScript
 - ✅ ESLint
 - ✅ Tailwind CSS
@@ -78,6 +81,7 @@ pnpm dlx shadcn-ui@latest init
 ```
 
 **Configuration**:
+
 - Style: Default
 - Base color: Slate
 - CSS variables: Yes
@@ -135,22 +139,22 @@ Update `tsconfig.json`:
 Create `vitest.config.ts`:
 
 ```typescript
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import path from 'path';
+import { defineConfig } from "vitest/config";
+import react from "@vitejs/plugin-react";
+import path from "path";
 
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'jsdom',
+    environment: "jsdom",
     globals: true,
-    setupFiles: ['./tests/setup.ts'],
-    include: ['tests/**/*.test.ts', 'tests/**/*.test.tsx'],
+    setupFiles: ["./tests/setup.ts"],
+    include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      include: ['src/domain/**', 'src/application/**'],
-      exclude: ['**/*.test.ts', '**/*.test.tsx', '**/index.ts'],
+      provider: "v8",
+      reporter: ["text", "json", "html"],
+      include: ["src/domain/**", "src/application/**"],
+      exclude: ["**/*.test.ts", "**/*.test.tsx", "**/index.ts"],
       lines: 80,
       functions: 80,
       branches: 80,
@@ -159,7 +163,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      "@": path.resolve(__dirname, "./src"),
     },
   },
 });
@@ -168,9 +172,9 @@ export default defineConfig({
 Create `tests/setup.ts`:
 
 ```typescript
-import { expect, afterEach } from 'vitest';
-import { cleanup } from '@testing-library/react';
-import * as matchers from '@testing-library/jest-dom/matchers';
+import { expect, afterEach } from "vitest";
+import { cleanup } from "@testing-library/react";
+import * as matchers from "@testing-library/jest-dom/matchers";
 
 expect.extend(matchers);
 
@@ -190,30 +194,30 @@ pnpm create playwright
 Update `playwright.config.ts`:
 
 ```typescript
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: "./tests/e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: "html",
   use: {
-    baseURL: 'http://localhost:3000',
-    trace: 'on-first-retry',
+    baseURL: "http://localhost:3000",
+    trace: "on-first-retry",
   },
 
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
   ],
 
   webServer: {
-    command: 'pnpm dev',
-    url: 'http://localhost:3000',
+    command: "pnpm dev",
+    url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
   },
 });
@@ -264,9 +268,7 @@ Update `package.json`:
       "prettier --write",
       "vitest related --run --passWithNoTests"
     ],
-    "*.{md,json}": [
-      "prettier --write"
-    ]
+    "*.{md,json}": ["prettier --write"]
   }
 }
 ```
@@ -334,10 +336,10 @@ export class ApplicationError extends Error {
   constructor(
     message: string,
     public readonly code: string,
-    public readonly details?: unknown
+    public readonly details?: unknown,
   ) {
     super(message);
-    this.name = 'ApplicationError';
+    this.name = "ApplicationError";
   }
 }
 ```
@@ -405,17 +407,17 @@ src/
 **File**: `src/domain/entities/YourEntity.ts`
 
 ```typescript
-import { Result, ok, err } from '@/lib/result';
+import { Result, ok, err } from "@/lib/result";
 
 export class YourEntity {
   private constructor(
     public readonly id: string,
-    public readonly name: string
+    public readonly name: string,
   ) {}
 
   static create(id: string, name: string): Result<YourEntity> {
     if (!name.trim()) {
-      return err(new Error('Name cannot be empty'));
+      return err(new Error("Name cannot be empty"));
     }
 
     return ok(new YourEntity(id, name));
@@ -426,21 +428,21 @@ export class YourEntity {
 **Test**: `tests/unit/domain/entities/YourEntity.test.ts`
 
 ```typescript
-import { describe, it, expect } from 'vitest';
-import { YourEntity } from '@/domain/entities/YourEntity';
+import { describe, it, expect } from "vitest";
+import { YourEntity } from "@/domain/entities/YourEntity";
 
-describe('YourEntity', () => {
-  it('should create valid entity', () => {
-    const result = YourEntity.create('123', 'Test');
+describe("YourEntity", () => {
+  it("should create valid entity", () => {
+    const result = YourEntity.create("123", "Test");
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.value.id).toBe('123');
+      expect(result.value.id).toBe("123");
     }
   });
 
-  it('should reject empty name', () => {
-    const result = YourEntity.create('123', '');
+  it("should reject empty name", () => {
+    const result = YourEntity.create("123", "");
 
     expect(result.ok).toBe(false);
   });
@@ -448,6 +450,7 @@ describe('YourEntity', () => {
 ```
 
 **Run Test**:
+
 ```bash
 pnpm test:unit src/domain/entities/YourEntity
 ```
@@ -459,32 +462,32 @@ pnpm test:unit src/domain/entities/YourEntity
 **File**: `src/app/actions/analyzeRepository.ts`
 
 ```typescript
-'use server';
+"use server";
 
-import { AnalysisRequestSchema } from '@/lib/validation/schemas';
-import { Result, ok, err } from '@/lib/result';
-import { z } from 'zod';
+import { AnalysisRequestSchema } from "@/lib/validation/schemas";
+import { Result, ok, err } from "@/lib/result";
+import { z } from "zod";
 
 type AnalysisRequest = z.infer<typeof AnalysisRequestSchema>;
 type AnalysisError = { code: string; message: string; details?: unknown };
 type AnalysisResult = { message: string };
 
 export async function analyzeRepository(
-  request: AnalysisRequest
+  request: AnalysisRequest,
 ): Promise<Result<AnalysisResult, AnalysisError>> {
   const validation = AnalysisRequestSchema.safeParse(request);
 
   if (!validation.success) {
     return err({
-      code: 'INVALID_INPUT',
-      message: 'Validation failed',
+      code: "INVALID_INPUT",
+      message: "Validation failed",
       details: validation.error.errors,
     });
   }
 
   // Implementation...
 
-  return ok({ message: 'Analysis complete' });
+  return ok({ message: "Analysis complete" });
 }
 ```
 
@@ -557,11 +560,13 @@ export function AnalysisForm() {
 ### Unit Tests (Vitest)
 
 **Run all tests**:
+
 ```bash
 pnpm test
 ```
 
 **Run specific tests**:
+
 ```bash
 pnpm test:unit
 pnpm test:domain
@@ -574,6 +579,7 @@ pnpm test:coverage
 ### E2E Tests (Playwright)
 
 **Run E2E tests**:
+
 ```bash
 pnpm test:e2e
 pnpm test:e2e:ui
@@ -584,10 +590,10 @@ pnpm test:e2e:ui
 **File**: `tests/e2e/happy-path.spec.ts`
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { test, expect } from "@playwright/test";
 
-test('should display home page', async ({ page }) => {
-  await page.goto('/');
+test("should display home page", async ({ page }) => {
+  await page.goto("/");
   await expect(page).toHaveTitle(/Team Insights/);
 });
 ```
@@ -622,6 +628,7 @@ pnpm test:coverage       # Coverage report
 ## Resources
 
 ### Documentation
+
 - [Next.js 14 Docs](https://nextjs.org/docs)
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/)
 - [Vitest Guide](https://vitest.dev/guide/)
@@ -629,12 +636,14 @@ pnpm test:coverage       # Coverage report
 - [Shadcn/UI](https://ui.shadcn.com/)
 
 ### Project-Specific
+
 - [Constitution](./.specify/memory/constitution.md) - Project principles
 - [Data Model](./data-model.md) - Domain entities
 - [API Contracts](./contracts/api-contracts.md) - Endpoint definitions
 - [Research](./research.md) - Technical decisions
 
 ### External Tools
+
 - [GitHub API Docs](https://docs.github.com/en/rest)
 - [simple-git Docs](https://github.com/steveukx/git-js#readme)
 - [Octokit Docs](https://octokit.github.io/rest.js/)

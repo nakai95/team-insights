@@ -13,17 +13,20 @@ A web application that visualizes GitHub repository developer activity. Users in
 
 **Language/Version**: TypeScript with Next.js 14 (App Router)
 **Primary Dependencies**:
+
 - UI: Tailwind CSS, Shadcn/UI components, Recharts (visualization)
 - Data: @octokit/rest (GitHub API), simple-git (Git operations)
 - Validation: Zod (runtime validation)
 - Testing: Vitest (unit tests), Playwright (E2E tests)
 
 **Storage**:
+
 - Temporary: Filesystem (cloned repositories - cleaned up after analysis)
 - Persistent: Browser localStorage or simple file-based storage for identity merge preferences
 - No database required for MVP
 
 **Testing**:
+
 - Unit: Vitest (mandatory for domain layer, 80%+ coverage)
 - E2E: Playwright (critical paths only)
 - Mocking: Mock GitHub API server for E2E tests
@@ -32,12 +35,14 @@ A web application that visualizes GitHub repository developer activity. Users in
 **Project Type**: Web application (Next.js 14 App Router with server-side processing)
 
 **Performance Goals**:
+
 - Analysis completion within 2 minutes for repositories with <1000 commits
 - Progress updates every 5 seconds during analysis
 - Dashboard renders top 5 contributors within 10 seconds
 - Identity merge operations complete within 5 seconds
 
 **Constraints**:
+
 - HTTPS required for all communications
 - GitHub tokens processed server-side only (never exposed to client)
 - Vercel deployment: 60-second serverless function timeout limit
@@ -46,26 +51,30 @@ A web application that visualizes GitHub repository developer activity. Users in
 - No background job processing for MVP (user must keep browser open)
 
 **Scale/Scope**:
+
 - Target: Repositories with up to 100 contributors and 5 years of history
 - Initial focus: Small to medium teams (10-50 developers)
 - Analysis period: Default 6 months, extendable to custom ranges
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
 ### I. Pragmatic Clean Architecture
+
 - ✅ **PASS**: Planning follows clean architecture with domain/application/infrastructure/presentation layers
 - ✅ **PASS**: Directory structure aligns with constitution: `src/domain/`, `src/application/`, `src/infrastructure/`, `src/presentation/`, `src/app/`
 - ✅ **PASS**: Next.js conventions followed (App Router, Server Components)
 - ✅ **PASS**: No forced abstractions against framework patterns
 
 ### II. Practical SOLID Principles
+
 - ✅ **PASS**: Single Responsibility enforced (GitLogParser, GitHubAPIClient as separate components)
 - ✅ **PASS**: Dependency Inversion at critical boundaries (Git operations, GitHub API interfaces)
 - ✅ **PASS**: Interface Segregation planned for focused interfaces
 
 ### III. Test Strategy
+
 - ✅ **PASS**: Domain layer testing mandatory with 80%+ coverage target
 - ✅ **PASS**: Application layer testing recommended with mocks
 - ✅ **PASS**: E2E tests limited to critical paths (happy path + error path)
@@ -73,6 +82,7 @@ A web application that visualizes GitHub repository developer activity. Users in
 - ✅ **PASS**: Mock GitHub API server planned for E2E tests
 
 ### IV. Performance & Scalability
+
 - ✅ **PASS**: Git log operations use `--since` for time-based filtering (6-month default)
 - ✅ **PASS**: No shallow clone (`--depth 1` avoided, history required)
 - ✅ **PASS**: GitHub API pagination implemented
@@ -82,11 +92,13 @@ A web application that visualizes GitHub repository developer activity. Users in
 - ✅ **PASS**: Caching deferred to post-MVP
 
 ### V. Type Safety
+
 - ✅ **PASS**: TypeScript strict mode configured
 - ✅ **PASS**: Zod validation for user inputs (repository URL, GitHub token)
 - ✅ **PASS**: Runtime validation planned for GitHub API responses
 
 ### VI. Security First
+
 - ✅ **PASS**: GitHub tokens processed server-side only
 - ✅ **PASS**: Tokens never exposed to client-side JavaScript
 - ✅ **PASS**: Temporary directory cleanup mandatory (try-finally pattern)
@@ -95,12 +107,14 @@ A web application that visualizes GitHub repository developer activity. Users in
 - ✅ **PASS**: Token masking in logs planned
 
 ### VII. Error Handling
+
 - ✅ **PASS**: Result types or exceptions in domain layer (consistency to be established)
 - ✅ **PASS**: User-friendly error messages in application layer
 - ✅ **PASS**: Toast notifications or error boundaries for presentation layer
 - ✅ **PASS**: 27 functional requirements include error handling scenarios
 
 ### VIII. Code Quality & Discipline
+
 - ✅ **PASS**: No `any` types (TypeScript strict mode enforced)
 - ✅ **PASS**: ESLint + Prettier planned
 - ✅ **PASS**: Pre-commit hooks planned (husky with lint + tests)
