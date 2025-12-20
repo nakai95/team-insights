@@ -17,12 +17,12 @@
 
 **Purpose**: Project initialization and NextAuth.js v5 installation
 
-- [ ] T001 Install NextAuth.js v5 (beta) via `pnpm add next-auth@beta`
-- [ ] T002 Create GitHub OAuth application in GitHub Developer Settings for development (callback: `http://localhost:3000/api/auth/callback/github`)
-- [ ] T003 Generate AUTH_SECRET for JWT encryption via `openssl rand -base64 32`
-- [ ] T004 [P] Create `.env.local` with AUTH_GITHUB_ID, AUTH_GITHUB_SECRET, AUTH_SECRET variables
-- [ ] T005 [P] Create TypeScript type extensions in `types/next-auth.d.ts` for Session and JWT interfaces
-- [ ] T006 [P] Update `tsconfig.json` to include `types/**/*.d.ts` in the include array
+- [x] T001 Install NextAuth.js v5 (beta) via `pnpm add next-auth@beta`
+- [x] T002 Create GitHub OAuth application in GitHub Developer Settings for development (callback: `http://localhost:3000/api/auth/callback/github`)
+- [x] T003 Generate AUTH_SECRET for JWT encryption via `openssl rand -base64 32`
+- [x] T004 [P] Create `.env.local` with AUTH_GITHUB_ID, AUTH_GITHUB_SECRET, AUTH_SECRET variables
+- [x] T005 [P] Create TypeScript type extensions in `types/next-auth.d.ts` for Session and JWT interfaces
+- [x] T006 [P] Update `tsconfig.json` to include `types/**/*.d.ts` in the include array
 
 ---
 
