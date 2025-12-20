@@ -1,0 +1,362 @@
+openapi: 3.0.3
+info:
+  title: GitHub OAuth Authentication API
+  description: |
+    Authentication endpoints for team-insights application using NextAuth.js v5.
+
+    **Authentication Flow**:
+    1. User clicks "Sign in with GitHub" → redirects to `/api/auth/signin/github`
+    2. NextAuth redirects to GitHub OAuth authorization page
+    3. User approves permissions → GitHub redirects to `/api/auth/callback/github`
+    4. NextAuth exchanges code for access token, creates encrypted JWT session
+    5. User redirected to application with session cookie
+
+    **Session Management**:
+    - JWT-based (no database)
+    - 7-day expiry with 24-hour activity extension
+    - HTTP-only cookie: `__Secure-next-auth.session-token` (production) or `next-auth.session-token` (dev)
+  version: 1.0.0
+  contact:
+    name: Team Insights
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://team-insights.vercel.app/api
+    description: Production server
+
+paths:
+  /auth/signin/github:
+    get:
+      summary: Initiate GitHub OAuth sign-in
+      description: |
+        Redirects user to GitHub's OAuth authorization page.
+        Called when user clicks "Sign in with GitHub" button.
+      operationId: signInGitHub
+      tags:
+        - Authentication
+      parameters:
+        - name: callbackUrl
+          in: query
+          description: URL to redirect to after successful authentication
+          required: false
+          schema:
+            type: string
+            format: uri
+            default: /
+            example: /dashboard
+      responses:
+        '302':
+          description: Redirect to GitHub OAuth authorization
+          headers:
+            Location:
+              description: GitHub OAuth authorization URL
+              schema:
+                type: string
+                example: https://github.com/login/oauth/authorize?client_id=...&scope=read:user+user:email+repo
+        '500':
+          description: Internal server error (OAuth configuration invalid)
+          content:
+            text/html:
+              schema:
+                type: string
+                example: "<html>Error: Invalid OAuth configuration</html>"
+
+  /auth/callback/github:
+    get:
+      summary: GitHub OAuth callback handler
+      description: |
+        Handles OAuth callback from GitHub after user authorization.
+        **Do not call directly** - GitHub redirects here automatically.
+
+        **Success Flow**:
+        1. Validate OAuth state parameter
+        2. Exchange authorization code for access token
+        3. Fetch user profile from GitHub API
+        4. Create JWT with access token + user data
+        5. Set session cookie
+        6. Redirect to callbackUrl or homepage
+
+        **Error Flow**:
+        - Invalid state → redirect to /auth/error?error=OAuthSignin
+        - User denied → redirect to /auth/error?error=AccessDenied
+        - Exchange failed → redirect to /auth/error?error=OAuthCallback
+      operationId: callbackGitHub
+      tags:
+        - Authentication
+      parameters:
+        - name: code
+          in: query
+          description: Authorization code from GitHub
+          required: true
+          schema:
+            type: string
+            example: 1234567890abcdef
+        - name: state
+          in: query
+          description: CSRF protection state token
+          required: true
+          schema:
+            type: string
+            example: abc123def456
+        - name: error
+          in: query
+          description: Error code if user denied authorization
+          required: false
+          schema:
+            type: string
+            enum: [access_denied]
+      responses:
+        '302':
+          description: Redirect after successful authentication
+          headers:
+            Location:
+              description: Redirect URL (callbackUrl or homepage)
+              schema:
+                type: string
+                example: /dashboard
+            Set-Cookie:
+              description: Encrypted JWT session cookie
+              schema:
+                type: string
+                example: |
+                  next-auth.session-token=eyJhbGc...; Path=/; HttpOnly; Secure; SameSite=Lax
+        '302 ':
+          description: Redirect to error page on failure
+          headers:
+            Location:
+              description: Error page with error code
+              schema:
+                type: string
+                example: /auth/error?error=AccessDenied
+
+  /auth/signout:
+    post:
+      summary: Sign out user
+      description: |
+        Destroys user session and clears session cookie.
+        Called when user clicks "Sign out" button.
+
+        **Process**:
+        1. Validate CSRF token
+        2. Delete session cookie
+        3. Redirect to homepage or specified URL
+      operationId: signOut
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - csrfToken
+              properties:
+                csrfToken:
+                  type: string
+                  description: CSRF token from /api/auth/csrf
+                  example: abc123def456
+                callbackUrl:
+                  type: string
+                  format: uri
+                  description: URL to redirect to after sign out
+                  default: /
+                  example: /
+      responses:
+        '302':
+          description: Redirect after sign out
+          headers:
+            Location:
+              description: Redirect URL
+              schema:
+                type: string
+                example: /
+            Set-Cookie:
+              description: Cleared session cookie
+              schema:
+                type: string
+                example: |
+                  next-auth.session-token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT
+        '403':
+          description: Invalid CSRF token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/session:
+    get:
+      summary: Get current session
+      description: |
+        Returns current authenticated session or null if not authenticated.
+        **Cookie required**: Session cookie must be present in request.
+
+        Used by:
+        - Client components to check auth status
+        - Server-side session validation
+      operationId: getSession
+      tags:
+        - Authentication
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Session data (if authenticated)
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Session'
+                  - type: 'null'
+              examples:
+                authenticated:
+                  summary: Authenticated session
+                  value:
+                    user:
+                      id: "12345678"
+                      name: "John Doe"
+                      email: "john@example.com"
+                      image: "https://avatars.githubusercontent.com/u/12345678"
+                    accessToken: "ghp_1234567890abcdefghijklmnopqrstuvwxyz12"
+                    expires: "2025-12-27T12:00:00.000Z"
+                unauthenticated:
+                  summary: No active session
+                  value: null
+
+  /auth/csrf:
+    get:
+      summary: Get CSRF token
+      description: |
+        Returns CSRF token for sign-out form.
+        **Required before calling /auth/signout**.
+      operationId: getCsrfToken
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: CSRF token
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - csrfToken
+                properties:
+                  csrfToken:
+                    type: string
+                    description: CSRF token value
+                    example: abc123def456ghi789
+
+components:
+  schemas:
+    Session:
+      type: object
+      required:
+        - user
+        - accessToken
+        - expires
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        accessToken:
+          type: string
+          description: GitHub OAuth access token (40-char hex, ghp_ prefix)
+          pattern: '^ghp_[a-zA-Z0-9]{36}$'
+          example: "ghp_1234567890abcdefghijklmnopqrstuvwxyz12"
+        expires:
+          type: string
+          format: date-time
+          description: Session expiration timestamp (ISO 8601)
+          example: "2025-12-27T12:00:00.000Z"
+        error:
+          type: string
+          description: Error code if session is in error state
+          enum:
+            - RefreshAccessTokenError
+            - NoAccessToken
+            - OAuthAccountNotLinked
+          example: RefreshAccessTokenError
+
+    User:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: GitHub user ID
+          example: "12345678"
+        name:
+          type: string
+          description: GitHub username or display name
+          maxLength: 255
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          description: Primary email from GitHub
+          example: "john@example.com"
+        image:
+          type: string
+          format: uri
+          description: GitHub avatar URL
+          example: "https://avatars.githubusercontent.com/u/12345678"
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+          enum:
+            - Configuration
+            - AccessDenied
+            - Verification
+            - OAuthSignin
+            - OAuthCallback
+            - OAuthAccountNotLinked
+            - EmailCreateAccount
+            - Callback
+            - OAuthCreateAccount
+            - SessionRequired
+            - InvalidCallbackUrl
+        message:
+          type: string
+          description: Human-readable error message
+          example: "User denied authorization"
+        details:
+          type: object
+          description: Additional error details
+
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: next-auth.session-token
+      description: |
+        Encrypted JWT session cookie set by NextAuth.js.
+
+        **Production cookie name**: `__Secure-next-auth.session-token`
+        **Development cookie name**: `next-auth.session-token`
+
+        **Cookie attributes**:
+        - HttpOnly: true (prevents client-side JS access)
+        - Secure: true (HTTPS only in production)
+        - SameSite: Lax (CSRF protection)
+        - Path: /
+        - Max-Age: 604800 (7 days)
+
+tags:
+  - name: Authentication
+    description: NextAuth.js v5 OAuth endpoints for GitHub authentication
+    externalDocs:
+      description: NextAuth.js Documentation
+      url: https://authjs.dev
+
+externalDocs:
+  description: Team Insights Authentication Guide
+  url: https://github.com/team-insights/docs/auth
