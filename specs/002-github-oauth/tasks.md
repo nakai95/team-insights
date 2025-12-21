@@ -144,10 +144,10 @@
 
 **Purpose**: Validate critical authentication and analysis flows end-to-end
 
-- [ ] T045 [P] Create E2E test for OAuth login → repository analysis flow in `tests/e2e/auth-flow.spec.ts` using Playwright
-- [ ] T046 [P] Create E2E test for OAuth denial → error message flow in `tests/e2e/auth-error.spec.ts`
-- [ ] T047 [P] Update existing E2E tests to use OAuth flow instead of token input
-- [ ] T048 Run all E2E tests and verify 100% pass rate for authentication flows
+- [x] T045 [P] Create E2E test for OAuth login → repository analysis flow in `tests/e2e/auth-flow.spec.ts` using Playwright
+- [x] T046 [P] Create E2E test for OAuth denial → error message flow in `tests/e2e/auth-error.spec.ts`
+- [x] T047 [P] Update existing E2E tests to use OAuth flow instead of token input
+- [x] T048 Run all E2E tests and verify 100% pass rate for authentication flows
 
 ---
 

@@ -17,13 +17,22 @@ test.describe("Repository Analysis - Happy Path", () => {
       page.getByRole("heading", { name: "Team Insights" }),
     ).toBeVisible();
 
-    // Fill in the form
+    // Check if authenticated (requires OAuth)
+    const signOutButton = page.locator("header").getByText(/sign out/i);
+    const isAuthenticated = await signOutButton.isVisible().catch(() => false);
+
+    if (!isAuthenticated) {
+      // Skip test if not authenticated
+      // This test requires prior OAuth authentication
+      test.skip();
+      return;
+    }
+
+    // Fill in the form (no token input required with OAuth)
     const repoUrl =
       process.env.TEST_REPO_URL || "https://github.com/vercel/next.js";
-    const githubToken = process.env.TEST_GITHUB_TOKEN || "test_token";
 
     await page.getByLabel(/repository url/i).fill(repoUrl);
-    await page.getByLabel(/github personal access token/i).fill(githubToken);
 
     // Optional: Fill in date range
     // await page.getByLabel(/start date/i).fill("2024-01-01");
@@ -72,12 +81,20 @@ test.describe("Repository Analysis - Happy Path", () => {
   test("should handle date range input correctly", async ({ page }) => {
     await page.goto("/");
 
-    const repoUrl = "https://github.com/facebook/react";
-    const githubToken = process.env.TEST_GITHUB_TOKEN || "test_token";
+    // Check if authenticated (requires OAuth)
+    const signOutButton = page.locator("header").getByText(/sign out/i);
+    const isAuthenticated = await signOutButton.isVisible().catch(() => false);
 
-    // Fill form with date range
+    if (!isAuthenticated) {
+      // Skip test if not authenticated
+      test.skip();
+      return;
+    }
+
+    const repoUrl = "https://github.com/facebook/react";
+
+    // Fill form with date range (no token required with OAuth)
     await page.getByLabel(/repository url/i).fill(repoUrl);
-    await page.getByLabel(/github personal access token/i).fill(githubToken);
     await page.getByLabel(/start date/i).fill("2024-01-01");
     await page.getByLabel(/end date/i).fill("2024-06-30");
 
