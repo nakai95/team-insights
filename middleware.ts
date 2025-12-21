@@ -9,14 +9,15 @@ import { NextResponse } from "next/server";
  *
  * Features:
  * - Redirects unauthenticated users to login page
- * - Redirects authenticated users away from auth pages
+ * - Redirects authenticated users from homepage to dashboard
  * - Handles session errors gracefully
  * - Allows public routes without authentication
  *
  * Route Patterns:
- * - Public: / (homepage)
+ * - Public: / (landing page for unauthenticated users)
  * - Auth pages: /login, /auth/error
- * - Protected: All other routes require authentication
+ * - Protected: /dashboard and all other routes require authentication
+ * - Authenticated users on / are redirected to /dashboard
  */
 export default auth((req) => {
   const isAuthenticated = !!req.auth;
@@ -25,11 +26,16 @@ export default auth((req) => {
   // Define route types
   const isAuthPage =
     pathname.startsWith("/login") || pathname.startsWith("/auth/error");
-  const isPublicRoute = pathname === "/";
+  const isPublicRoute = pathname === "/"; // Homepage is public (landing page)
 
   // Check for session errors
   if (req.auth?.error && pathname !== "/auth/error") {
     return NextResponse.redirect(new URL("/auth/error", req.nextUrl.origin));
+  }
+
+  // Redirect authenticated users from homepage to dashboard
+  if (isAuthenticated && pathname === "/") {
+    return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
   }
 
   // Redirect unauthenticated users to login (except for auth pages and public routes)
@@ -40,9 +46,9 @@ export default auth((req) => {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect authenticated users away from auth pages (unless there's an error)
+  // Redirect authenticated users away from auth pages to dashboard
   if (isAuthenticated && isAuthPage && !req.auth?.error) {
-    return NextResponse.redirect(new URL("/", req.nextUrl.origin));
+    return NextResponse.redirect(new URL("/dashboard", req.nextUrl.origin));
   }
 
   // Allow the request to proceed

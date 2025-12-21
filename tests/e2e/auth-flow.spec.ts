@@ -75,19 +75,22 @@ test.describe("OAuth Login → Repository Analysis Flow", () => {
         return;
       }
 
-      // Step 7: Verify successful redirect back to app
-      await expect(page).toHaveURL("http://localhost:3000/");
+      // Step 7: Verify successful redirect back to dashboard
+      await expect(page).toHaveURL("http://localhost:3000/dashboard");
 
       // Step 8: Verify authenticated state - user profile should be visible
       await expect(page.locator("header").getByText(/sign out/i)).toBeVisible({
         timeout: 5000,
       });
+    } else {
+      // Already authenticated, should be on dashboard
+      await page.goto("http://localhost:3000/dashboard");
     }
 
-    // At this point, we're authenticated (either already or just completed OAuth)
+    // At this point, we're authenticated and on the dashboard
 
-    // Step 9: Navigate to homepage if not there
-    await page.goto("http://localhost:3000");
+    // Step 9: Verify we are on dashboard page
+    await expect(page).toHaveURL("http://localhost:3000/dashboard");
 
     // Step 10: Verify repository analysis form is visible
     await expect(page.getByLabel(/repository url/i)).toBeVisible();
@@ -176,18 +179,14 @@ test.describe("OAuth Login → Repository Analysis Flow", () => {
     // Step 4: Verify still authenticated after refresh
     await expect(page.locator("header").getByText(/sign out/i)).toBeVisible();
 
-    // Step 5: Navigate to a different page
+    // Step 5: Navigate to a different page (login)
     await page.goto("http://localhost:3000/login");
 
-    // Step 6: Should redirect away from login if authenticated
-    // Or if no redirect, sign-out button should be visible
+    // Step 6: Should redirect to dashboard if authenticated
     await page.waitForTimeout(1000); // Wait for any redirects
 
-    const onLoginPage = page.url().includes("/login");
-    if (onLoginPage) {
-      // If still on login page, verify we can see user profile
-      await expect(page.locator("header").getByText(/sign out/i)).toBeVisible();
-    }
+    // Should be redirected to dashboard
+    await expect(page).toHaveURL("http://localhost:3000/dashboard");
   });
 
   test("should allow sign out after authentication", async ({ page }) => {
@@ -226,32 +225,94 @@ test.describe("OAuth Login → Repository Analysis Flow", () => {
       .catch(() => false);
     expect(stillAuthenticated).toBe(false);
 
-    // Step 7: Attempt to analyze a repository (should require auth)
+    // Step 7: Verify landing page is shown (not analysis form)
     await page.goto("http://localhost:3000");
 
-    // If analysis form is visible, try to submit it
-    const analysisForm = await page
+    // Should see landing page with sign-in button, not analysis form
+    const hasSignInButton = await page
+      .getByText(/sign in with github/i)
+      .isVisible()
+      .catch(() => false);
+
+    const hasAnalysisForm = await page
       .getByLabel(/repository url/i)
       .isVisible()
       .catch(() => false);
 
-    if (analysisForm) {
-      await page
-        .getByLabel(/repository url/i)
-        .fill("https://github.com/facebook/react");
-      await page.getByRole("button", { name: /analyze repository/i }).click();
+    // Landing page should show sign-in button, not analysis form
+    expect(hasSignInButton).toBe(true);
+    expect(hasAnalysisForm).toBe(false);
 
-      // Should either redirect to login or show auth error
-      await page.waitForTimeout(2000);
+    // Step 8: Try to access dashboard directly (should redirect to login)
+    await page.goto("http://localhost:3000/dashboard");
+    await page.waitForTimeout(1000);
 
-      const hasAuthError = await page
-        .getByText(/authentication required|sign in/i)
-        .isVisible()
-        .catch(() => false);
-      const isOnLoginPage = page.url().includes("/login");
+    // Should be redirected to login page
+    expect(page.url()).toContain("/login");
+  });
 
-      expect(hasAuthError || isOnLoginPage).toBe(true);
+  test("should redirect authenticated users from homepage to dashboard", async ({
+    page,
+  }) => {
+    // Step 1: Navigate to homepage
+    await page.goto("http://localhost:3000");
+
+    // Step 2: Check if authenticated
+    const isAuthenticated = await page
+      .locator("header")
+      .getByText(/sign out/i)
+      .isVisible()
+      .catch(() => false);
+
+    if (!isAuthenticated) {
+      // Skip test if not authenticated
+      test.skip();
+      return;
     }
+
+    // Step 3: Should automatically redirect to /dashboard
+    await expect(page).toHaveURL("http://localhost:3000/dashboard");
+
+    // Step 4: Verify analysis form is visible on dashboard
+    await expect(page.getByLabel(/repository url/i)).toBeVisible();
+  });
+
+  test("should show landing page to unauthenticated users", async ({
+    page,
+  }) => {
+    // Step 1: Ensure not authenticated (skip if authenticated)
+    await page.goto("http://localhost:3000");
+
+    const isAuthenticated = await page
+      .locator("header")
+      .getByText(/sign out/i)
+      .isVisible()
+      .catch(() => false);
+
+    if (isAuthenticated) {
+      // Skip test if authenticated
+      test.skip();
+      return;
+    }
+
+    // Step 2: Should see landing page
+    await expect(page).toHaveURL("http://localhost:3000/");
+
+    // Step 3: Verify landing page content
+    await expect(page.getByText(/team insights/i).first()).toBeVisible();
+    await expect(page.getByText(/sign in with github/i)).toBeVisible();
+
+    // Step 4: Should NOT see analysis form
+    const hasAnalysisForm = await page
+      .getByLabel(/repository url/i)
+      .isVisible()
+      .catch(() => false);
+    expect(hasAnalysisForm).toBe(false);
+
+    // Step 5: Verify features section is visible
+    await expect(
+      page.getByText(/repository analysis|contributor insights/i).first(),
+    ).toBeVisible();
   });
 });
 

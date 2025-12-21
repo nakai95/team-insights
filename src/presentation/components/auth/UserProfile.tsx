@@ -1,6 +1,8 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { SignInButton } from "./SignInButton";
 import { SignOutButton } from "./SignOutButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,11 +18,13 @@ import { Skeleton } from "@/components/ui/skeleton";
  * - Loading: Shows skeleton loader
  * - Authenticated: Shows user avatar, name, and sign-out button
  * - Unauthenticated: Shows sign-in button
+ * - Error: Redirects to login with error message
  *
  * Features:
  * - Uses NextAuth useSession hook for real-time session state
  * - Displays GitHub avatar and username
  * - Graceful loading and error states
+ * - Automatic redirect on session errors
  * - Responsive layout
  *
  * @example
@@ -30,6 +34,14 @@ import { Skeleton } from "@/components/ui/skeleton";
  */
 export function UserProfile() {
   const { data: session, status } = useSession();
+  const router = useRouter();
+
+  // Redirect to login if session has an error
+  useEffect(() => {
+    if (session?.error) {
+      router.push("/login?error=SessionExpired");
+    }
+  }, [session?.error, router]);
 
   // Loading state
   if (status === "loading") {
