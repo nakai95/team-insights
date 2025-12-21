@@ -31,6 +31,7 @@ import { AlertCircle } from "lucide-react";
  * - OAuthSignin: Failed to construct authorization URL
  * - OAuthCallback: Failed to handle callback
  * - OAuthAccountNotLinked: Email already linked to different account
+ * - RefreshAccessTokenError: Session expired or token revoked
  * - Default: Generic authentication error
  *
  * Query Parameters:
@@ -72,6 +73,12 @@ export default function AuthErrorPage() {
           title: "Account Conflict",
           message:
             "Your email is already associated with a different GitHub account. Please use a different account.",
+        };
+      case "RefreshAccessTokenError":
+        return {
+          title: "Session Expired",
+          message:
+            "Your session has expired or your GitHub access has been revoked. Please sign in again to continue.",
         };
       default:
         return {

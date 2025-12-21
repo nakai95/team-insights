@@ -111,12 +111,12 @@
 
 ### Implementation for User Story 4
 
-- [ ] T034 [US4] Verify NextAuthAdapter (created in T009) returns proper error Result when session has error field
-- [ ] T035 [US4] Verify middleware (created in T012) redirects users with session.error to /auth/error page
-- [ ] T036 [US4] Verify auth error page (created in T020) displays appropriate messages for token expiration errors
-- [ ] T037 [US4] Update analyzeRepository Server Action error handling to detect TOKEN_EXPIRED and return user-friendly message
-- [ ] T038 [US4] Add re-authentication flow: user receives token expired error → clicks "Sign in again" → redirected to OAuth flow
-- [ ] T039 [US4] Test token expiration scenario: simulate expired token → attempt analysis → verify error message → re-authenticate → verify analysis works
+- [x] T034 [US4] Verify NextAuthAdapter (created in T009) returns proper error Result when session has error field
+- [x] T035 [US4] Verify middleware (created in T012) redirects users with session.error to /auth/error page
+- [x] T036 [US4] Verify auth error page (created in T020) displays appropriate messages for token expiration errors
+- [x] T037 [US4] Update analyzeRepository Server Action error handling to detect TOKEN_EXPIRED and return user-friendly message
+- [x] T038 [US4] Add re-authentication flow: user receives token expired error → clicks "Sign in again" → redirected to OAuth flow
+- [x] T039 [US4] Test token expiration scenario: simulate expired token → attempt analysis → verify error message → re-authenticate → verify analysis works
 
 **Checkpoint**: Token expiration errors should be handled gracefully with clear user guidance
 
