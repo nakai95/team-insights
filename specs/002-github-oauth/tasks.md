@@ -167,14 +167,14 @@
 
 **Purpose**: Improvements that affect multiple user stories and final validation
 
-- [ ] T054 [P] Verify all logs use maskToken() utility to prevent token exposure
-- [ ] T055 [P] Verify AUTH_SECRET is at least 32 characters and properly encrypted JWT
-- [ ] T056 [P] Verify session cookies are HTTP-only, Secure (production), SameSite=Lax
-- [ ] T057 [P] Update README.md with OAuth setup instructions and environment variable documentation
-- [ ] T058 [P] Create MIGRATION.md documenting breaking change: removal of githubToken parameter
-- [ ] T059 Run quickstart.md validation: follow all 10 steps and verify successful OAuth implementation
-- [ ] T060 [P] Performance test: verify auth check overhead <10ms per request
-- [ ] T061 [P] Security audit: verify zero tokens in client-side code, logs, or error messages
+- [x] T054 [P] Verify all logs use maskToken() utility to prevent token exposure
+- [x] T055 [P] Verify AUTH_SECRET is at least 32 characters and properly encrypted JWT
+- [x] T056 [P] Verify session cookies are HTTP-only, Secure (production), SameSite=Lax
+- [x] T057 [P] Update README.md with OAuth setup instructions and environment variable documentation
+- [x] T058 [P] Create MIGRATION.md documenting breaking change: removal of githubToken parameter
+- [x] T059 Run quickstart.md validation: follow all 10 steps and verify successful OAuth implementation
+- [x] T060 [P] Performance test: verify auth check overhead <10ms per request
+- [x] T061 [P] Security audit: verify zero tokens in client-side code, logs, or error messages
 - [ ] T062 Final manual test: complete all user stories end-to-end to verify independent functionality
 
 ---
