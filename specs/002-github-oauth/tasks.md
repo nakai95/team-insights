@@ -155,11 +155,11 @@
 
 **Purpose**: Test infrastructure adapters with new session provider pattern
 
-- [ ] T049 [P] Create MockSessionProvider for testing in `tests/unit/infrastructure/__mocks__/MockSessionProvider.ts`
-- [ ] T050 [P] Update OctokitAdapter tests in `tests/unit/infrastructure/github/OctokitAdapter.test.ts` to use MockSessionProvider
-- [ ] T051 [P] Update SimpleGitAdapter tests in `tests/unit/infrastructure/git/SimpleGitAdapter.test.ts` to use MockSessionProvider
-- [ ] T052 [P] Create NextAuthAdapter tests in `tests/unit/infrastructure/auth/NextAuthAdapter.test.ts` (optional - simple wrapper)
-- [ ] T053 Run all infrastructure tests and verify pass rate
+- [x] T049 [P] Create MockSessionProvider for testing in `src/infrastructure/auth/__mocks__/MockSessionProvider.ts`
+- [x] T050 [P] Create OctokitAdapter tests in `src/infrastructure/github/__tests__/OctokitAdapter.test.ts` to use MockSessionProvider
+- [x] T051 [P] Update SimpleGitAdapter tests in `src/infrastructure/git/__tests__/SimpleGitAdapter.test.ts` to use MockSessionProvider
+- [x] T052 [P] Create NextAuthAdapter tests in `src/infrastructure/auth/__tests__/NextAuthAdapter.test.ts` (optional - simple wrapper)
+- [x] T053 Run all infrastructure tests and verify pass rate
 
 ---
 
