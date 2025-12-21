@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { ContributorDto } from "@/application/dto/ContributorDto";
 import {
   Card,
@@ -29,6 +30,8 @@ export interface ContributorListProps {
  * Shows key metrics: commits, PRs, reviews, and activity scores
  */
 export function ContributorList({ contributors }: ContributorListProps) {
+  const t = useTranslations("contributorList");
+
   // Cache sorted contributors with pre-calculated scores
   const sortedContributorsWithScores = useMemo(() => {
     return [...contributors]
@@ -42,22 +45,20 @@ export function ContributorList({ contributors }: ContributorListProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Contributors</CardTitle>
-        <CardDescription>
-          Ranked by overall activity (implementation + review)
-        </CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-12">Rank</TableHead>
-              <TableHead>Contributor</TableHead>
-              <TableHead className="text-right">Commits</TableHead>
-              <TableHead className="text-right">PRs</TableHead>
-              <TableHead className="text-right">Reviews</TableHead>
-              <TableHead className="text-right">Lines Changed</TableHead>
-              <TableHead className="text-right">Score</TableHead>
+              <TableHead className="w-12">{t("rank")}</TableHead>
+              <TableHead>{t("contributor")}</TableHead>
+              <TableHead className="text-right">{t("commits")}</TableHead>
+              <TableHead className="text-right">{t("prs")}</TableHead>
+              <TableHead className="text-right">{t("reviews")}</TableHead>
+              <TableHead className="text-right">{t("linesChanged")}</TableHead>
+              <TableHead className="text-right">{t("score")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

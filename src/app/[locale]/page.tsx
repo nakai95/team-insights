@@ -1,8 +1,9 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { SignInButton } from "@/presentation/components/auth/SignInButton";
 import {
   Card,
@@ -29,6 +30,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function LandingPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const t = useTranslations("landing");
+  const tCommon = useTranslations("common");
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
@@ -57,10 +60,9 @@ export default function LandingPage() {
     <main className="container mx-auto px-4 py-16">
       {/* Hero Section */}
       <div className="text-center space-y-6 mb-16">
-        <h1 className="text-5xl font-bold tracking-tight">Team Insights</h1>
+        <h1 className="text-5xl font-bold tracking-tight">{t("hero.title")}</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Analyze GitHub repository contributor activity and metrics to
-          understand your team&apos;s development patterns
+          {t("hero.subtitle")}
         </p>
         <div className="flex justify-center pt-4">
           <SignInButton />
@@ -72,12 +74,11 @@ export default function LandingPage() {
         <Card>
           <CardHeader>
             <GitBranch className="h-8 w-8 mb-2 text-primary" />
-            <CardTitle>Repository Analysis</CardTitle>
+            <CardTitle>{t("features.repository.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
-              Deep dive into repository activity with commit history, pull
-              requests, and code review metrics
+              {t("features.repository.description")}
             </CardDescription>
           </CardContent>
         </Card>
@@ -85,12 +86,11 @@ export default function LandingPage() {
         <Card>
           <CardHeader>
             <Users className="h-8 w-8 mb-2 text-primary" />
-            <CardTitle>Contributor Insights</CardTitle>
+            <CardTitle>{t("features.contributor.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
-              Track individual contributor metrics including implementation
-              work, code reviews, and collaboration patterns
+              {t("features.contributor.description")}
             </CardDescription>
           </CardContent>
         </Card>
@@ -98,12 +98,11 @@ export default function LandingPage() {
         <Card>
           <CardHeader>
             <BarChart className="h-8 w-8 mb-2 text-primary" />
-            <CardTitle>Visual Analytics</CardTitle>
+            <CardTitle>{t("features.analytics.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
-              Interactive charts and visualizations to understand activity
-              trends and team dynamics over time
+              {t("features.analytics.description")}
             </CardDescription>
           </CardContent>
         </Card>
@@ -111,12 +110,11 @@ export default function LandingPage() {
         <Card>
           <CardHeader>
             <Shield className="h-8 w-8 mb-2 text-primary" />
-            <CardTitle>Secure OAuth</CardTitle>
+            <CardTitle>{t("features.security.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <CardDescription>
-              Safe and secure GitHub OAuth authentication with read-only access
-              to your repositories
+              {t("features.security.description")}
             </CardDescription>
           </CardContent>
         </Card>
@@ -124,7 +122,9 @@ export default function LandingPage() {
 
       {/* How It Works Section */}
       <div className="max-w-4xl mx-auto mb-16">
-        <h2 className="text-3xl font-bold text-center mb-8">How It Works</h2>
+        <h2 className="text-3xl font-bold text-center mb-8">
+          {t("howItWorks.title")}
+        </h2>
         <div className="space-y-6">
           <div className="flex items-start space-x-4">
             <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold">
@@ -132,11 +132,10 @@ export default function LandingPage() {
             </div>
             <div>
               <h3 className="font-semibold text-lg mb-1">
-                Sign In with GitHub
+                {t("howItWorks.step1.title")}
               </h3>
               <p className="text-muted-foreground">
-                Authenticate securely using your GitHub account. We only request
-                read access to repositories.
+                {t("howItWorks.step1.description")}
               </p>
             </div>
           </div>
@@ -147,11 +146,10 @@ export default function LandingPage() {
             </div>
             <div>
               <h3 className="font-semibold text-lg mb-1">
-                Enter Repository URL
+                {t("howItWorks.step2.title")}
               </h3>
               <p className="text-muted-foreground">
-                Provide the GitHub repository URL you want to analyze. Works
-                with both public and private repositories you have access to.
+                {t("howItWorks.step2.description")}
               </p>
             </div>
           </div>
@@ -162,11 +160,10 @@ export default function LandingPage() {
             </div>
             <div>
               <h3 className="font-semibold text-lg mb-1">
-                View Detailed Insights
+                {t("howItWorks.step3.title")}
               </h3>
               <p className="text-muted-foreground">
-                Get comprehensive analytics including contributor metrics,
-                activity trends, and team collaboration patterns.
+                {t("howItWorks.step3.description")}
               </p>
             </div>
           </div>
@@ -175,10 +172,8 @@ export default function LandingPage() {
 
       {/* Call to Action */}
       <div className="text-center space-y-4 py-8">
-        <h2 className="text-3xl font-bold">Ready to get started?</h2>
-        <p className="text-muted-foreground mb-6">
-          Sign in with your GitHub account to start analyzing repositories
-        </p>
+        <h2 className="text-3xl font-bold">{t("cta.title")}</h2>
+        <p className="text-muted-foreground mb-6">{t("cta.subtitle")}</p>
         <SignInButton />
       </div>
     </main>

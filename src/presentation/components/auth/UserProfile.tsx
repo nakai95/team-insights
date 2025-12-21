@@ -1,12 +1,21 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { SignInButton } from "./SignInButton";
-import { SignOutButton } from "./SignOutButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { LogOut } from "lucide-react";
 
 /**
  * UserProfile Component
@@ -35,6 +44,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export function UserProfile() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const t = useTranslations("auth");
 
   // Redirect to login if session has an error
   useEffect(() => {
@@ -48,7 +58,6 @@ export function UserProfile() {
     return (
       <div className="flex items-center space-x-4">
         <Skeleton className="h-10 w-10 rounded-full" />
-        <Skeleton className="h-4 w-24" />
       </div>
     );
   }
@@ -59,10 +68,11 @@ export function UserProfile() {
   }
 
   // Authenticated state
+
   return (
-    <div className="flex items-center space-x-4">
-      <div className="flex items-center space-x-2">
-        <Avatar>
+    <DropdownMenu>
+      <DropdownMenuTrigger className="focus:outline-none">
+        <Avatar className="cursor-pointer hover:opacity-80 transition-opacity">
           <AvatarImage
             src={session.user?.image || ""}
             alt={session.user?.name || "User"}
@@ -71,9 +81,27 @@ export function UserProfile() {
             {session.user?.name?.charAt(0).toUpperCase() || "U"}
           </AvatarFallback>
         </Avatar>
-        <span className="text-sm font-medium">{session.user?.name}</span>
-      </div>
-      <SignOutButton />
-    </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-64">
+        <DropdownMenuLabel className="font-normal">
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">
+              {session.user?.name}
+            </p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {session.user?.email}
+            </p>
+          </div>
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => signOut({ callbackUrl: "/" })}
+        >
+          <LogOut className="mr-2 h-4 w-4" />
+          <span>{t("signOut")}</span>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

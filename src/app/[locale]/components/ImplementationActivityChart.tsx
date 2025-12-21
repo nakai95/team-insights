@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { ContributorDto } from "@/application/dto/ContributorDto";
 import {
   Card,
@@ -33,6 +34,8 @@ export function ImplementationActivityChart({
   contributors,
   maxContributors = 10,
 }: ImplementationActivityChartProps) {
+  const t = useTranslations("chart");
+
   // Sort by activity score and take top N
   const topContributors = [...contributors]
     .sort(
@@ -54,9 +57,9 @@ export function ImplementationActivityChart({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Implementation Activity</CardTitle>
+        <CardTitle>{t("title")}</CardTitle>
         <CardDescription>
-          Top {maxContributors} contributors by implementation score
+          {t("description", { count: maxContributors })}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -80,12 +83,16 @@ export function ImplementationActivityChart({
             />
             <YAxis
               yAxisId="left"
-              label={{ value: "Commits", angle: -90, position: "insideLeft" }}
+              label={{
+                value: t("commits"),
+                angle: -90,
+                position: "insideLeft",
+              }}
             />
             <YAxis
               yAxisId="right"
               orientation="right"
-              label={{ value: "Lines", angle: 90, position: "insideRight" }}
+              label={{ value: t("lines"), angle: 90, position: "insideRight" }}
             />
             <Tooltip />
             <Legend />
@@ -93,19 +100,19 @@ export function ImplementationActivityChart({
               yAxisId="left"
               dataKey="commits"
               fill="#8884d8"
-              name="Commits"
+              name={t("commits")}
             />
             <Bar
               yAxisId="right"
               dataKey="linesAdded"
               fill="#82ca9d"
-              name="Lines Added"
+              name={t("linesAdded")}
             />
             <Bar
               yAxisId="right"
               dataKey="linesDeleted"
               fill="#ffc658"
-              name="Lines Deleted"
+              name={t("linesDeleted")}
             />
           </ComposedChart>
         </ResponsiveContainer>

@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { signOut } from "next-auth/react";
 import {
   Card,
@@ -41,6 +43,8 @@ export default function AuthErrorPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const error = searchParams.get("error");
+  const t = useTranslations("auth.errors");
+  const tActions = useTranslations("auth.actions");
 
   // Auto sign-out to clear invalid session and prevent redirect loops
   useEffect(() => {
@@ -49,44 +53,11 @@ export default function AuthErrorPage() {
 
   // Get user-friendly error message based on error code
   const getErrorMessage = (errorCode: string | null) => {
-    switch (errorCode) {
-      case "AccessDenied":
-        return {
-          title: "Authorization Cancelled",
-          message:
-            "You cancelled the GitHub authorization. Please try again to access the application.",
-        };
-      case "OAuthSignin":
-        return {
-          title: "Sign-In Failed",
-          message:
-            "Failed to initiate GitHub sign-in. Please check your network connection and try again.",
-        };
-      case "OAuthCallback":
-        return {
-          title: "Callback Failed",
-          message:
-            "Failed to process GitHub authorization. This may be due to an invalid or expired authorization code.",
-        };
-      case "OAuthAccountNotLinked":
-        return {
-          title: "Account Conflict",
-          message:
-            "Your email is already associated with a different GitHub account. Please use a different account.",
-        };
-      case "RefreshAccessTokenError":
-        return {
-          title: "Session Expired",
-          message:
-            "Your session has expired or your GitHub access has been revoked. Please sign in again to continue.",
-        };
-      default:
-        return {
-          title: "Authentication Error",
-          message:
-            "An unexpected error occurred during sign-in. Please try again.",
-        };
-    }
+    const key = errorCode || "default";
+    return {
+      title: t(`${key}.title`),
+      message: t(`${key}.message`),
+    };
   };
 
   const errorDetails = getErrorMessage(error);
@@ -103,8 +74,8 @@ export default function AuthErrorPage() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Authentication Error</CardTitle>
-          <CardDescription>There was a problem signing you in</CardDescription>
+          <CardTitle>{t("default.title")}</CardTitle>
+          <CardDescription>{errorDetails.title}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert variant="destructive">
@@ -116,7 +87,7 @@ export default function AuthErrorPage() {
           {error && (
             <div className="text-xs text-muted-foreground">
               <p>
-                Error code:{" "}
+                {t("errorCode")}:{" "}
                 <code className="bg-muted px-1 py-0.5 rounded">{error}</code>
               </p>
             </div>
@@ -124,10 +95,10 @@ export default function AuthErrorPage() {
 
           <div className="flex flex-col space-y-2">
             <Button onClick={handleTryAgain} className="w-full">
-              Try Again
+              {tActions("tryAgain")}
             </Button>
             <Button onClick={handleGoHome} variant="outline" className="w-full">
-              Go to Homepage
+              {tActions("goHome")}
             </Button>
           </div>
         </CardContent>

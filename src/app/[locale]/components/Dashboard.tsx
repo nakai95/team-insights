@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { AnalysisResult } from "@/application/dto/AnalysisResult";
 import { ContributorDto } from "@/application/dto/ContributorDto";
 import {
@@ -24,6 +25,7 @@ export interface DashboardProps {
  * Shows summary cards, charts, and contributor details
  */
 export function Dashboard({ result }: DashboardProps) {
+  const t = useTranslations("dashboard");
   const { analysis, summary } = result;
   const [contributors, setContributors] = useState<ContributorDto[]>(
     result.contributors,
@@ -53,7 +55,7 @@ export function Dashboard({ result }: DashboardProps) {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Repository Analysis</h1>
+          <h1 className="text-3xl font-bold">{t("title")}</h1>
           <p className="text-muted-foreground">{analysis.repositoryUrl}</p>
           <p className="text-sm text-muted-foreground">
             Analyzed: {new Date(analysis.analyzedAt).toLocaleString()} | Period:{" "}
@@ -73,7 +75,7 @@ export function Dashboard({ result }: DashboardProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total Contributors
+              {t("summary.totalContributors")}
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -86,7 +88,9 @@ export function Dashboard({ result }: DashboardProps) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Commits</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("summary.totalCommits")}
+            </CardTitle>
             <GitBranch className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -98,7 +102,9 @@ export function Dashboard({ result }: DashboardProps) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pull Requests</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {t("summary.pullRequests")}
+            </CardTitle>
             <GitPullRequest className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -111,7 +117,7 @@ export function Dashboard({ result }: DashboardProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Review Comments
+              {t("summary.reviewComments")}
             </CardTitle>
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -120,7 +126,9 @@ export function Dashboard({ result }: DashboardProps) {
               {summary.totalReviewComments.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              Analysis time: {(summary.analysisTimeMs / 1000).toFixed(1)}s
+              {t("analysisTime", {
+                seconds: (summary.analysisTimeMs / 1000).toFixed(1),
+              })}
             </p>
           </CardContent>
         </Card>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { SignInButton } from "@/presentation/components/auth/SignInButton";
 import {
   Card,
@@ -28,26 +29,23 @@ import { useSearchParams } from "next/navigation";
 export default function LoginPage() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
+  const t = useTranslations("auth");
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Welcome to Team Insights</CardTitle>
-          <CardDescription>
-            Sign in with your GitHub account to analyze repository activity
-          </CardDescription>
+          <CardTitle className="text-2xl">{t("welcome")}</CardTitle>
+          <CardDescription>{t("welcomeDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center space-y-4">
           <p className="text-sm text-muted-foreground text-center">
-            You need to authenticate with GitHub to access repository analysis
-            features.
+            {t("helpText")}
           </p>
           <SignInButton />
           {callbackUrl && (
             <p className="text-xs text-muted-foreground text-center">
-              After signing in, you&apos;ll be redirected to your requested
-              page.
+              {t("redirectNotice")}
             </p>
           )}
         </CardContent>

@@ -19,7 +19,7 @@ test.describe("OAuth Denial → Error Message Flow", () => {
   }) => {
     // Step 1: Navigate directly to auth error page
     // This simulates what happens when OAuth is denied or fails
-    await page.goto("http://localhost:3000/auth/error");
+    await page.goto("http://localhost:3000/en/auth/error");
 
     // Step 2: Verify we're on the error page
     await expect(page).toHaveURL(/\/auth\/error/);
@@ -39,7 +39,7 @@ test.describe("OAuth Denial → Error Message Flow", () => {
 
   test("should auto sign out when on auth error page", async ({ page }) => {
     // Step 1: Navigate to auth error page
-    await page.goto("http://localhost:3000/auth/error");
+    await page.goto("http://localhost:3000/en/auth/error");
 
     // Step 2: Wait for auto sign-out effect to run
     await page.waitForTimeout(1000);
@@ -66,7 +66,7 @@ test.describe("OAuth Denial → Error Message Flow", () => {
 
   test("should allow retry after auth error", async ({ page }) => {
     // Step 1: Navigate to auth error page
-    await page.goto("http://localhost:3000/auth/error");
+    await page.goto("http://localhost:3000/en/auth/error");
 
     // Step 2: Wait for page to load
     await expect(page.getByText(/error/i).first()).toBeVisible();
@@ -87,7 +87,7 @@ test.describe("OAuth Denial → Error Message Flow", () => {
       ).toBeVisible();
     } else {
       // If no retry link, navigate manually to login
-      await page.goto("http://localhost:3000/login");
+      await page.goto("http://localhost:3000/en/login");
 
       // Verify login page is accessible
       await expect(page).toHaveURL(/\/login/);
@@ -101,7 +101,7 @@ test.describe("OAuth Denial → Error Message Flow", () => {
     page,
   }) => {
     // Step 1: Navigate to auth error page with AccessDenied error
-    await page.goto("http://localhost:3000/auth/error?error=AccessDenied");
+    await page.goto("http://localhost:3000/en/auth/error?error=AccessDenied");
 
     // Step 2: Verify we're on the error page
     await expect(page).toHaveURL(/\/auth\/error/);
@@ -116,7 +116,7 @@ test.describe("OAuth Denial → Error Message Flow", () => {
     page,
   }) => {
     // Step 1: Navigate to auth error page
-    await page.goto("http://localhost:3000/auth/error");
+    await page.goto("http://localhost:3000/en/auth/error");
 
     // Step 2: Wait for auto sign-out
     await page.waitForTimeout(1000);
@@ -154,7 +154,7 @@ test.describe("OAuth Denial → Error Message Flow", () => {
 test.describe("OAuth Error Handling - Various Scenarios", () => {
   test("should handle OAuthSignin error", async ({ page }) => {
     // Navigate to error page with OAuthSignin error
-    await page.goto("http://localhost:3000/auth/error?error=OAuthSignin");
+    await page.goto("http://localhost:3000/en/auth/error?error=OAuthSignin");
 
     // Verify error page is displayed
     await expect(page).toHaveURL(/\/auth\/error/);
@@ -165,7 +165,7 @@ test.describe("OAuth Error Handling - Various Scenarios", () => {
 
   test("should handle OAuthCallback error", async ({ page }) => {
     // Navigate to error page with OAuthCallback error
-    await page.goto("http://localhost:3000/auth/error?error=OAuthCallback");
+    await page.goto("http://localhost:3000/en/auth/error?error=OAuthCallback");
 
     // Verify error page is displayed
     await expect(page).toHaveURL(/\/auth\/error/);
@@ -177,7 +177,7 @@ test.describe("OAuth Error Handling - Various Scenarios", () => {
   test("should handle OAuthAccountNotLinked error", async ({ page }) => {
     // Navigate to error page with OAuthAccountNotLinked error
     await page.goto(
-      "http://localhost:3000/auth/error?error=OAuthAccountNotLinked",
+      "http://localhost:3000/en/auth/error?error=OAuthAccountNotLinked",
     );
 
     // Verify error page is displayed
@@ -189,7 +189,7 @@ test.describe("OAuth Error Handling - Various Scenarios", () => {
 
   test("should provide clear error context", async ({ page }) => {
     // Navigate to auth error page
-    await page.goto("http://localhost:3000/auth/error");
+    await page.goto("http://localhost:3000/en/auth/error");
 
     // Verify error page has helpful information
     await expect(page.getByText(/error/i).first()).toBeVisible();
@@ -207,14 +207,14 @@ test.describe("OAuth Error Handling - Various Scenarios", () => {
 test.describe("Error Recovery Flow", () => {
   test("should allow full recovery from auth error", async ({ page }) => {
     // Step 1: Start at auth error page
-    await page.goto("http://localhost:3000/auth/error");
+    await page.goto("http://localhost:3000/en/auth/error");
     await expect(page).toHaveURL(/\/auth\/error/);
 
     // Step 2: Wait for auto sign-out
     await page.waitForTimeout(1000);
 
     // Step 3: Navigate to login page
-    await page.goto("http://localhost:3000/login");
+    await page.goto("http://localhost:3000/en/login");
     await expect(page).toHaveURL(/\/login/);
 
     // Step 4: Verify sign-in button is available
@@ -231,7 +231,7 @@ test.describe("Error Recovery Flow", () => {
 
     // Step 6: Verify can navigate to homepage
     await page.goto("http://localhost:3000");
-    await expect(page).toHaveURL("http://localhost:3000/");
+    await expect(page).toHaveURL("http://localhost:3000/en/");
 
     // Step 7: Verify homepage loads without errors
     await expect(page.locator("header")).toBeVisible();
@@ -239,7 +239,7 @@ test.describe("Error Recovery Flow", () => {
 
   test("should prevent infinite redirect loops", async ({ page }) => {
     // Step 1: Navigate to auth error page
-    await page.goto("http://localhost:3000/auth/error");
+    await page.goto("http://localhost:3000/en/auth/error");
 
     // Step 2: Wait and verify we stay on error page
     await page.waitForTimeout(1000);
@@ -247,7 +247,7 @@ test.describe("Error Recovery Flow", () => {
 
     // Step 3: Navigate away and back
     await page.goto("http://localhost:3000");
-    await page.goto("http://localhost:3000/auth/error");
+    await page.goto("http://localhost:3000/en/auth/error");
 
     // Step 4: Verify still on error page, not in a redirect loop
     await expect(page).toHaveURL(/\/auth\/error/);

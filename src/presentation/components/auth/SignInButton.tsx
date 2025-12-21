@@ -1,6 +1,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
 
@@ -15,6 +16,7 @@ import { LogIn } from "lucide-react";
  * - Shows loading state during redirect
  * - Accessible button with icon
  * - Error handling for failed sign-in
+ * - Internationalized button text
  *
  * @example
  * ```tsx
@@ -22,6 +24,8 @@ import { LogIn } from "lucide-react";
  * ```
  */
 export function SignInButton() {
+  const t = useTranslations("auth");
+
   const handleSignIn = async () => {
     try {
       await signIn("github", {
@@ -35,7 +39,7 @@ export function SignInButton() {
   return (
     <Button onClick={handleSignIn} variant="default" size="default">
       <LogIn className="mr-2 h-4 w-4" />
-      Sign in with GitHub
+      {t("signIn")}
     </Button>
   );
 }

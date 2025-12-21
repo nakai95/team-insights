@@ -1,0 +1,231 @@
+{
+  "common": {
+    "appName": "Team Insights",
+    "appDescription": "Analyze GitHub repository contributor activity and metrics",
+    "loading": "Loading..."
+  },
+  "auth": {
+    "signIn": "Sign in with GitHub",
+    "signOut": "Sign out",
+    "welcome": "Welcome to Team Insights",
+    "welcomeDescription": "Sign in with your GitHub account to analyze repository contributor activity and gain insights into development patterns.",
+    "helpText": "This application uses secure GitHub OAuth to access repository data. We only request read access to public repositories.",
+    "redirectNotice": "You will be redirected to the dashboard after signing in.",
+    "errors": {
+      "AccessDenied": {
+        "title": "Authorization Cancelled",
+        "message": "You cancelled the GitHub authorization process. No worries - you can try again whenever you're ready."
+      },
+      "OAuthSignin": {
+        "title": "Sign-In Failed",
+        "message": "Failed to initiate GitHub sign-in. This might be a temporary issue. Please try again."
+      },
+      "OAuthCallback": {
+        "title": "Callback Error",
+        "message": "An error occurred while processing the GitHub OAuth callback. Please try signing in again."
+      },
+      "OAuthAccountNotLinked": {
+        "title": "Account Not Linked",
+        "message": "This GitHub account is not linked to any existing user. Please contact support or try a different account."
+      },
+      "RefreshAccessTokenError": {
+        "title": "Session Expired",
+        "message": "Your session has expired. Please sign in again to continue."
+      },
+      "default": {
+        "title": "Authentication Error",
+        "message": "An unexpected error occurred during authentication. Please try again or contact support if the problem persists."
+      },
+      "errorCode": "Error code"
+    },
+    "actions": {
+      "tryAgain": "Try Again",
+      "goHome": "Go to Homepage"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Team Insights",
+      "subtitle": "Analyze GitHub repository contributor activity and metrics to understand your team's development patterns",
+      "getStarted": "Get Started"
+    },
+    "features": {
+      "title": "Features",
+      "repository": {
+        "title": "Repository Analysis",
+        "description": "Deep dive into repository activity with commit history, pull requests, and code review metrics"
+      },
+      "contributor": {
+        "title": "Contributor Insights",
+        "description": "Track individual contributor metrics including commits, PRs, reviews, and code changes"
+      },
+      "analytics": {
+        "title": "Visual Analytics",
+        "description": "Interactive charts and visualizations to understand development patterns and team dynamics"
+      },
+      "security": {
+        "title": "Secure OAuth",
+        "description": "Safe and secure GitHub OAuth integration with read-only access to your repositories"
+      }
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "step1": {
+        "title": "Sign In with GitHub",
+        "description": "Authenticate securely using your GitHub account to grant read access to repositories"
+      },
+      "step2": {
+        "title": "Enter Repository URL",
+        "description": "Provide the GitHub repository URL you want to analyze"
+      },
+      "step3": {
+        "title": "View Detailed Insights",
+        "description": "Get comprehensive analytics about contributors, commits, pull requests, and reviews"
+      }
+    },
+    "cta": {
+      "title": "Ready to get started?",
+      "subtitle": "Sign in with your GitHub account to start analyzing repositories"
+    }
+  },
+  "dashboard": {
+    "title": "Repository Analysis",
+    "analyzeAnother": "Analyze Another Repository",
+    "tryAgain": "Try Again",
+    "analysisTime": "Analysis time: {seconds}s",
+    "summary": {
+      "totalContributors": "Total Contributors",
+      "totalCommits": "Total Commits",
+      "pullRequests": "Pull Requests",
+      "reviewComments": "Review Comments"
+    },
+    "charts": {
+      "implementationActivity": "Implementation Activity",
+      "reviewActivity": "Review Activity"
+    },
+    "error": {
+      "title": "Analysis Failed",
+      "errorCode": "Error Code",
+      "message": "Message",
+      "technicalDetails": "Technical Details",
+      "permissionGuidance": {
+        "title": "This error usually indicates missing repository permissions. To resolve:",
+        "step1": "Make sure the repository exists and is accessible",
+        "step2": "If it's a private repository, ensure your GitHub account has access",
+        "step3": "Try signing out and signing in again to refresh permissions",
+        "step4": "Check if the repository URL is correct"
+      }
+    }
+  },
+  "form": {
+    "title": "Repository Analysis",
+    "repositoryUrl": "Repository URL",
+    "repositoryUrlRequired": "Repository URL *",
+    "repositoryUrlPlaceholder": "https://github.com/owner/repo",
+    "repositoryUrlHelp": "Enter the full GitHub repository URL (e.g., https://github.com/owner/repo)",
+    "startDate": "Start Date (Optional)",
+    "endDate": "End Date (Optional)",
+    "dateRangeHelp": "Leave dates empty to analyze the last 6 months",
+    "analyze": "Analyze Repository",
+    "analyzing": "Analyzing...",
+    "validation": {
+      "invalidUrl": "Please enter a valid GitHub repository URL",
+      "invalidDateRange": "End date must be after start date",
+      "futureDateNotAllowed": "Future dates are not allowed",
+      "DATE_RANGE_INVALID": "End date must be after start date",
+      "FUTURE_DATE_NOT_ALLOWED": "Future dates are not allowed",
+      "LARGE_DATE_RANGE": "Large date range may result in longer analysis time",
+      "VERY_LARGE_DATE_RANGE": "Very large date range (over 2 years) may take significantly longer to analyze"
+    }
+  },
+  "contributors": {
+    "title": "Top Contributors",
+    "description": "Ranked by overall activity score (commits, PRs, reviews, and code changes)",
+    "table": {
+      "rank": "Rank",
+      "contributor": "Contributor",
+      "commits": "Commits",
+      "prs": "PRs",
+      "reviews": "Reviews",
+      "linesChanged": "Lines Changed",
+      "score": "Score"
+    },
+    "mergeIdentities": "Merge Identities"
+  },
+  "identityMerger": {
+    "title": "Merge Duplicate Contributors",
+    "description": "Select contributors that represent the same person. Choose one as the primary identity to preserve.",
+    "button": "Merge Identities",
+    "instructions": {
+      "title": "How to merge:",
+      "step1": "Check the boxes for contributors to merge",
+      "step2": "Click \"Set as Primary\" on the identity you want to keep",
+      "step3": "Review the preview and click \"Merge Identities\""
+    },
+    "selectSection": {
+      "title": "Select Contributors"
+    },
+    "preview": {
+      "title": "Merge Preview",
+      "selectedCount": "{count} contributor selected",
+      "selectedCount_other": "{count} contributors selected",
+      "primary": "Primary Identity (will be preserved):",
+      "willBeMerged": "Will be merged into primary:",
+      "selectPrimaryPrompt": "Please select a primary identity by clicking \"Set as Primary\" on one of the selected contributors."
+    },
+    "contributor": {
+      "primaryBadge": "Primary",
+      "commits": "{count} commits",
+      "reviews": "{count} reviews"
+    },
+    "actions": {
+      "setAsPrimary": "Set as Primary",
+      "cancel": "Cancel",
+      "merge": "Merge Identities",
+      "merging": "Merging..."
+    }
+  },
+  "progress": {
+    "title": "Analysis in Progress",
+    "message": "Analyzing repository...",
+    "percentComplete": "{percent}% complete",
+    "steps": {
+      "cloning": "Cloning repository",
+      "commits": "Fetching commit history",
+      "pullRequests": "Analyzing pull requests",
+      "reviews": "Processing review comments",
+      "metrics": "Calculating metrics"
+    }
+  },
+  "chart": {
+    "title": "Implementation Activity",
+    "description": "Top {count} contributors by implementation score",
+    "commits": "Commits",
+    "linesAdded": "Lines Added",
+    "linesDeleted": "Lines Deleted",
+    "lines": "Lines"
+  },
+  "contributorList": {
+    "title": "Contributors",
+    "description": "Ranked by overall activity (implementation + review)",
+    "rank": "Rank",
+    "contributor": "Contributor",
+    "commits": "Commits",
+    "prs": "PRs",
+    "reviews": "Reviews",
+    "linesChanged": "Lines Changed",
+    "score": "Score"
+  },
+  "errors": {
+    "AUTHENTICATION_REQUIRED": "Authentication required. Please sign in.",
+    "TOKEN_EXPIRED": "Your session has expired. Please sign in again.",
+    "INVALID_URL": "Invalid repository URL. Please check and try again.",
+    "INVALID_TOKEN": "Invalid authentication token. Please sign in again.",
+    "REPO_NOT_FOUND": "Repository not found. Please check the URL.",
+    "INSUFFICIENT_PERMISSIONS": "Insufficient permissions to access this repository.",
+    "RATE_LIMIT_EXCEEDED": "GitHub API rate limit exceeded. Please try again later.",
+    "CLONE_FAILED": "Failed to clone repository. Please try again.",
+    "ANALYSIS_TIMEOUT": "Analysis timed out. This might be a very large repository.",
+    "INTERNAL_ERROR": "An internal error occurred. Please try again."
+  }
+}
