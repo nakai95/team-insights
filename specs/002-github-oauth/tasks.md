@@ -73,14 +73,14 @@
 
 ### Implementation for User Story 2
 
-- [ ] T022 [US2] Modify AnalysisRequest DTO in `src/application/dto/AnalysisRequest.ts` to remove `githubToken` field
-- [ ] T023 [P] [US2] Modify OctokitAdapter constructor in `src/infrastructure/github/OctokitAdapter.ts` to accept ISessionProvider, update all methods to call sessionProvider.getAccessToken()
-- [ ] T024 [P] [US2] Modify SimpleGitAdapter constructor in `src/infrastructure/git/SimpleGitAdapter.ts` to accept ISessionProvider, update clone() method to inject token into URL as `https://oauth2:<token>@github.com/owner/repo.git`
-- [ ] T025 [US2] Modify analyzeRepository Server Action in `src/app/actions/analyzeRepository.ts` to remove githubToken parameter validation, inject NextAuthAdapter, pass to adapters, add AUTHENTICATION_REQUIRED error handling
-- [ ] T026 [US2] Update AnalysisForm component in `src/presentation/components/AnalysisForm.tsx` to remove token input field
-- [ ] T027 [US2] Add TOKEN_EXPIRED error code to AnalysisErrorCode enum in `src/application/dto/AnalysisResult.ts`
-- [ ] T028 [US2] Update error mapping in `src/app/actions/errorMapping.ts` to handle session authentication errors
-- [ ] T029 [US2] Test repository analysis flow: authenticate → enter repo URL → analyze → verify no token input → verify results
+- [x] T022 [US2] Modify AnalysisRequest DTO in `src/application/dto/AnalysisRequest.ts` to remove `githubToken` field
+- [x] T023 [P] [US2] Modify OctokitAdapter constructor in `src/infrastructure/github/OctokitAdapter.ts` to accept ISessionProvider, update all methods to call sessionProvider.getAccessToken()
+- [x] T024 [P] [US2] Modify SimpleGitAdapter constructor in `src/infrastructure/git/SimpleGitAdapter.ts` to accept ISessionProvider, update clone() method to inject token into URL as `https://oauth2:<token>@github.com/owner/repo.git`
+- [x] T025 [US2] Modify analyzeRepository Server Action in `src/app/actions/analyzeRepository.ts` to remove githubToken parameter validation, inject NextAuthAdapter, pass to adapters, add AUTHENTICATION_REQUIRED error handling
+- [x] T026 [US2] Update AnalysisForm component in `src/presentation/components/AnalysisForm.tsx` to remove token input field
+- [x] T027 [US2] Add TOKEN_EXPIRED error code to AnalysisErrorCode enum in `src/application/dto/AnalysisResult.ts`
+- [x] T028 [US2] Update error mapping in `src/app/actions/errorMapping.ts` to handle session authentication errors
+- [x] T029 [US2] Test repository analysis flow: authenticate → enter repo URL → analyze → verify no token input → verify results
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently - users can sign in and analyze repos without token input
 
