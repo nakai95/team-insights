@@ -64,18 +64,22 @@ export class OctokitAdapter implements IGitHubAPI {
 
       // Handle specific error cases
       if (error?.status === 401) {
-        return err(new Error("Invalid GitHub token"));
+        return err(new Error("Invalid GitHub token. Please sign in again."));
       }
 
       if (error?.status === 404) {
         return err(
-          new Error("Repository not found or insufficient permissions"),
+          new Error(
+            "Repository not found or you do not have permission to access it. Please check the repository URL and your access rights.",
+          ),
         );
       }
 
       if (error?.status === 403) {
         return err(
-          new Error("Rate limit exceeded or insufficient permissions"),
+          new Error(
+            "You do not have permission to access this repository. This may be due to rate limiting or insufficient access rights. Please verify you have read access or that the repository is not private.",
+          ),
         );
       }
 
@@ -181,6 +185,23 @@ export class OctokitAdapter implements IGitHubAPI {
         status: error?.status,
       });
 
+      // Handle specific permission errors
+      if (error?.status === 403) {
+        return err(
+          new Error(
+            "You do not have permission to access this repository. Please verify you have read access or that the repository is not private.",
+          ),
+        );
+      }
+
+      if (error?.status === 404) {
+        return err(
+          new Error(
+            "Repository not found or you do not have permission to access it. Please check the repository URL and your access rights.",
+          ),
+        );
+      }
+
       return err(
         new Error(
           `Failed to fetch pull requests: ${error?.message || String(error)}`,
@@ -262,6 +283,23 @@ export class OctokitAdapter implements IGitHubAPI {
         error: error?.message || String(error),
         status: error?.status,
       });
+
+      // Handle specific permission errors
+      if (error?.status === 403) {
+        return err(
+          new Error(
+            "You do not have permission to access this repository. Please verify you have read access or that the repository is not private.",
+          ),
+        );
+      }
+
+      if (error?.status === 404) {
+        return err(
+          new Error(
+            "Repository not found or you do not have permission to access it. Please check the repository URL and your access rights.",
+          ),
+        );
+      }
 
       return err(
         new Error(

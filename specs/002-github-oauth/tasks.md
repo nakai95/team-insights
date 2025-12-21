@@ -130,11 +130,11 @@
 
 ### Implementation for User Story 5
 
-- [ ] T040 [US5] Verify OctokitAdapter (modified in T023) already handles 403/404 GitHub API errors with appropriate messages
-- [ ] T041 [US5] Update error mapping to ensure ACCESS_DENIED errors include guidance on requesting access or verifying repository visibility
-- [ ] T042 [US5] Update AnalysisForm to display permission errors with actionable guidance
-- [ ] T043 [US5] Test insufficient permissions scenario: authenticate → analyze inaccessible private repo → verify helpful error message
-- [ ] T044 [US5] Test graceful handling of mid-analysis permission revocation
+- [x] T040 [US5] Verify OctokitAdapter (modified in T023) already handles 403/404 GitHub API errors with appropriate messages
+- [x] T041 [US5] Update error mapping to ensure ACCESS_DENIED errors include guidance on requesting access or verifying repository visibility
+- [x] T042 [US5] Update AnalysisForm to display permission errors with actionable guidance
+- [x] T043 [US5] Test insufficient permissions scenario: authenticate → analyze inaccessible private repo → verify helpful error message
+- [x] T044 [US5] Test graceful handling of mid-analysis permission revocation
 
 **Checkpoint**: All user stories should now be independently functional with proper error handling
 

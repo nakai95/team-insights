@@ -41,6 +41,33 @@ export default function Home() {
                     <p>
                       <strong>Message:</strong> {state.error.message}
                     </p>
+                    {/* Show actionable guidance for permission errors */}
+                    {(state.error.code === "INSUFFICIENT_PERMISSIONS" ||
+                      state.error.code === "REPO_NOT_FOUND") && (
+                      <div className="mt-3 p-3 bg-muted rounded-md">
+                        <p className="font-semibold text-sm mb-2">
+                          What you can do:
+                        </p>
+                        <ul className="text-sm space-y-1 list-disc list-inside">
+                          <li>
+                            Verify the repository URL is correct and the
+                            repository exists
+                          </li>
+                          <li>
+                            For private repositories, ensure you have read
+                            access
+                          </li>
+                          <li>
+                            Check that your GitHub account has been granted
+                            access to the repository
+                          </li>
+                          <li>
+                            If you just gained access, try signing out and
+                            signing in again to refresh your permissions
+                          </li>
+                        </ul>
+                      </div>
+                    )}
                     {state.error.details ? (
                       <details className="mt-2">
                         <summary className="cursor-pointer">
