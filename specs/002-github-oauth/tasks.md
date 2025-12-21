@@ -94,10 +94,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T030 [US3] Verify SignOutButton component (already created in T016) properly calls signOut({ callbackUrl: "/" })
-- [ ] T031 [US3] Verify middleware (created in T012) redirects unauthenticated users attempting to access protected routes to /login
-- [ ] T032 [US3] Test session persistence: authenticate → close browser → reopen → verify still authenticated (within 7 days)
-- [ ] T033 [US3] Test sign-out flow: authenticate → sign out → verify redirect → verify unauthenticated → attempt analysis → verify login redirect
+- [x] T030 [US3] Verify SignOutButton component (already created in T016) properly calls signOut({ callbackUrl: "/" })
+- [x] T031 [US3] Verify middleware (created in T012) redirects unauthenticated users attempting to access protected routes to /login
+- [x] T032 [US3] Test session persistence: authenticate → close browser → reopen → verify still authenticated (within 7 days)
+- [x] T033 [US3] Test sign-out flow: authenticate → sign out → verify redirect → verify unauthenticated → attempt analysis → verify login redirect
 
 **Checkpoint**: All core authentication flows (sign in, analysis, sign out) should now be independently functional
 
