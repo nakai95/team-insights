@@ -1,5 +1,6 @@
 import simpleGit, { SimpleGit, SimpleGitOptions } from "simple-git";
 import { IGitOperations, GitCommit } from "@/domain/interfaces/IGitOperations";
+import { ISessionProvider } from "@/domain/interfaces/ISessionProvider";
 import { Result, ok, err } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
 import { maskToken } from "@/lib/utils/tokenMasker";
@@ -10,19 +11,38 @@ import { execSync } from "child_process";
 /**
  * Adapter for Git operations using simple-git library
  * Implements IGitOperations interface for repository cloning and log parsing
+ *
+ * Modified to use ISessionProvider for OAuth token retrieval.
+ * Token is injected into HTTPS URLs for authenticated cloning.
  */
 export class SimpleGitAdapter implements IGitOperations {
   private git: SimpleGit;
 
-  constructor(options?: Partial<SimpleGitOptions>) {
+  constructor(
+    private sessionProvider: ISessionProvider,
+    options?: Partial<SimpleGitOptions>,
+  ) {
     this.git = options ? simpleGit(options) : simpleGit();
   }
 
   /**
+   * Get GitHub access token from session
+   * @throws Error if token retrieval fails
+   */
+  private async getToken(): Promise<string> {
+    const tokenResult = await this.sessionProvider.getAccessToken();
+    if (!tokenResult.ok) {
+      throw tokenResult.error;
+    }
+    return tokenResult.value;
+  }
+
+  /**
    * Clone a repository to a target directory
-   * @param url Repository URL (may contain token)
+   * Token is automatically injected from session into the URL
+   * @param url Repository URL (HTTPS GitHub URL)
    * @param targetPath Directory to clone to
-   * @param sinceDate Optional date to limit history with --shallow-since
+   * @param sinceDate Optional date to limit history (not used - full clone for accuracy)
    */
   async clone(
     url: string,
@@ -30,21 +50,28 @@ export class SimpleGitAdapter implements IGitOperations {
     sinceDate?: Date,
   ): Promise<Result<void>> {
     try {
+      const token = await this.getToken();
+
+      // Inject token into URL: https://oauth2:<token>@github.com/owner/repo.git
+      const authenticatedUrl = url.replace(
+        "https://github.com",
+        `https://oauth2:${token}@github.com`,
+      );
+
       logger.debug(`Cloning repository to ${targetPath}`, {
-        url: maskToken(url),
+        url: maskToken(authenticatedUrl),
         sinceDate: sinceDate?.toISOString(),
       });
 
       // Always use full clone to ensure accurate git log results
       // Note: shallow clones (--shallow-since, --depth) can cause git log to miss commits
       // due to missing parent commit history
-      await this.git.clone(url, targetPath);
+      await this.git.clone(authenticatedUrl, targetPath);
 
       logger.info(`Successfully cloned repository to ${targetPath}`);
       return ok(undefined);
     } catch (error) {
       logger.error("Failed to clone repository", {
-        url: maskToken(url),
         targetPath,
         error: getErrorMessage(error),
       });

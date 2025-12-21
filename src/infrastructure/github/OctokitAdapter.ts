@@ -5,6 +5,7 @@ import {
   ReviewComment,
   RateLimitInfo,
 } from "@/domain/interfaces/IGitHubAPI";
+import { ISessionProvider } from "@/domain/interfaces/ISessionProvider";
 import { Result, ok, err } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
 import { maskToken } from "@/lib/utils/tokenMasker";
@@ -13,18 +14,33 @@ import { RateLimiter } from "./RateLimiter";
 /**
  * Adapter for GitHub API operations using Octokit
  * Implements IGitHubAPI interface with rate limiting and pagination
+ *
+ * Modified to use ISessionProvider for OAuth token retrieval instead of
+ * accepting tokens as method parameters.
  */
 export class OctokitAdapter implements IGitHubAPI {
   private rateLimiter = new RateLimiter();
+
+  constructor(private sessionProvider: ISessionProvider) {}
+
+  /**
+   * Get GitHub access token from session
+   * @throws Error if token retrieval fails
+   */
+  private async getToken(): Promise<string> {
+    const tokenResult = await this.sessionProvider.getAccessToken();
+    if (!tokenResult.ok) {
+      throw tokenResult.error;
+    }
+    return tokenResult.value;
+  }
+
   /**
    * Validate GitHub token has access to repository
    */
-  async validateAccess(
-    owner: string,
-    repo: string,
-    token: string,
-  ): Promise<Result<boolean>> {
+  async validateAccess(owner: string, repo: string): Promise<Result<boolean>> {
     try {
+      const token = await this.getToken();
       logger.debug("Validating GitHub token access", {
         owner,
         repo,
@@ -42,7 +58,6 @@ export class OctokitAdapter implements IGitHubAPI {
       logger.error("GitHub token validation failed", {
         owner,
         repo,
-        token: maskToken(token),
         error: error?.message || String(error),
         status: error?.status,
       });
@@ -78,10 +93,10 @@ export class OctokitAdapter implements IGitHubAPI {
   async getPullRequests(
     owner: string,
     repo: string,
-    token: string,
     sinceDate?: Date,
   ): Promise<Result<PullRequest[]>> {
     try {
+      const token = await this.getToken();
       logger.debug("Fetching pull requests", {
         owner,
         repo,
@@ -110,7 +125,7 @@ export class OctokitAdapter implements IGitHubAPI {
         });
 
         // Update rate limit info after each request
-        const rateLimitResult = await this.getRateLimitStatus(token);
+        const rateLimitResult = await this.getRateLimitStatus();
         if (rateLimitResult.ok) {
           this.rateLimiter.updateRateLimit(rateLimitResult.value);
         }
@@ -180,10 +195,10 @@ export class OctokitAdapter implements IGitHubAPI {
   async getReviewComments(
     owner: string,
     repo: string,
-    token: string,
     pullRequestNumbers: number[],
   ): Promise<Result<ReviewComment[]>> {
     try {
+      const token = await this.getToken();
       logger.debug("Fetching review comments", {
         owner,
         repo,
@@ -211,7 +226,7 @@ export class OctokitAdapter implements IGitHubAPI {
           });
 
           // Update rate limit info after each request
-          const rateLimitResult = await this.getRateLimitStatus(token);
+          const rateLimitResult = await this.getRateLimitStatus();
           if (rateLimitResult.ok) {
             this.rateLimiter.updateRateLimit(rateLimitResult.value);
           }
@@ -259,8 +274,9 @@ export class OctokitAdapter implements IGitHubAPI {
   /**
    * Get current rate limit status
    */
-  async getRateLimitStatus(token: string): Promise<Result<RateLimitInfo>> {
+  async getRateLimitStatus(): Promise<Result<RateLimitInfo>> {
     try {
+      const token = await this.getToken();
       const octokit = new Octokit({ auth: token });
       const response = await octokit.rest.rateLimit.get();
 

@@ -17,6 +17,7 @@ import { getErrorMessage } from "@/lib/utils/errorUtils";
 import { Result } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
 import { mapErrorCode } from "./errorMapping";
+import { NextAuthAdapter } from "@/infrastructure/auth/NextAuthAdapter";
 
 /**
  * Server Action for analyzing a GitHub repository
@@ -34,12 +35,12 @@ export async function analyzeRepository(
     });
 
     // Validate input (Zod schema validation can be added here)
-    if (!request.repositoryUrl || !request.githubToken) {
+    if (!request.repositoryUrl) {
       return {
         ok: false,
         error: {
           code: AnalysisErrorCode.INVALID_URL,
-          message: "Repository URL and GitHub token are required",
+          message: "Repository URL is required",
         },
       };
     }
@@ -74,9 +75,12 @@ export async function analyzeRepository(
       }
     }
 
+    // Initialize session provider
+    const sessionProvider = new NextAuthAdapter();
+
     // Initialize infrastructure dependencies
-    const gitOperations = new SimpleGitAdapter();
-    const githubAPI = new OctokitAdapter();
+    const gitOperations = new SimpleGitAdapter(sessionProvider);
+    const githubAPI = new OctokitAdapter(sessionProvider);
     const tempDirManager = new TempDirectoryManager();
 
     // Initialize use cases
@@ -91,7 +95,6 @@ export async function analyzeRepository(
     // Execute analysis
     const result = await analyzeRepo.execute({
       repositoryUrl: request.repositoryUrl,
-      githubToken: request.githubToken,
       dateRangeStart,
       dateRangeEnd,
     });

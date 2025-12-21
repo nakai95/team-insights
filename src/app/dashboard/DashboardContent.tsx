@@ -21,14 +21,12 @@ export default function DashboardContent() {
   // Auto-trigger analysis from URL parameters if provided
   useEffect(() => {
     const repoUrl = searchParams.get("repo");
-    const token = searchParams.get("token");
     const startDate = searchParams.get("start");
     const endDate = searchParams.get("end");
 
-    if (repoUrl && token && state.status === "idle") {
+    if (repoUrl && state.status === "idle") {
       analyze({
         repositoryUrl: repoUrl,
-        githubToken: token,
         dateRange:
           startDate && endDate ? { start: startDate, end: endDate } : undefined,
       });

@@ -11,10 +11,10 @@ import { v4 as uuidv4 } from "uuid";
 
 /**
  * Input for AnalyzeRepository use case
+ * GitHub token is now sourced from session via ISessionProvider
  */
 export interface AnalyzeRepositoryInput {
   repositoryUrl: string;
-  githubToken: string;
   dateRangeStart?: Date;
   dateRangeEnd?: Date;
 }
@@ -94,7 +94,6 @@ export class AnalyzeRepository {
       // Step 5: Fetch Git and GitHub data
       const fetchInput: FetchGitDataInput = {
         repositoryUrl: input.repositoryUrl,
-        githubToken: input.githubToken,
         dateRange,
         tempDirectory: tempDir,
       };
