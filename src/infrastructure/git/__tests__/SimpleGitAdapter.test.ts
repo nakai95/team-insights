@@ -1,9 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { SimpleGitAdapter } from "../SimpleGitAdapter";
+import { ISessionProvider } from "@/domain/interfaces/ISessionProvider";
+import { ok } from "@/lib/result";
 
 describe("SimpleGitAdapter - getLog", () => {
   it("retrieves git log and verifies data structure", async () => {
-    const adapter = new SimpleGitAdapter();
+    const mockSessionProvider: ISessionProvider = {
+      getAccessToken: async () => ok("mock-github-token"),
+    };
+    const adapter = new SimpleGitAdapter(mockSessionProvider);
     const repoPath = process.cwd(); // Current repository
 
     // Get commits from 2024 onwards

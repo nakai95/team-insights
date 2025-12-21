@@ -3,9 +3,13 @@ import { IdentityMerge } from "../IdentityMerge";
 import { RepositoryUrl } from "@/domain/value-objects/RepositoryUrl";
 
 describe("IdentityMerge", () => {
-  const validRepoUrl = RepositoryUrl.create(
+  const validRepoUrlResult = RepositoryUrl.create(
     "https://github.com/owner/repo",
-  ).value!;
+  );
+  if (!validRepoUrlResult.ok) {
+    throw new Error("Test setup failed: validRepoUrl");
+  }
+  const validRepoUrl = validRepoUrlResult.value;
   const now = new Date("2024-01-01T12:00:00Z");
   const later = new Date("2024-01-02T12:00:00Z");
 
@@ -168,20 +172,26 @@ describe("IdentityMerge", () => {
 
   describe("includes", () => {
     it("returns true for primary contributor ID", () => {
-      const merge = IdentityMerge.create(validParams).value!;
+      const mergeResult = IdentityMerge.create(validParams);
+      if (!mergeResult.ok) throw new Error("Test setup failed");
+      const merge = mergeResult.value;
 
       expect(merge.includes("contributor-1")).toBe(true);
     });
 
     it("returns true for merged contributor ID", () => {
-      const merge = IdentityMerge.create(validParams).value!;
+      const mergeResult = IdentityMerge.create(validParams);
+      if (!mergeResult.ok) throw new Error("Test setup failed");
+      const merge = mergeResult.value;
 
       expect(merge.includes("contributor-2")).toBe(true);
       expect(merge.includes("contributor-3")).toBe(true);
     });
 
     it("returns false for non-included contributor ID", () => {
-      const merge = IdentityMerge.create(validParams).value!;
+      const mergeResult = IdentityMerge.create(validParams);
+      if (!mergeResult.ok) throw new Error("Test setup failed");
+      const merge = mergeResult.value;
 
       expect(merge.includes("contributor-999")).toBe(false);
     });
@@ -189,7 +199,9 @@ describe("IdentityMerge", () => {
 
   describe("allContributorIds", () => {
     it("returns all contributor IDs including primary", () => {
-      const merge = IdentityMerge.create(validParams).value!;
+      const mergeResult = IdentityMerge.create(validParams);
+      if (!mergeResult.ok) throw new Error("Test setup failed");
+      const merge = mergeResult.value;
 
       expect(merge.allContributorIds).toEqual([
         "contributor-1",
@@ -199,7 +211,9 @@ describe("IdentityMerge", () => {
     });
 
     it("maintains order with primary first", () => {
-      const merge = IdentityMerge.create(validParams).value!;
+      const mergeResult = IdentityMerge.create(validParams);
+      if (!mergeResult.ok) throw new Error("Test setup failed");
+      const merge = mergeResult.value;
 
       expect(merge.allContributorIds[0]).toBe("contributor-1");
     });
@@ -207,7 +221,9 @@ describe("IdentityMerge", () => {
 
   describe("updateLastApplied", () => {
     it("updates lastAppliedAt timestamp", () => {
-      const merge = IdentityMerge.create(validParams).value!;
+      const mergeResult = IdentityMerge.create(validParams);
+      if (!mergeResult.ok) throw new Error("Test setup failed");
+      const merge = mergeResult.value;
       const newTime = new Date("2024-01-03T12:00:00Z");
 
       const result = merge.updateLastApplied(newTime);
@@ -221,11 +237,13 @@ describe("IdentityMerge", () => {
     });
 
     it("rejects timestamp before createdAt", () => {
-      const merge = IdentityMerge.create({
+      const mergeResult = IdentityMerge.create({
         ...validParams,
         createdAt: later,
         lastAppliedAt: later,
-      }).value!;
+      });
+      if (!mergeResult.ok) throw new Error("Test setup failed");
+      const merge = mergeResult.value;
 
       const result = merge.updateLastApplied(now);
 
@@ -238,11 +256,13 @@ describe("IdentityMerge", () => {
     });
 
     it("accepts timestamp equal to createdAt", () => {
-      const merge = IdentityMerge.create({
+      const mergeResult = IdentityMerge.create({
         ...validParams,
         createdAt: now,
         lastAppliedAt: later,
-      }).value!;
+      });
+      if (!mergeResult.ok) throw new Error("Test setup failed");
+      const merge = mergeResult.value;
 
       const result = merge.updateLastApplied(now);
 

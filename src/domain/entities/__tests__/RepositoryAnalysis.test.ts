@@ -49,9 +49,11 @@ describe("RepositoryAnalysis", () => {
     });
 
     it("should reject completion without contributors", () => {
-      const params = createValidParams();
-      params.status = AnalysisStatus.COMPLETED;
-      params.contributors = [];
+      const params = {
+        ...createValidParams(),
+        status: AnalysisStatus.COMPLETED,
+        contributors: [],
+      };
 
       const result = RepositoryAnalysis.create(params);
 
@@ -64,9 +66,11 @@ describe("RepositoryAnalysis", () => {
     });
 
     it("should reject failed status without error message", () => {
-      const params = createValidParams();
-      params.status = AnalysisStatus.FAILED;
-      params.errorMessage = null;
+      const params = {
+        ...createValidParams(),
+        status: AnalysisStatus.FAILED,
+        errorMessage: null,
+      };
 
       const result = RepositoryAnalysis.create(params);
 
@@ -163,9 +167,11 @@ describe("RepositoryAnalysis", () => {
     });
 
     it("should reject completion when not in progress", () => {
-      const params = createValidParams();
-      params.status = AnalysisStatus.COMPLETED;
-      params.contributors = [{ id: "contributor-1" } as any];
+      const params = {
+        ...createValidParams(),
+        status: AnalysisStatus.COMPLETED,
+        contributors: [{ id: "contributor-1" } as any],
+      };
 
       const analysisResult = RepositoryAnalysis.create(params);
       expect(analysisResult.ok).toBe(true);
@@ -242,9 +248,11 @@ describe("RepositoryAnalysis", () => {
     });
 
     it("should reject failure when not in progress", () => {
-      const params = createValidParams();
-      params.status = AnalysisStatus.FAILED;
-      params.errorMessage = "Previous error";
+      const params = {
+        ...createValidParams(),
+        status: AnalysisStatus.FAILED,
+        errorMessage: "Previous error",
+      };
 
       const analysisResult = RepositoryAnalysis.create(params);
       expect(analysisResult.ok).toBe(true);
