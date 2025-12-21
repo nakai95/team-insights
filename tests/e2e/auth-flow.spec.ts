@@ -21,7 +21,7 @@ test.describe("OAuth Login → Repository Analysis Flow", () => {
   }) => {
     // Step 1: Navigate to homepage
     await page.goto("http://localhost:3000");
-    await expect(page).toHaveURL("http://localhost:3000/");
+    await expect(page).toHaveURL("http://localhost:3000/en/");
 
     // Step 2: Check if already authenticated
     const userProfile = page.locator("header").getByText(/sign out/i);
@@ -29,7 +29,7 @@ test.describe("OAuth Login → Repository Analysis Flow", () => {
 
     if (!isAuthenticated) {
       // Step 3: Navigate to login page
-      await page.goto("http://localhost:3000/login");
+      await page.goto("http://localhost:3000/en/login");
       await expect(page).toHaveURL(/\/login/);
 
       // Step 4: Verify sign-in button is visible
@@ -76,7 +76,7 @@ test.describe("OAuth Login → Repository Analysis Flow", () => {
       }
 
       // Step 7: Verify successful redirect back to dashboard
-      await expect(page).toHaveURL("http://localhost:3000/dashboard");
+      await expect(page).toHaveURL("http://localhost:3000/en/dashboard");
 
       // Step 8: Verify authenticated state - user profile should be visible
       await expect(page.locator("header").getByText(/sign out/i)).toBeVisible({
@@ -84,13 +84,13 @@ test.describe("OAuth Login → Repository Analysis Flow", () => {
       });
     } else {
       // Already authenticated, should be on dashboard
-      await page.goto("http://localhost:3000/dashboard");
+      await page.goto("http://localhost:3000/en/dashboard");
     }
 
     // At this point, we're authenticated and on the dashboard
 
     // Step 9: Verify we are on dashboard page
-    await expect(page).toHaveURL("http://localhost:3000/dashboard");
+    await expect(page).toHaveURL("http://localhost:3000/en/dashboard");
 
     // Step 10: Verify repository analysis form is visible
     await expect(page.getByLabel(/repository url/i)).toBeVisible();
@@ -180,13 +180,13 @@ test.describe("OAuth Login → Repository Analysis Flow", () => {
     await expect(page.locator("header").getByText(/sign out/i)).toBeVisible();
 
     // Step 5: Navigate to a different page (login)
-    await page.goto("http://localhost:3000/login");
+    await page.goto("http://localhost:3000/en/login");
 
     // Step 6: Should redirect to dashboard if authenticated
     await page.waitForTimeout(1000); // Wait for any redirects
 
     // Should be redirected to dashboard
-    await expect(page).toHaveURL("http://localhost:3000/dashboard");
+    await expect(page).toHaveURL("http://localhost:3000/en/dashboard");
   });
 
   test("should allow sign out after authentication", async ({ page }) => {
@@ -244,7 +244,7 @@ test.describe("OAuth Login → Repository Analysis Flow", () => {
     expect(hasAnalysisForm).toBe(false);
 
     // Step 8: Try to access dashboard directly (should redirect to login)
-    await page.goto("http://localhost:3000/dashboard");
+    await page.goto("http://localhost:3000/en/dashboard");
     await page.waitForTimeout(1000);
 
     // Should be redirected to login page
@@ -271,7 +271,7 @@ test.describe("OAuth Login → Repository Analysis Flow", () => {
     }
 
     // Step 3: Should automatically redirect to /dashboard
-    await expect(page).toHaveURL("http://localhost:3000/dashboard");
+    await expect(page).toHaveURL("http://localhost:3000/en/dashboard");
 
     // Step 4: Verify analysis form is visible on dashboard
     await expect(page.getByLabel(/repository url/i)).toBeVisible();
@@ -296,7 +296,7 @@ test.describe("OAuth Login → Repository Analysis Flow", () => {
     }
 
     // Step 2: Should see landing page
-    await expect(page).toHaveURL("http://localhost:3000/");
+    await expect(page).toHaveURL("http://localhost:3000/en/");
 
     // Step 3: Verify landing page content
     await expect(page.getByText(/team insights/i).first()).toBeVisible();

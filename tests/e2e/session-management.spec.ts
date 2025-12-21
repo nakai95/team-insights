@@ -26,10 +26,10 @@ test.describe("User Story 3: Session Management and Logout", () => {
       await page.goto("http://localhost:3000");
 
       // Step 3: Homepage is public, so we should be able to access it
-      await expect(page).toHaveURL("http://localhost:3000/");
+      await expect(page).toHaveURL("http://localhost:3000/en/");
 
       // Step 4: Try to access login page
-      await page.goto("http://localhost:3000/login");
+      await page.goto("http://localhost:3000/en/login");
       await expect(
         page.locator("button").filter({ hasText: /sign in/i }),
       ).toBeVisible();
@@ -45,7 +45,7 @@ test.describe("User Story 3: Session Management and Logout", () => {
       const newPage = await newContext.newPage();
 
       // Step 7: Navigate to the app again
-      await newPage.goto("http://localhost:3000/login");
+      await newPage.goto("http://localhost:3000/en/login");
 
       // Step 8: Should still be able to access login page (not authenticated)
       await expect(newPage).toHaveURL(/\/login/);
@@ -58,7 +58,7 @@ test.describe("User Story 3: Session Management and Logout", () => {
 
     test("should maintain session across page refreshes", async ({ page }) => {
       // Navigate to login page
-      await page.goto("http://localhost:3000/login");
+      await page.goto("http://localhost:3000/en/login");
 
       // Verify we're on login page
       await expect(page).toHaveURL(/\/login/);
@@ -92,7 +92,7 @@ test.describe("User Story 3: Session Management and Logout", () => {
       await page.goto("http://localhost:3000");
 
       // Step 2: Homepage is public, should be accessible
-      await expect(page).toHaveURL("http://localhost:3000/");
+      await expect(page).toHaveURL("http://localhost:3000/en/");
 
       // Step 3: Check if Header component is visible (which contains UserProfile)
       await expect(page.locator("header")).toBeVisible();
@@ -112,7 +112,7 @@ test.describe("User Story 3: Session Management and Logout", () => {
       // Skip for now until OAuth credentials are configured in test environment
 
       // Step 1: Navigate to a protected route without authentication
-      await page.goto("http://localhost:3000/dashboard");
+      await page.goto("http://localhost:3000/en/dashboard");
 
       // Step 2: Should redirect to login with callback URL
       await expect(page).toHaveURL(/\/login/);
@@ -132,7 +132,7 @@ test.describe("User Story 3: Session Management and Logout", () => {
 
     test("should show sign-in button on login page", async ({ page }) => {
       // Navigate to login page
-      await page.goto("http://localhost:3000/login");
+      await page.goto("http://localhost:3000/en/login");
 
       // Should be on login page
       await expect(page).toHaveURL(/\/login/);
@@ -149,7 +149,7 @@ test.describe("User Story 3: Session Management and Logout", () => {
 
     test("should have login page accessible", async ({ page }) => {
       // Navigate to the login page
-      await page.goto("http://localhost:3000/login");
+      await page.goto("http://localhost:3000/en/login");
 
       // Verify we're on login page
       await expect(page).toHaveURL(/\/login/);
@@ -177,10 +177,10 @@ test.describe("User Story 3: Session Management and Logout", () => {
 
       // Step 1: Start at homepage (public route)
       await page.goto("http://localhost:3000");
-      await expect(page).toHaveURL("http://localhost:3000/");
+      await expect(page).toHaveURL("http://localhost:3000/en/");
 
       // Step 2: Navigate to login page
-      await page.goto("http://localhost:3000/login");
+      await page.goto("http://localhost:3000/en/login");
       await expect(page).toHaveURL(/\/login/);
 
       // Step 3: Verify sign-in button exists
@@ -205,7 +205,7 @@ test.describe("User Story 3: Session Management and Logout", () => {
       page,
     }) => {
       // Step 1: Navigate to login page
-      await page.goto("http://localhost:3000/login");
+      await page.goto("http://localhost:3000/en/login");
       await expect(page).toHaveURL(/\/login/);
 
       // Step 2: Verify sign-in button exists
@@ -215,7 +215,7 @@ test.describe("User Story 3: Session Management and Logout", () => {
 
       // Step 3: Verify homepage is accessible
       await page.goto("http://localhost:3000");
-      await expect(page).toHaveURL("http://localhost:3000/");
+      await expect(page).toHaveURL("http://localhost:3000/en/");
     });
   });
 });

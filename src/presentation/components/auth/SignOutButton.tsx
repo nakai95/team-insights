@@ -1,6 +1,7 @@
 "use client";
 
 import { signOut } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 
@@ -15,6 +16,7 @@ import { LogOut } from "lucide-react";
  * - Redirects to homepage after sign-out
  * - Accessible button with icon
  * - Error handling for failed sign-out
+ * - Internationalized button text
  *
  * @example
  * ```tsx
@@ -22,6 +24,8 @@ import { LogOut } from "lucide-react";
  * ```
  */
 export function SignOutButton() {
+  const t = useTranslations("auth");
+
   const handleSignOut = async () => {
     try {
       await signOut({
@@ -35,7 +39,7 @@ export function SignOutButton() {
   return (
     <Button onClick={handleSignOut} variant="outline" size="default">
       <LogOut className="mr-2 h-4 w-4" />
-      Sign out
+      {t("signOut")}
     </Button>
   );
 }

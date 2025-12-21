@@ -33,7 +33,7 @@ test.describe("User Story 4: Token Expiration Handling", () => {
     test("should display error page components correctly", async ({ page }) => {
       // Navigate to error page with RefreshAccessTokenError
       await page.goto(
-        "http://localhost:3000/auth/error?error=RefreshAccessTokenError",
+        "http://localhost:3000/en/auth/error?error=RefreshAccessTokenError",
       );
 
       // Verify we're on the error page
@@ -65,7 +65,7 @@ test.describe("User Story 4: Token Expiration Handling", () => {
     }) => {
       // Navigate to error page
       await page.goto(
-        "http://localhost:3000/auth/error?error=RefreshAccessTokenError",
+        "http://localhost:3000/en/auth/error?error=RefreshAccessTokenError",
       );
 
       // Click "Try Again" button
@@ -85,14 +85,14 @@ test.describe("User Story 4: Token Expiration Handling", () => {
     }) => {
       // Navigate to error page
       await page.goto(
-        "http://localhost:3000/auth/error?error=RefreshAccessTokenError",
+        "http://localhost:3000/en/auth/error?error=RefreshAccessTokenError",
       );
 
       // Click "Go to Homepage" button
       await page.click("button:has-text('Go to Homepage')");
 
       // Verify redirect to homepage
-      await expect(page).toHaveURL("http://localhost:3000/");
+      await expect(page).toHaveURL("http://localhost:3000/en/");
     });
 
     test("should display different error messages for different error codes", async ({
@@ -100,30 +100,32 @@ test.describe("User Story 4: Token Expiration Handling", () => {
     }) => {
       // Test RefreshAccessTokenError
       await page.goto(
-        "http://localhost:3000/auth/error?error=RefreshAccessTokenError",
+        "http://localhost:3000/en/auth/error?error=RefreshAccessTokenError",
       );
       await expect(page.locator("text=Session Expired")).toBeVisible();
 
       // Test AccessDenied
-      await page.goto("http://localhost:3000/auth/error?error=AccessDenied");
+      await page.goto("http://localhost:3000/en/auth/error?error=AccessDenied");
       await expect(page.locator("text=Authorization Cancelled")).toBeVisible();
 
       // Test OAuthSignin
-      await page.goto("http://localhost:3000/auth/error?error=OAuthSignin");
+      await page.goto("http://localhost:3000/en/auth/error?error=OAuthSignin");
       await expect(page.locator("text=Sign-In Failed")).toBeVisible();
 
       // Test OAuthCallback
-      await page.goto("http://localhost:3000/auth/error?error=OAuthCallback");
+      await page.goto(
+        "http://localhost:3000/en/auth/error?error=OAuthCallback",
+      );
       await expect(page.locator("text=Callback Failed")).toBeVisible();
 
       // Test OAuthAccountNotLinked
       await page.goto(
-        "http://localhost:3000/auth/error?error=OAuthAccountNotLinked",
+        "http://localhost:3000/en/auth/error?error=OAuthAccountNotLinked",
       );
       await expect(page.locator("text=Account Conflict")).toBeVisible();
 
       // Test default error (no error code)
-      await page.goto("http://localhost:3000/auth/error");
+      await page.goto("http://localhost:3000/en/auth/error");
       await expect(
         page.getByRole("heading", { name: "Authentication Error" }),
       ).toBeVisible();
@@ -132,7 +134,7 @@ test.describe("User Story 4: Token Expiration Handling", () => {
     test("should display error code when provided", async ({ page }) => {
       // Navigate to error page with error code
       await page.goto(
-        "http://localhost:3000/auth/error?error=RefreshAccessTokenError",
+        "http://localhost:3000/en/auth/error?error=RefreshAccessTokenError",
       );
 
       // Verify error code is displayed
@@ -168,7 +170,7 @@ test.describe("User Story 4: Token Expiration Handling", () => {
       context,
     }) => {
       // Navigate to error page
-      await page.goto("http://localhost:3000/auth/error");
+      await page.goto("http://localhost:3000/en/auth/error");
 
       // Wait for auto sign-out to complete
       await page.waitForTimeout(1000);

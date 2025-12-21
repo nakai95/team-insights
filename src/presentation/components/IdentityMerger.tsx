@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { ContributorDto } from "@/application/dto/ContributorDto";
 import {
   Card,
@@ -40,6 +41,7 @@ export function IdentityMerger({
   repositoryUrl,
   onMergeComplete,
 }: IdentityMergerProps) {
+  const t = useTranslations("identityMerger");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const {
     selectedContributors,
@@ -84,19 +86,16 @@ export function IdentityMerger({
       <DialogTrigger asChild>
         <Button variant="outline" className="gap-2">
           <GitMerge className="h-4 w-4" />
-          Merge Identities
+          {t("button")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <GitMerge className="h-5 w-5" />
-            Merge Duplicate Contributors
+            {t("title")}
           </DialogTitle>
-          <DialogDescription>
-            Select contributors that represent the same person. Choose one as
-            the primary identity to preserve.
-          </DialogDescription>
+          <DialogDescription>{t("description")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
@@ -104,23 +103,18 @@ export function IdentityMerger({
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              <strong>How to merge:</strong>
+              <strong>{t("instructions.title")}</strong>
               <ol className="list-decimal list-inside mt-2 space-y-1">
-                <li>Check the boxes for contributors to merge</li>
-                <li>
-                  Click &quot;Set as Primary&quot; on the identity you want to
-                  keep
-                </li>
-                <li>
-                  Review the preview and click &quot;Merge Identities&quot;
-                </li>
+                <li>{t("instructions.step1")}</li>
+                <li>{t("instructions.step2")}</li>
+                <li>{t("instructions.step3")}</li>
               </ol>
             </AlertDescription>
           </Alert>
 
           {/* Contributor Selection List */}
           <div className="space-y-2">
-            <h4 className="text-sm font-medium">Select Contributors</h4>
+            <h4 className="text-sm font-medium">{t("selectSection.title")}</h4>
             <div className="border rounded-lg divide-y max-h-[300px] overflow-y-auto">
               {contributors.map((contributor) => {
                 const isSelected = selectedContributors.has(contributor.id);
@@ -149,7 +143,7 @@ export function IdentityMerger({
                           </span>
                           {isPrimary && (
                             <Badge variant="default" className="ml-auto">
-                              Primary
+                              {t("contributor.primaryBadge")}
                             </Badge>
                           )}
                         </div>
@@ -161,12 +155,16 @@ export function IdentityMerger({
                         </div>
                         <div className="flex gap-4 text-xs text-muted-foreground">
                           <span>
-                            {contributor.implementationActivity.commitCount}{" "}
-                            commits
+                            {t("contributor.commits", {
+                              count:
+                                contributor.implementationActivity.commitCount,
+                            })}
                           </span>
                           <span>
-                            {contributor.reviewActivity.pullRequestsReviewed}{" "}
-                            reviews
+                            {t("contributor.reviews", {
+                              count:
+                                contributor.reviewActivity.pullRequestsReviewed,
+                            })}
                           </span>
                         </div>
                       </div>
@@ -176,7 +174,7 @@ export function IdentityMerger({
                           variant="outline"
                           onClick={() => setPrimary(contributor.id)}
                         >
-                          Set as Primary
+                          {t("actions.setAsPrimary")}
                         </Button>
                       )}
                     </div>
@@ -190,10 +188,13 @@ export function IdentityMerger({
           {selectedContributors.size > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-base">Merge Preview</CardTitle>
+                <CardTitle className="text-base">
+                  {t("preview.title")}
+                </CardTitle>
                 <CardDescription>
-                  {selectedContributors.size} contributor
-                  {selectedContributors.size > 1 ? "s" : ""} selected
+                  {t("preview.selectedCount", {
+                    count: selectedContributors.size,
+                  })}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -201,7 +202,7 @@ export function IdentityMerger({
                   <>
                     <div>
                       <div className="text-sm font-medium mb-2">
-                        Primary Identity (will be preserved):
+                        {t("preview.primary")}
                       </div>
                       <div className="bg-primary/10 p-3 rounded-lg">
                         <div className="font-medium">
@@ -216,7 +217,7 @@ export function IdentityMerger({
                     {mergedContributors.length > 0 && (
                       <div>
                         <div className="text-sm font-medium mb-2">
-                          Will be merged into primary:
+                          {t("preview.willBeMerged")}
                         </div>
                         <div className="space-y-2">
                           {mergedContributors.map((contributor) => (
@@ -240,8 +241,7 @@ export function IdentityMerger({
                   <Alert>
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription>
-                      Please select a primary identity by clicking &quot;Set as
-                      Primary&quot; on one of the selected contributors.
+                      {t("preview.selectPrimaryPrompt")}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -256,10 +256,10 @@ export function IdentityMerger({
             onClick={() => handleDialogClose(false)}
             disabled={isLoading}
           >
-            Cancel
+            {t("actions.cancel")}
           </Button>
           <Button onClick={handleMerge} disabled={!canMerge || isLoading}>
-            {isLoading ? "Merging..." : "Merge Identities"}
+            {isLoading ? t("actions.merging") : t("actions.merge")}
           </Button>
         </DialogFooter>
       </DialogContent>

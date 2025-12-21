@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +31,7 @@ export function AnalysisForm({
   onSubmit,
   isLoading = false,
 }: AnalysisFormProps) {
+  const t = useTranslations("form");
   const [repositoryUrl, setRepositoryUrl] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -75,33 +77,30 @@ export function AnalysisForm({
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>Repository Analysis</CardTitle>
-        <CardDescription>
-          Analyze contributor activity for a GitHub repository
-        </CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("repositoryUrlHelp")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="repository-url">Repository URL *</Label>
+            <Label htmlFor="repository-url">{t("repositoryUrlRequired")}</Label>
             <Input
               id="repository-url"
               type="url"
-              placeholder="https://github.com/owner/repo"
+              placeholder={t("repositoryUrlPlaceholder")}
               value={repositoryUrl}
               onChange={(e) => setRepositoryUrl(e.target.value)}
               required
               disabled={isLoading}
             />
             <p className="text-sm text-muted-foreground">
-              Enter the full GitHub repository URL. Authentication is handled
-              via your GitHub account.
+              {t("repositoryUrlHelp")}
             </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="start-date">Start Date (Optional)</Label>
+              <Label htmlFor="start-date">{t("startDate")}</Label>
               <Input
                 id="start-date"
                 type="date"
@@ -115,7 +114,7 @@ export function AnalysisForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="end-date">End Date (Optional)</Label>
+              <Label htmlFor="end-date">{t("endDate")}</Label>
               <Input
                 id="end-date"
                 type="date"
@@ -143,16 +142,14 @@ export function AnalysisForm({
             </Alert>
           )}
 
-          <p className="text-sm text-muted-foreground">
-            Leave dates empty to analyze the last 6 months
-          </p>
+          <p className="text-sm text-muted-foreground">{t("dateRangeHelp")}</p>
 
           <Button
             type="submit"
             className="w-full"
             disabled={isLoading || !dateRangeValidation.valid}
           >
-            {isLoading ? "Analyzing..." : "Analyze Repository"}
+            {isLoading ? t("analyzing") : t("analyze")}
           </Button>
         </form>
       </CardContent>

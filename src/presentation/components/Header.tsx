@@ -1,6 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { UserProfile } from "./auth/UserProfile";
+import { LocaleSwitcher } from "./LocaleSwitcher";
 
 /**
  * Header Component
@@ -13,6 +15,7 @@ import { UserProfile } from "./auth/UserProfile";
  * - User authentication status
  * - Sign in/out buttons
  * - User avatar and name when authenticated
+ * - Locale switcher for language selection
  *
  * @example
  * ```tsx
@@ -20,20 +23,25 @@ import { UserProfile } from "./auth/UserProfile";
  * ```
  */
 export function Header() {
+  const t = useTranslations("common");
+
   return (
     <header className="border-b">
       <div className="max-w-7xl mx-auto px-8 py-4">
         <div className="flex items-center justify-between">
           {/* Left side: Branding */}
           <div className="space-y-1">
-            <h1 className="text-2xl font-bold">Team Insights</h1>
+            <h1 className="text-2xl font-bold">{t("appName")}</h1>
             <p className="text-sm text-muted-foreground">
-              Analyze GitHub repository contributor activity and metrics
+              {t("appDescription")}
             </p>
           </div>
 
-          {/* Right side: User Profile */}
-          <UserProfile />
+          {/* Right side: Locale Switcher and User Profile */}
+          <div className="flex items-center gap-4">
+            <LocaleSwitcher />
+            <UserProfile />
+          </div>
         </div>
       </div>
     </header>

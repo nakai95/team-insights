@@ -1,0 +1,231 @@
+{
+  "common": {
+    "appName": "Team Insights",
+    "appDescription": "GitHubリポジトリのContributor活動とメトリクスを分析",
+    "loading": "読み込み中..."
+  },
+  "auth": {
+    "signIn": "GitHubでサインイン",
+    "signOut": "サインアウト",
+    "welcome": "Team Insightsへようこそ",
+    "welcomeDescription": "GitHubアカウントでサインインして、リポジトリのContributorの活動を分析し、開発プロセスを改善するヒントを得ましょう。",
+    "helpText": "このアプリケーションは、GitHub OAuthを使用してリポジトリデータに安全にアクセスします。パブリックリポジトリへの読み取りアクセスのみをリクエストします。",
+    "redirectNotice": "サインイン後、ダッシュボードにリダイレクトされます。",
+    "errors": {
+      "AccessDenied": {
+        "title": "認証がキャンセルされました",
+        "message": "GitHub認証プロセスをキャンセルしました。問題ありません - いつでも再度お試しいただけます。"
+      },
+      "OAuthSignin": {
+        "title": "サインインに失敗しました",
+        "message": "GitHubサインインの開始に失敗しました。一時的な問題の可能性があります。もう一度お試しください。"
+      },
+      "OAuthCallback": {
+        "title": "コールバックエラー",
+        "message": "GitHub OAuthコールバックの処理中にエラーが発生しました。再度サインインしてください。"
+      },
+      "OAuthAccountNotLinked": {
+        "title": "アカウントがリンクされていません",
+        "message": "このGitHubアカウントは既存のユーザーにリンクされていません。サポートに連絡するか、別のアカウントをお試しください。"
+      },
+      "RefreshAccessTokenError": {
+        "title": "セッションが期限切れです",
+        "message": "セッションが期限切れになりました。続けるには再度サインインしてください。"
+      },
+      "default": {
+        "title": "認証エラー",
+        "message": "認証中に予期しないエラーが発生しました。もう一度お試しいただくか、問題が解決しない場合はサポートにお問い合わせください。"
+      },
+      "errorCode": "エラーコード"
+    },
+    "actions": {
+      "tryAgain": "再試行",
+      "goHome": "ホームへ"
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Team Insights",
+      "subtitle": "GitHubリポジトリのContributor活動とメトリクスを分析し、チームの開発パターンを理解します",
+      "getStarted": "始める"
+    },
+    "features": {
+      "title": "機能",
+      "repository": {
+        "title": "リポジトリ分析",
+        "description": "コミット履歴、プルリクエスト、コードレビューメトリクスでリポジトリ活動を深く掘り下げます"
+      },
+      "contributor": {
+        "title": "Contributorインサイト",
+        "description": "コミット、PR、レビュー、コード変更を含む個々のContributorのメトリクスを追跡します"
+      },
+      "analytics": {
+        "title": "ビジュアル分析",
+        "description": "開発パターンとチームダイナミクスを理解するためのインタラクティブなチャートと可視化"
+      },
+      "security": {
+        "title": "セキュアOAuth",
+        "description": "リポジトリへの読み取り専用アクセスによる安全なGitHub OAuth統合"
+      }
+    },
+    "howItWorks": {
+      "title": "使い方",
+      "step1": {
+        "title": "GitHubでサインイン",
+        "description": "GitHubアカウントを使用して安全に認証し、リポジトリへの読み取りアクセスを許可します"
+      },
+      "step2": {
+        "title": "リポジトリURLを入力",
+        "description": "分析したいGitHubリポジトリのURLを入力します"
+      },
+      "step3": {
+        "title": "詳細なインサイトを表示",
+        "description": "Contributor、コミット、プルリクエスト、レビューに関する包括的な分析を取得します"
+      }
+    },
+    "cta": {
+      "title": "始める準備はできましたか？",
+      "subtitle": "GitHubアカウントでサインインして、リポジトリの分析を開始しましょう"
+    }
+  },
+  "dashboard": {
+    "title": "リポジトリ分析",
+    "analyzeAnother": "別のリポジトリを分析",
+    "tryAgain": "再試行",
+    "analysisTime": "分析時間: {seconds}秒",
+    "summary": {
+      "totalContributors": "総Contributor数",
+      "totalCommits": "総コミット数",
+      "pullRequests": "プルリクエスト",
+      "reviewComments": "レビューコメント"
+    },
+    "charts": {
+      "implementationActivity": "実装活動",
+      "reviewActivity": "レビュー活動"
+    },
+    "error": {
+      "title": "分析に失敗しました",
+      "errorCode": "エラーコード",
+      "message": "メッセージ",
+      "technicalDetails": "技術的詳細",
+      "permissionGuidance": {
+        "title": "このエラーは通常、リポジトリの権限不足を示しています。解決するには:",
+        "step1": "リポジトリが存在し、アクセス可能であることを確認してください",
+        "step2": "プライベートリポジトリの場合、GitHubアカウントにアクセス権があることを確認してください",
+        "step3": "サインアウトして再度サインインし、権限を更新してください",
+        "step4": "リポジトリURLが正しいか確認してください"
+      }
+    }
+  },
+  "form": {
+    "title": "リポジトリ分析",
+    "repositoryUrl": "リポジトリURL",
+    "repositoryUrlRequired": "リポジトリURL *",
+    "repositoryUrlPlaceholder": "https://github.com/owner/repo",
+    "repositoryUrlHelp": "完全なGitHubリポジトリURLを入力してください（例: https://github.com/owner/repo）",
+    "startDate": "開始日（任意）",
+    "endDate": "終了日（任意）",
+    "dateRangeHelp": "日付を空欄にすると、過去6ヶ月を分析します",
+    "analyze": "リポジトリを分析",
+    "analyzing": "分析中...",
+    "validation": {
+      "invalidUrl": "有効なGitHubリポジトリURLを入力してください",
+      "invalidDateRange": "終了日は開始日より後である必要があります",
+      "futureDateNotAllowed": "未来の日付は許可されていません",
+      "DATE_RANGE_INVALID": "終了日は開始日より後である必要があります",
+      "FUTURE_DATE_NOT_ALLOWED": "未来の日付は許可されていません",
+      "LARGE_DATE_RANGE": "大きな日付範囲は分析時間が長くなる可能性があります",
+      "VERY_LARGE_DATE_RANGE": "非常に大きな日付範囲（2年以上）は分析に著しく時間がかかる場合があります"
+    }
+  },
+  "contributors": {
+    "title": "上位Contributor",
+    "description": "総合活動スコア（コミット、PR、レビュー、コード変更）でランク付け",
+    "table": {
+      "rank": "順位",
+      "contributor": "Contributor",
+      "commits": "コミット",
+      "prs": "PR",
+      "reviews": "レビュー",
+      "linesChanged": "変更行数",
+      "score": "スコア"
+    },
+    "mergeIdentities": "ID統合"
+  },
+  "identityMerger": {
+    "title": "重複するContributorを統合",
+    "description": "同じ人物を表すContributorを選択してください。保持する主要なIDを1つ選択してください。",
+    "button": "ID統合",
+    "instructions": {
+      "title": "統合方法:",
+      "step1": "統合するContributorのチェックボックスをオンにします",
+      "step2": "保持したいIDで「メインに設定」をクリックします",
+      "step3": "プレビューを確認して「ID統合」をクリックします"
+    },
+    "selectSection": {
+      "title": "Contributorを選択"
+    },
+    "preview": {
+      "title": "統合プレビュー",
+      "selectedCount": "{count}人のContributorが選択されました",
+      "selectedCount_other": "{count}人のContributorが選択されました",
+      "primary": "メインID（保持されます）:",
+      "willBeMerged": "メインに統合されます:",
+      "selectPrimaryPrompt": "選択したContributorの1人で「メインに設定」をクリックして、メインIDを選択してください。"
+    },
+    "contributor": {
+      "primaryBadge": "メイン",
+      "commits": "{count}コミット",
+      "reviews": "{count}レビュー"
+    },
+    "actions": {
+      "setAsPrimary": "メインに設定",
+      "cancel": "キャンセル",
+      "merge": "ID統合",
+      "merging": "統合中..."
+    }
+  },
+  "progress": {
+    "title": "分析進行中",
+    "message": "リポジトリを分析しています...",
+    "percentComplete": "{percent}% 完了",
+    "steps": {
+      "cloning": "リポジトリをクローン中",
+      "commits": "コミット履歴を取得中",
+      "pullRequests": "プルリクエストを分析中",
+      "reviews": "レビューコメントを処理中",
+      "metrics": "メトリクスを計算中"
+    }
+  },
+  "chart": {
+    "title": "実装活動",
+    "description": "実装スコア上位{count}人のContributor",
+    "commits": "コミット",
+    "linesAdded": "追加行数",
+    "linesDeleted": "削除行数",
+    "lines": "行数"
+  },
+  "contributorList": {
+    "title": "Contributor",
+    "description": "総合活動量（実装+レビュー）でランク付け",
+    "rank": "順位",
+    "contributor": "Contributor",
+    "commits": "コミット",
+    "prs": "PR",
+    "reviews": "レビュー",
+    "linesChanged": "変更行数",
+    "score": "スコア"
+  },
+  "errors": {
+    "AUTHENTICATION_REQUIRED": "認証が必要です。サインインしてください。",
+    "TOKEN_EXPIRED": "セッションが期限切れになりました。再度サインインしてください。",
+    "INVALID_URL": "無効なリポジトリURLです。確認して再試行してください。",
+    "INVALID_TOKEN": "無効な認証トークンです。再度サインインしてください。",
+    "REPO_NOT_FOUND": "リポジトリが見つかりません。URLを確認してください。",
+    "INSUFFICIENT_PERMISSIONS": "このリポジトリにアクセスするための権限が不足しています。",
+    "RATE_LIMIT_EXCEEDED": "GitHub APIのレート制限を超えました。後でもう一度お試しください。",
+    "CLONE_FAILED": "リポジトリのクローンに失敗しました。再試行してください。",
+    "ANALYSIS_TIMEOUT": "分析がタイムアウトしました。非常に大きなリポジトリの可能性があります。",
+    "INTERNAL_ERROR": "内部エラーが発生しました。再試行してください。"
+  }
+}

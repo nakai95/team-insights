@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import {
   Card,
   CardContent,
@@ -20,35 +21,37 @@ export interface ProgressIndicatorProps {
  * Shows a loading spinner and optional progress percentage
  */
 export function ProgressIndicator({
-  message = "Analyzing repository...",
+  message,
   progress,
 }: ProgressIndicatorProps) {
+  const t = useTranslations("progress");
+  const displayMessage = message || t("message");
+
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Loader2 className="h-5 w-5 animate-spin" />
-          Analysis in Progress
+          {t("title")}
         </CardTitle>
-        <CardDescription>{message}</CardDescription>
+        <CardDescription>{displayMessage}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {progress !== undefined && (
           <>
             <Progress value={progress} className="w-full" />
             <p className="text-sm text-center text-muted-foreground">
-              {Math.round(progress)}% complete
+              {t("percentComplete", { percent: Math.round(progress) })}
             </p>
           </>
         )}
         <div className="text-sm text-muted-foreground space-y-1">
-          <p>This may take a few minutes depending on repository size:</p>
           <ul className="list-disc list-inside space-y-1 ml-2">
-            <li>Cloning repository</li>
-            <li>Fetching commit history</li>
-            <li>Analyzing pull requests</li>
-            <li>Processing review comments</li>
-            <li>Calculating metrics</li>
+            <li>{t("steps.cloning")}</li>
+            <li>{t("steps.commits")}</li>
+            <li>{t("steps.pullRequests")}</li>
+            <li>{t("steps.reviews")}</li>
+            <li>{t("steps.metrics")}</li>
           </ul>
         </div>
       </CardContent>
