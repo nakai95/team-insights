@@ -12,10 +12,10 @@ import { getErrorMessage } from "@/lib/utils/errorUtils";
 
 /**
  * Input for FetchGitData use case
+ * GitHub token is now sourced from session via ISessionProvider
  */
 export interface FetchGitDataInput {
   repositoryUrl: string;
-  githubToken: string;
   dateRange: DateRange;
   tempDirectory: string;
 }
@@ -59,13 +59,9 @@ export class FetchGitData {
       const owner = repoUrl.owner;
       const repo = repoUrl.repo;
 
-      // Step 1: Validate GitHub token access
+      // Step 1: Validate GitHub access
       logger.debug("Validating GitHub access");
-      const accessResult = await this.githubAPI.validateAccess(
-        owner,
-        repo,
-        input.githubToken,
-      );
+      const accessResult = await this.githubAPI.validateAccess(owner, repo);
 
       if (!accessResult.ok) {
         return err(accessResult.error);
@@ -75,12 +71,8 @@ export class FetchGitData {
       logger.debug("Cloning repository", {
         tempDirectory: input.tempDirectory,
       });
-      const cloneUrl = this.buildCloneUrl(
-        input.repositoryUrl,
-        input.githubToken,
-      );
       const cloneResult = await this.gitOperations.clone(
-        cloneUrl,
+        input.repositoryUrl,
         input.tempDirectory,
         input.dateRange.start,
       );
@@ -109,7 +101,6 @@ export class FetchGitData {
       const prsResult = await this.githubAPI.getPullRequests(
         owner,
         repo,
-        input.githubToken,
         input.dateRange.start,
       );
 
@@ -126,7 +117,6 @@ export class FetchGitData {
       const commentsResult = await this.githubAPI.getReviewComments(
         owner,
         repo,
-        input.githubToken,
         prNumbers,
       );
 
@@ -164,15 +154,5 @@ export class FetchGitData {
         new Error(`Failed to fetch Git data: ${getErrorMessage(error)}`),
       );
     }
-  }
-
-  /**
-   * Build clone URL with embedded token for authentication
-   */
-  private buildCloneUrl(repositoryUrl: string, token: string): string {
-    // Convert https://github.com/owner/repo to https://token@github.com/owner/repo
-    const url = new URL(repositoryUrl);
-    url.username = token;
-    return url.toString();
   }
 }

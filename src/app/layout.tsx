@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Providers } from "./providers";
+import { Header } from "@/presentation/components/Header";
 
 export const metadata: Metadata = {
   title: "Team Insights",
@@ -15,8 +17,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
-        <Toaster />
+        <Providers>
+          <Header />
+          {children}
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );

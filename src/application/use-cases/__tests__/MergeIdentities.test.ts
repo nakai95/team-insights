@@ -26,53 +26,73 @@ describe("MergeIdentities", () => {
     };
 
     // Create test contributors
-    const email1 = Email.create("user1@example.com").value!;
-    const email2 = Email.create("user2@example.com").value!;
-    const email3 = Email.create("user3@example.com").value!;
+    const email1Result = Email.create("user1@example.com");
+    if (!email1Result.ok) throw new Error("Test setup failed: email1");
+    const email1 = email1Result.value;
 
-    const impl1 = ImplementationActivity.create({
+    const email2Result = Email.create("user2@example.com");
+    if (!email2Result.ok) throw new Error("Test setup failed: email2");
+    const email2 = email2Result.value;
+
+    const email3Result = Email.create("user3@example.com");
+    if (!email3Result.ok) throw new Error("Test setup failed: email3");
+    const email3 = email3Result.value;
+
+    const impl1Result = ImplementationActivity.create({
       commitCount: 10,
       linesAdded: 100,
       linesDeleted: 10,
       linesModified: 100,
       filesChanged: 5,
-    }).value!;
+    });
+    if (!impl1Result.ok) throw new Error("Test setup failed: impl1");
+    const impl1 = impl1Result.value;
 
-    const impl2 = ImplementationActivity.create({
+    const impl2Result = ImplementationActivity.create({
       commitCount: 20,
       linesAdded: 200,
       linesDeleted: 20,
       linesModified: 200,
       filesChanged: 10,
-    }).value!;
+    });
+    if (!impl2Result.ok) throw new Error("Test setup failed: impl2");
+    const impl2 = impl2Result.value;
 
-    const impl3 = ImplementationActivity.create({
+    const impl3Result = ImplementationActivity.create({
       commitCount: 30,
       linesAdded: 300,
       linesDeleted: 30,
       linesModified: 300,
       filesChanged: 15,
-    }).value!;
+    });
+    if (!impl3Result.ok) throw new Error("Test setup failed: impl3");
+    const impl3 = impl3Result.value;
 
-    const review1 = ReviewActivity.create({
+    const review1Result = ReviewActivity.create({
       pullRequestCount: 5,
       reviewCommentCount: 10,
       pullRequestsReviewed: 5,
-    }).value!;
+    });
+    if (!review1Result.ok) throw new Error("Test setup failed: review1");
+    const review1 = review1Result.value;
 
-    const review2 = ReviewActivity.create({
+    const review2Result = ReviewActivity.create({
       pullRequestCount: 10,
       reviewCommentCount: 20,
       pullRequestsReviewed: 10,
-    }).value!;
+    });
+    if (!review2Result.ok) throw new Error("Test setup failed: review2");
+    const review2 = review2Result.value;
 
-    const review3 = ReviewActivity.create({
+    const review3Result = ReviewActivity.create({
       pullRequestCount: 15,
       reviewCommentCount: 30,
       pullRequestsReviewed: 15,
-    }).value!;
+    });
+    if (!review3Result.ok) throw new Error("Test setup failed: review3");
+    const review3 = review3Result.value;
 
-    contributor1 = Contributor.create({
+    const contributor1Result = Contributor.create({
       id: "contributor-1",
       primaryEmail: email1,
       mergedEmails: [],
@@ -80,9 +100,12 @@ describe("MergeIdentities", () => {
       implementationActivity: impl1,
       reviewActivity: review1,
       activityTimeline: [],
-    }).value!;
+    });
+    if (!contributor1Result.ok)
+      throw new Error("Test setup failed: contributor1");
+    contributor1 = contributor1Result.value;
 
-    contributor2 = Contributor.create({
+    const contributor2Result = Contributor.create({
       id: "contributor-2",
       primaryEmail: email2,
       mergedEmails: [],
@@ -90,9 +113,12 @@ describe("MergeIdentities", () => {
       implementationActivity: impl2,
       reviewActivity: review2,
       activityTimeline: [],
-    }).value!;
+    });
+    if (!contributor2Result.ok)
+      throw new Error("Test setup failed: contributor2");
+    contributor2 = contributor2Result.value;
 
-    contributor3 = Contributor.create({
+    const contributor3Result = Contributor.create({
       id: "contributor-3",
       primaryEmail: email3,
       mergedEmails: [],
@@ -100,7 +126,10 @@ describe("MergeIdentities", () => {
       implementationActivity: impl3,
       reviewActivity: review3,
       activityTimeline: [],
-    }).value!;
+    });
+    if (!contributor3Result.ok)
+      throw new Error("Test setup failed: contributor3");
+    contributor3 = contributor3Result.value;
   });
 
   describe("execute", () => {
@@ -302,7 +331,9 @@ describe("MergeIdentities", () => {
         },
       ];
 
-      mockStorage.load = vi.fn(async () => ok(mockMerges));
+      mockStorage.load = vi.fn(async () =>
+        ok(mockMerges),
+      ) as typeof mockStorage.load;
 
       const useCase = new MergeIdentities(mockStorage);
       const result = await useCase.loadMergePreferences(

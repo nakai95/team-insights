@@ -5,6 +5,7 @@ import {
   ReviewComment,
   RateLimitInfo,
 } from "@/domain/interfaces/IGitHubAPI";
+import { ISessionProvider } from "@/domain/interfaces/ISessionProvider";
 import { Result, ok, err } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
 import { maskToken } from "@/lib/utils/tokenMasker";
@@ -13,18 +14,33 @@ import { RateLimiter } from "./RateLimiter";
 /**
  * Adapter for GitHub API operations using Octokit
  * Implements IGitHubAPI interface with rate limiting and pagination
+ *
+ * Modified to use ISessionProvider for OAuth token retrieval instead of
+ * accepting tokens as method parameters.
  */
 export class OctokitAdapter implements IGitHubAPI {
   private rateLimiter = new RateLimiter();
+
+  constructor(private sessionProvider: ISessionProvider) {}
+
+  /**
+   * Get GitHub access token from session
+   * @throws Error if token retrieval fails
+   */
+  private async getToken(): Promise<string> {
+    const tokenResult = await this.sessionProvider.getAccessToken();
+    if (!tokenResult.ok) {
+      throw tokenResult.error;
+    }
+    return tokenResult.value;
+  }
+
   /**
    * Validate GitHub token has access to repository
    */
-  async validateAccess(
-    owner: string,
-    repo: string,
-    token: string,
-  ): Promise<Result<boolean>> {
+  async validateAccess(owner: string, repo: string): Promise<Result<boolean>> {
     try {
+      const token = await this.getToken();
       logger.debug("Validating GitHub token access", {
         owner,
         repo,
@@ -42,25 +58,28 @@ export class OctokitAdapter implements IGitHubAPI {
       logger.error("GitHub token validation failed", {
         owner,
         repo,
-        token: maskToken(token),
         error: error?.message || String(error),
         status: error?.status,
       });
 
       // Handle specific error cases
       if (error?.status === 401) {
-        return err(new Error("Invalid GitHub token"));
+        return err(new Error("Invalid GitHub token. Please sign in again."));
       }
 
       if (error?.status === 404) {
         return err(
-          new Error("Repository not found or insufficient permissions"),
+          new Error(
+            "Repository not found or you do not have permission to access it. Please check the repository URL and your access rights.",
+          ),
         );
       }
 
       if (error?.status === 403) {
         return err(
-          new Error("Rate limit exceeded or insufficient permissions"),
+          new Error(
+            "You do not have permission to access this repository. This may be due to rate limiting or insufficient access rights. Please verify you have read access or that the repository is not private.",
+          ),
         );
       }
 
@@ -78,10 +97,10 @@ export class OctokitAdapter implements IGitHubAPI {
   async getPullRequests(
     owner: string,
     repo: string,
-    token: string,
     sinceDate?: Date,
   ): Promise<Result<PullRequest[]>> {
     try {
+      const token = await this.getToken();
       logger.debug("Fetching pull requests", {
         owner,
         repo,
@@ -110,7 +129,7 @@ export class OctokitAdapter implements IGitHubAPI {
         });
 
         // Update rate limit info after each request
-        const rateLimitResult = await this.getRateLimitStatus(token);
+        const rateLimitResult = await this.getRateLimitStatus();
         if (rateLimitResult.ok) {
           this.rateLimiter.updateRateLimit(rateLimitResult.value);
         }
@@ -166,6 +185,23 @@ export class OctokitAdapter implements IGitHubAPI {
         status: error?.status,
       });
 
+      // Handle specific permission errors
+      if (error?.status === 403) {
+        return err(
+          new Error(
+            "You do not have permission to access this repository. Please verify you have read access or that the repository is not private.",
+          ),
+        );
+      }
+
+      if (error?.status === 404) {
+        return err(
+          new Error(
+            "Repository not found or you do not have permission to access it. Please check the repository URL and your access rights.",
+          ),
+        );
+      }
+
       return err(
         new Error(
           `Failed to fetch pull requests: ${error?.message || String(error)}`,
@@ -180,10 +216,10 @@ export class OctokitAdapter implements IGitHubAPI {
   async getReviewComments(
     owner: string,
     repo: string,
-    token: string,
     pullRequestNumbers: number[],
   ): Promise<Result<ReviewComment[]>> {
     try {
+      const token = await this.getToken();
       logger.debug("Fetching review comments", {
         owner,
         repo,
@@ -211,7 +247,7 @@ export class OctokitAdapter implements IGitHubAPI {
           });
 
           // Update rate limit info after each request
-          const rateLimitResult = await this.getRateLimitStatus(token);
+          const rateLimitResult = await this.getRateLimitStatus();
           if (rateLimitResult.ok) {
             this.rateLimiter.updateRateLimit(rateLimitResult.value);
           }
@@ -248,6 +284,23 @@ export class OctokitAdapter implements IGitHubAPI {
         status: error?.status,
       });
 
+      // Handle specific permission errors
+      if (error?.status === 403) {
+        return err(
+          new Error(
+            "You do not have permission to access this repository. Please verify you have read access or that the repository is not private.",
+          ),
+        );
+      }
+
+      if (error?.status === 404) {
+        return err(
+          new Error(
+            "Repository not found or you do not have permission to access it. Please check the repository URL and your access rights.",
+          ),
+        );
+      }
+
       return err(
         new Error(
           `Failed to fetch review comments: ${error?.message || String(error)}`,
@@ -259,8 +312,9 @@ export class OctokitAdapter implements IGitHubAPI {
   /**
    * Get current rate limit status
    */
-  async getRateLimitStatus(token: string): Promise<Result<RateLimitInfo>> {
+  async getRateLimitStatus(): Promise<Result<RateLimitInfo>> {
     try {
+      const token = await this.getToken();
       const octokit = new Octokit({ auth: token });
       const response = await octokit.rest.rateLimit.get();
 

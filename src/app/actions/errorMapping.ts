@@ -18,6 +18,23 @@ interface ErrorPattern {
  * Patterns are evaluated in order - first match wins
  */
 const ERROR_PATTERNS: ReadonlyArray<ErrorPattern> = [
+  // Authentication errors (check first - highest priority)
+  {
+    code: AnalysisErrorCode.AUTHENTICATION_REQUIRED,
+    matches: (msg) =>
+      msg.includes("authentication required") ||
+      msg.includes("no active session") ||
+      msg.includes("no valid authentication"),
+  },
+  {
+    code: AnalysisErrorCode.TOKEN_EXPIRED,
+    matches: (msg) =>
+      msg.includes("token expired") ||
+      msg.includes("session expired") ||
+      msg.includes("session error") ||
+      msg.includes("no access token in session"),
+  },
+  // URL and token validation errors
   {
     code: AnalysisErrorCode.INVALID_URL,
     matches: (msg) => msg.includes("invalid") && msg.includes("url"),
@@ -26,6 +43,7 @@ const ERROR_PATTERNS: ReadonlyArray<ErrorPattern> = [
     code: AnalysisErrorCode.INVALID_TOKEN,
     matches: (msg) => msg.includes("invalid") && msg.includes("token"),
   },
+  // Repository access errors
   {
     code: AnalysisErrorCode.REPO_NOT_FOUND,
     matches: (msg) => msg.includes("not found") || msg.includes("404"),
@@ -34,14 +52,17 @@ const ERROR_PATTERNS: ReadonlyArray<ErrorPattern> = [
     code: AnalysisErrorCode.INSUFFICIENT_PERMISSIONS,
     matches: (msg) => msg.includes("permission") || msg.includes("403"),
   },
+  // Rate limiting
   {
     code: AnalysisErrorCode.RATE_LIMIT_EXCEEDED,
     matches: (msg) => msg.includes("rate limit"),
   },
+  // Git operations
   {
     code: AnalysisErrorCode.CLONE_FAILED,
     matches: (msg) => msg.includes("clone"),
   },
+  // Timeout
   {
     code: AnalysisErrorCode.ANALYSIS_TIMEOUT,
     matches: (msg) => msg.includes("timeout") || msg.includes("timed out"),

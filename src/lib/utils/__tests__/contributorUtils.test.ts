@@ -109,9 +109,9 @@ describe("getTotalActivityScore", () => {
       (a, b) => getTotalActivityScore(b) - getTotalActivityScore(a),
     );
 
-    expect(getTotalActivityScore(sorted[0])).toBe(150);
-    expect(getTotalActivityScore(sorted[1])).toBe(80);
-    expect(getTotalActivityScore(sorted[2])).toBe(50);
+    expect(getTotalActivityScore(sorted[0]!)).toBe(150);
+    expect(getTotalActivityScore(sorted[1]!)).toBe(80);
+    expect(getTotalActivityScore(sorted[2]!)).toBe(50);
   });
 
   it("should produce consistent results when called multiple times", () => {

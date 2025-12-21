@@ -37,6 +37,7 @@ Follow-up TODOs: None - all principles fully defined
 **Complete readability and maintainability over perfect abstraction.**
 
 **Directory Structure:**
+
 - `src/domain/` - Business logic, type definitions, interfaces (pure TypeScript, no external dependencies)
 - `src/application/` - Use cases for data collection and analysis (depends only on domain)
 - `src/infrastructure/` - External dependencies: Git (simple-git), GitHub API (@octokit/rest), filesystem
@@ -44,12 +45,14 @@ Follow-up TODOs: None - all principles fully defined
 - `src/app/` - Next.js App Router (routes, server components)
 
 **Dependency Rules:**
+
 - Domain layer MUST NOT depend on any other layer
 - Application layer MUST depend only on domain
 - Infrastructure layer MUST implement domain interfaces
 - Presentation and app layers MAY use all layers
 
 **Practical Considerations:**
+
 - Small utility functions MAY reside in common `utils/` directory
 - Next.js conventions MUST be followed (do not force abstraction against framework patterns)
 - Server Components MAY call Use Cases directly without intermediate layers
@@ -59,18 +62,22 @@ Follow-up TODOs: None - all principles fully defined
 ### II. Practical SOLID Principles
 
 **Single Responsibility Principle (MANDATORY):**
+
 - One class/function = one responsibility
 - Example: `GitLogParser` handles ONLY git log parsing; `GitHubAPIClient` handles ONLY API calls
 
 **Interface Segregation Principle (MANDATORY):**
+
 - Interfaces MUST remain focused and avoid bloat
 - Clients SHOULD NOT depend on methods they don't use
 
 **Dependency Inversion Principle (MANDATORY for critical boundaries):**
+
 - Define interfaces at important boundaries: Git operations, GitHub API interactions
 - Enable easy mocking for tests
 
 **Open/Closed & Liskov Substitution:**
+
 - Do NOT over-apply these principles in personal development context
 - Prioritize shipping functional code
 
@@ -79,27 +86,33 @@ Follow-up TODOs: None - all principles fully defined
 ### III. Test Strategy
 
 **Unit Tests (Vitest) - Domain Layer:**
+
 - Domain layer tests are **MANDATORY** (ensures business logic correctness)
 - Target: 80%+ coverage in domain layer
 
 **Unit Tests (Vitest) - Application Layer:**
+
 - Application layer tests are **RECOMMENDED** (use mocks for dependencies)
 - Focus on use case orchestration logic
 
 **Unit Tests (Vitest) - Infrastructure Layer:**
+
 - Infrastructure tests are **OPTIONAL** (only for complex parsing logic)
 - Simple wrappers do not require tests
 
 **Unit Tests (Vitest) - Presentation Layer:**
+
 - Presentation tests are **OPTIONAL** (initially covered by E2E tests)
 
 **E2E Tests (Playwright):**
+
 - Test **ONLY critical paths** (minimal coverage to reduce maintenance burden)
   1. Happy path: URL + token input → graph display
   2. Error path: invalid token → error message display
 - Use mock GitHub API server (avoid slow real API calls)
 
 **Coverage Goals:**
+
 - Domain: 80%+ (strict requirement)
 - Overall: Defer until codebase stabilizes
 
@@ -108,17 +121,20 @@ Follow-up TODOs: None - all principles fully defined
 ### IV. Performance & Scalability
 
 **Large Repository Handling (MANDATORY):**
+
 - Git log operations MUST use `--since` to limit time range (default: past 6 months)
 - MUST NOT use shallow clone `--depth 1` (history is required for analysis)
 - GitHub API calls MUST implement pagination
 - Progress indicators MUST be displayed for long operations
 
 **Async Processing (MANDATORY):**
+
 - Use Next.js Server Actions OR API Routes for all analysis operations
 - Set appropriate timeouts (Vercel has 60-second limit on Hobby plan)
 - Consider job queue (Redis, BullMQ) if timeouts become problematic (defer until needed)
 
 **Caching (DEFERRED):**
+
 - Not required for MVP
 - Evaluate after initial launch based on actual usage patterns
 
@@ -127,6 +143,7 @@ Follow-up TODOs: None - all principles fully defined
 ### V. Type Safety
 
 **TypeScript Strict Mode (MANDATORY):**
+
 ```json
 {
   "compilerOptions": {
@@ -138,6 +155,7 @@ Follow-up TODOs: None - all principles fully defined
 ```
 
 **Runtime Validation (MANDATORY at boundaries):**
+
 - User inputs (repository URL, GitHub token) MUST be validated with Zod
 - External API responses (GitHub API) SHOULD use Zod schemas for type checking
 
@@ -146,15 +164,18 @@ Follow-up TODOs: None - all principles fully defined
 ### VI. Security First
 
 **Token Protection (MANDATORY):**
+
 - GitHub tokens MUST be processed server-side ONLY
 - Tokens MUST NEVER be exposed to client-side JavaScript
 - Logs MUST NEVER contain tokens (mask sensitive data)
 
 **Temporary Directory Cleanup (MANDATORY):**
+
 - Cloned repositories MUST be deleted after analysis
 - Use try-finally blocks or defer patterns to ensure cleanup
 
 **Rate Limiting (REQUIRED):**
+
 - Implement basic rate limiting for MVP
 - Consider Redis-based rate limiting for production
 
@@ -163,15 +184,18 @@ Follow-up TODOs: None - all principles fully defined
 ### VII. Error Handling
 
 **Domain Layer:**
+
 - Use Result types OR exceptions (MUST be consistent across domain layer)
 - Prefer Result types for expected failures (e.g., invalid input)
 - Reserve exceptions for unexpected errors
 
 **Application Layer:**
+
 - Transform technical errors into user-friendly messages
 - Example: "Git clone failed: ssh key not found" → "Unable to access repository. Please check the URL and your access permissions."
 
 **Presentation Layer:**
+
 - Display errors via toast notifications OR error boundaries
 - Provide actionable guidance when possible
 
@@ -180,6 +204,7 @@ Follow-up TODOs: None - all principles fully defined
 ### VIII. Code Quality & Discipline
 
 **Prohibited Practices:**
+
 - `any` type usage (use `unknown` instead)
 - Committed `console.log` statements (development-only)
 - Direct environment variable access (use env schema/validation)
@@ -188,6 +213,7 @@ Follow-up TODOs: None - all principles fully defined
 - Business logic changes without tests
 
 **Required Practices:**
+
 - ESLint + Prettier auto-formatting MUST be configured
 - Pre-commit hooks (husky) MUST run lint + tests
 - Comments SHOULD be used only when intent is unclear (prefer self-documenting code)
@@ -197,16 +223,19 @@ Follow-up TODOs: None - all principles fully defined
 ## Development Workflow
 
 **Priority Hierarchy:**
+
 1. **Ship functional MVP** - Get a working product in users' hands quickly
 2. **Test coverage for domain** - Ensure business logic correctness with mandatory domain tests
 3. **Refactor after validation** - Clean up code once it's proven valuable
 
 **Development Cycle:**
+
 - Build → Test → Ship → Gather Feedback → Refactor
 - Avoid refactoring before validating with real usage
 - Optimize for learning speed in early stages
 
 **Definition of Done:**
+
 - Feature works end-to-end for happy path
 - Domain logic has ≥80% test coverage
 - No `any` types, no committed console.logs
@@ -217,11 +246,13 @@ Follow-up TODOs: None - all principles fully defined
 ## Governance
 
 **Constitution Authority:**
+
 - This constitution supersedes all other development practices
 - All code reviews MUST verify constitutional compliance
 - Technical debt MUST be justified against constitutional principles
 
 **Amendment Process:**
+
 - Amendments require: documented rationale + migration plan + version bump
 - Version scheme: MAJOR.MINOR.PATCH
   - **MAJOR**: Backward-incompatible changes (principle removal/redefinition)
@@ -230,11 +261,13 @@ Follow-up TODOs: None - all principles fully defined
 - Amendments MUST update dependent templates (plan, spec, tasks)
 
 **Compliance Review:**
+
 - Constitution Check in plan-template.md MUST be completed before Phase 0 research
 - Re-check after Phase 1 design
 - Implementation MUST NOT proceed with unresolved violations
 
 **Complexity Justification:**
+
 - Any deviation from constitutional principles MUST be documented in Complexity Tracking table
 - Justification MUST explain why simpler alternatives were insufficient
 

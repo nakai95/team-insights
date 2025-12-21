@@ -23,14 +23,14 @@ export interface AnalysisFormProps {
 
 /**
  * Form component for inputting repository analysis parameters
- * Collects repository URL, GitHub token, and optional date range
+ * Collects repository URL and optional date range
+ * GitHub token is automatically sourced from authenticated session
  */
 export function AnalysisForm({
   onSubmit,
   isLoading = false,
 }: AnalysisFormProps) {
   const [repositoryUrl, setRepositoryUrl] = useState("");
-  const [githubToken, setGithubToken] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
@@ -60,7 +60,6 @@ export function AnalysisForm({
 
     const request: AnalysisRequest = {
       repositoryUrl: repositoryUrl.trim(),
-      githubToken: githubToken.trim(),
       dateRange:
         startDate && endDate
           ? {
@@ -95,24 +94,8 @@ export function AnalysisForm({
               disabled={isLoading}
             />
             <p className="text-sm text-muted-foreground">
-              Enter the full GitHub repository URL
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="github-token">GitHub Personal Access Token *</Label>
-            <Input
-              id="github-token"
-              type="password"
-              placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-              value={githubToken}
-              onChange={(e) => setGithubToken(e.target.value)}
-              required
-              disabled={isLoading}
-            />
-            <p className="text-sm text-muted-foreground">
-              Token with &apos;repo&apos; scope required for private
-              repositories
+              Enter the full GitHub repository URL. Authentication is handled
+              via your GitHub account.
             </p>
           </div>
 

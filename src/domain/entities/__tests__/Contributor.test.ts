@@ -129,11 +129,10 @@ describe("Contributor", () => {
       expect(snapshot2Result.ok).toBe(true);
 
       if (snapshot1Result.ok && snapshot2Result.ok) {
-        const params = createValidParams();
-        params.activityTimeline = [
-          snapshot1Result.value,
-          snapshot2Result.value,
-        ];
+        const params = {
+          ...createValidParams(),
+          activityTimeline: [snapshot1Result.value, snapshot2Result.value],
+        };
 
         const result = Contributor.create(params);
 
@@ -165,11 +164,10 @@ describe("Contributor", () => {
       expect(snapshot2Result.ok).toBe(true);
 
       if (snapshot1Result.ok && snapshot2Result.ok) {
-        const params = createValidParams();
-        params.activityTimeline = [
-          snapshot1Result.value,
-          snapshot2Result.value,
-        ];
+        const params = {
+          ...createValidParams(),
+          activityTimeline: [snapshot1Result.value, snapshot2Result.value],
+        };
 
         const result = Contributor.create(params);
 

@@ -4,7 +4,8 @@ Visualize GitHub repository activity to understand team dynamics. Track commits,
 
 ## Features
 
-- **Repository Analysis**: Analyze any GitHub repository by providing URL and access token
+- **GitHub OAuth Authentication**: Secure sign-in with your GitHub account (no manual token management)
+- **Repository Analysis**: Analyze any GitHub repository with authenticated access
 - **Activity Metrics**: View comprehensive metrics including:
   - Total commits and code changes per contributor
   - Pull request creation and review activity
@@ -17,11 +18,13 @@ Visualize GitHub repository activity to understand team dynamics. Track commits,
 - **Custom Date Ranges**: Analyze activity over specific time periods (default: last 6 months)
 - **Visual Dashboard**: Interactive charts and tables for easy data exploration
 - **Real-time Validation**: Immediate feedback on input validation and data quality
+- **Session Management**: Persistent authentication with 7-day session expiry
 
 ## Tech Stack
 
 - **Framework**: Next.js 14 (App Router)
 - **Language**: TypeScript (strict mode)
+- **Authentication**: NextAuth.js v5 (OAuth 2.0)
 - **UI Components**: Radix UI + Tailwind CSS
 - **Charts**: Recharts
 - **Testing**: Vitest (unit) + Playwright (E2E)
@@ -45,7 +48,7 @@ src/
 
 - Node.js 18+ (20+ recommended)
 - pnpm 8+
-- GitHub Personal Access Token with `repo` scope
+- GitHub OAuth Application (see setup instructions below)
 
 ## Installation
 
@@ -57,6 +60,55 @@ cd team-insights
 # Install dependencies
 pnpm install
 ```
+
+## GitHub OAuth Setup
+
+Before running the application, you need to create a GitHub OAuth application:
+
+### 1. Create GitHub OAuth App
+
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+2. Click "OAuth Apps" → "New OAuth App"
+3. Fill in the application details:
+   - **Application name**: Team Insights (Development)
+   - **Homepage URL**: `http://localhost:3000`
+   - **Authorization callback URL**: `http://localhost:3000/api/auth/callback/github`
+4. Click "Register application"
+5. Copy the **Client ID**
+6. Click "Generate a new client secret" and copy the **Client Secret**
+
+### 2. Configure Environment Variables
+
+Create a `.env.local` file in the project root:
+
+```bash
+# GitHub OAuth Credentials
+AUTH_GITHUB_ID=your_github_client_id
+AUTH_GITHUB_SECRET=your_github_client_secret
+
+# Session Encryption Secret (generate with: openssl rand -base64 32)
+AUTH_SECRET=your_32_character_secret_key
+```
+
+**Generate AUTH_SECRET**:
+
+```bash
+openssl rand -base64 32
+```
+
+**Security Notes**:
+
+- Never commit `.env.local` to version control
+- Use different OAuth apps for development and production
+- Keep your `AUTH_SECRET` secure and rotate it periodically
+
+### 3. Required GitHub OAuth Scopes
+
+The application requests the following scopes:
+
+- `read:user` - Read user profile information
+- `user:email` - Access user email addresses
+- `repo` - Access to public and private repositories
 
 ## Getting Started
 
@@ -75,14 +127,25 @@ pnpm build
 pnpm start
 ```
 
+**Production OAuth Setup**:
+
+1. Create a separate GitHub OAuth app for production
+2. Update callback URL to your production domain: `https://yourdomain.com/api/auth/callback/github`
+3. Set environment variables in your hosting platform
+
 ## Usage
 
-1. **Navigate to the home page** at `http://localhost:3000`
+1. **Sign in with GitHub**:
+   - Visit `http://localhost:3000`
+   - Click "Sign in with GitHub"
+   - Authorize the application to access your repositories
+   - You'll be redirected back with an active session
 
-2. **Enter repository details**:
-   - Repository URL (e.g., `https://github.com/vercel/next.js`)
-   - GitHub Personal Access Token
-   - (Optional) Custom date range for analysis
+2. **Analyze a repository**:
+   - Enter a repository URL (e.g., `https://github.com/vercel/next.js`)
+   - (Optional) Select a custom date range for analysis
+   - Click "Analyze Repository"
+   - No need to enter a personal access token - authentication is handled automatically
 
 3. **View the dashboard** with:
    - Summary metrics (total contributors, commits, PRs, review comments)
@@ -97,18 +160,30 @@ pnpm start
    - Review the merged metrics preview
    - Confirm to merge and update the dashboard
 
-5. **Analyze another repository** using the "Analyze Another Repository" button
+5. **Session management**:
+   - Your session persists for 7 days with automatic activity-based extension
+   - Click "Sign out" in the header to end your session
+   - Sessions are encrypted and stored securely
 
-## GitHub Personal Access Token
+6. **Analyze another repository** using the "Analyze Another Repository" button
 
-To analyze repositories, you need a GitHub Personal Access Token:
+## Authentication & Security
 
-1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
-2. Click "Generate new token" → "Generate new token (classic)"
-3. Select the `repo` scope (for private repositories) or `public_repo` (for public only)
-4. Generate and copy the token
+This application uses GitHub OAuth 2.0 for secure authentication:
 
-**Security**: The token is only sent to the server via Next.js Server Actions and is never exposed to the client-side JavaScript bundle.
+- **No manual token management**: Authentication is handled automatically via OAuth
+- **Server-side tokens**: Access tokens are never exposed to the browser
+- **Encrypted sessions**: JWT-based sessions encrypted with `AUTH_SECRET`
+- **Secure cookies**: HTTP-only, Secure (in production), SameSite=Lax
+- **Token masking**: All tokens are masked in logs to prevent exposure
+- **7-day sessions**: Automatic expiry with activity-based extension
+
+**What happens to your data**:
+
+- OAuth tokens are stored in encrypted JWT cookies
+- Tokens are only used server-side to access GitHub API
+- No tokens or sensitive data are sent to the client
+- Sessions expire after 7 days of inactivity
 
 ## Testing
 
@@ -200,12 +275,29 @@ team-insights/
 
 ## Environment Variables
 
-No environment variables are required for local development. All configuration is handled through the UI or default values.
+### Required for Development and Production
 
-For production deployment, consider:
+```bash
+# GitHub OAuth Configuration
+AUTH_GITHUB_ID=<your_github_oauth_client_id>
+AUTH_GITHUB_SECRET=<your_github_oauth_client_secret>
 
-- `NODE_ENV=production`
-- Next.js caching and optimization settings
+# Session Encryption (min 32 characters)
+AUTH_SECRET=<generated_with_openssl_rand_base64_32>
+
+# Optional: Base URL (auto-detected in development)
+NEXTAUTH_URL=http://localhost:3000
+```
+
+### Production Deployment
+
+For production deployment, ensure you:
+
+1. Create a separate GitHub OAuth app with production callback URL
+2. Set all required environment variables in your hosting platform
+3. Use a strong, unique `AUTH_SECRET` (different from development)
+4. Set `NODE_ENV=production`
+5. Enable HTTPS for secure cookie transmission
 
 ## Performance Considerations
 
