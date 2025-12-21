@@ -53,13 +53,13 @@
 
 ### Implementation for User Story 1
 
-- [ ] T015 [P] [US1] Create SignInButton client component in `src/presentation/components/auth/SignInButton.tsx`
-- [ ] T016 [P] [US1] Create SignOutButton client component in `src/presentation/components/auth/SignOutButton.tsx`
-- [ ] T017 [P] [US1] Create UserProfile client component in `src/presentation/components/auth/UserProfile.tsx` showing user info and auth buttons
-- [ ] T018 [US1] Update Header component in `src/presentation/components/Header.tsx` to include UserProfile component
-- [ ] T019 [P] [US1] Create login page in `src/app/login/page.tsx` with SignInButton
-- [ ] T020 [P] [US1] Create auth error page in `src/app/auth/error/page.tsx` with auto sign-out useEffect and error message display
-- [ ] T021 [US1] Test OAuth flow end-to-end: sign in → verify session → verify profile display → verify session persistence
+- [x] T015 [P] [US1] Create SignInButton client component in `src/presentation/components/auth/SignInButton.tsx`
+- [x] T016 [P] [US1] Create SignOutButton client component in `src/presentation/components/auth/SignOutButton.tsx`
+- [x] T017 [P] [US1] Create UserProfile client component in `src/presentation/components/auth/UserProfile.tsx` showing user info and auth buttons
+- [x] T018 [US1] Update Header component in `src/presentation/components/Header.tsx` to include UserProfile component
+- [x] T019 [P] [US1] Create login page in `src/app/login/page.tsx` with SignInButton
+- [x] T020 [P] [US1] Create auth error page in `src/app/auth/error/page.tsx` with auto sign-out useEffect and error message display
+- [x] T021 [US1] Test OAuth flow end-to-end: sign in → verify session → verify profile display → verify session persistence
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - users can sign in with GitHub OAuth and see their profile
 
