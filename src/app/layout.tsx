@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "./providers";
 
 const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID;
+const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
 
 export const metadata: Metadata = {
   title: "Team Insights",
@@ -11,11 +12,14 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.svg",
   },
-  ...(adsenseId && {
-    other: {
+  other: {
+    ...(adsenseId && {
       "google-adsense-account": adsenseId,
-    },
-  }),
+    }),
+    ...(googleSiteVerification && {
+      "google-site-verification": googleSiteVerification,
+    }),
+  },
 };
 
 export default function RootLayout({
