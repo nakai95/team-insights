@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "./providers";
+
+const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID;
 
 export const metadata: Metadata = {
   title: "Team Insights",
@@ -10,6 +11,11 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.svg",
   },
+  ...(adsenseId && {
+    other: {
+      "google-adsense-account": adsenseId,
+    },
+  }),
 };
 
 export default function RootLayout({
@@ -17,21 +23,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID;
-  const isProduction = process.env.NODE_ENV === "production";
-
   return (
     <html suppressHydrationWarning>
-      <head>
-        {isProduction && adsenseId && (
-          <Script
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseId}`}
-            crossOrigin="anonymous"
-            strategy="beforeInteractive"
-          />
-        )}
-      </head>
       <body>
         <Providers>
           {children}
