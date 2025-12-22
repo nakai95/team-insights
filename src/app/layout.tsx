@@ -6,6 +6,9 @@ import { Providers } from "./providers";
 export const metadata: Metadata = {
   title: "Team Insights",
   description: "Developer Activity Dashboard",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
