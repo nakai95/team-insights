@@ -227,5 +227,153 @@
     "CLONE_FAILED": "Failed to clone repository. Please try again.",
     "ANALYSIS_TIMEOUT": "Analysis timed out. This might be a very large repository.",
     "INTERNAL_ERROR": "An internal error occurred. Please try again."
+  },
+  "footer": {
+    "copyright": "© 2025 Team Insights",
+    "links": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "contact": "Contact"
+    }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last Updated: {date}",
+    "sections": {
+      "overview": {
+        "title": "Overview",
+        "content": "Team Insights (\"we\", \"our\", or \"us\") operates https://team-insights-rouge.vercel.app (the \"Service\"). This page informs you of our policies regarding the collection, use, and disclosure of personal information when you use our Service."
+      },
+      "informationCollection": {
+        "title": "Information Collection and Use",
+        "intro": "We collect the following types of information:",
+        "items": {
+          "github": {
+            "title": "GitHub Account Information",
+            "content": "When you sign in with GitHub OAuth, we collect your GitHub username, email, and profile information. This information is used solely for authentication and service provision."
+          },
+          "repository": {
+            "title": "Repository Data",
+            "content": "You provide GitHub repository URLs for analysis. We access repository data through GitHub's API using your authenticated session. Repository data is processed in real-time and not permanently stored."
+          },
+          "oauth": {
+            "title": "OAuth Tokens",
+            "content": "GitHub OAuth access tokens are encrypted and stored server-side in encrypted JWT session cookies. These tokens are used exclusively for accessing GitHub API on your behalf to perform repository analysis."
+          }
+        }
+      },
+      "dataUsage": {
+        "title": "How We Use Your Data",
+        "items": [
+          "To authenticate you and provide access to the Service",
+          "To analyze GitHub repository activity as requested by you",
+          "To improve and optimize the Service",
+          "To communicate with you about the Service"
+        ]
+      },
+      "cookies": {
+        "title": "Cookies and Tracking",
+        "content": "We use encrypted session cookies to maintain your authentication state. In the future, we plan to implement Google AdSense, which may use cookies for advertising purposes. You will be notified of any such changes to this policy."
+      },
+      "dataSecurity": {
+        "title": "Data Security",
+        "content": "We implement industry-standard security measures to protect your information. OAuth tokens are encrypted server-side, and all data transmission occurs over HTTPS. However, no method of transmission over the Internet is 100% secure."
+      },
+      "dataRetention": {
+        "title": "Data Retention",
+        "content": "Session data is retained only for the duration of your authenticated session. Repository analysis results are not permanently stored. When you sign out, your session data is deleted."
+      },
+      "thirdPartyServices": {
+        "title": "Third-Party Services",
+        "content": "Our Service uses GitHub OAuth for authentication and GitHub API for repository data access. Please review GitHub's Privacy Policy to understand how they handle your data."
+      },
+      "yourRights": {
+        "title": "Your Rights",
+        "content": "You have the right to access, correct, or delete your personal information. You can sign out at any time to end your session and delete session data. For other requests, please contact us through GitHub Issues."
+      },
+      "changes": {
+        "title": "Changes to This Privacy Policy",
+        "content": "We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the \"Last Updated\" date."
+      },
+      "contact": {
+        "title": "Contact Us",
+        "content": "If you have any questions about this Privacy Policy, please contact us through"
+      }
+    }
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "lastUpdated": "Last Updated: {date}",
+    "sections": {
+      "acceptance": {
+        "title": "1. Acceptance of Terms",
+        "content": "By accessing and using Team Insights (the \"Service\"), you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service."
+      },
+      "description": {
+        "title": "2. Service Description",
+        "content": "Team Insights is a GitHub repository development activity analysis tool. The Service allows you to analyze contributor activity, commits, pull requests, and code review metrics for GitHub repositories."
+      },
+      "accountRequirements": {
+        "title": "3. Account and Authentication",
+        "content": "To use the Service, you must authenticate using a valid GitHub account. You are responsible for maintaining the security of your GitHub account and for all activities that occur under your account."
+      },
+      "acceptableUse": {
+        "title": "4. Acceptable Use",
+        "intro": "You agree not to:",
+        "items": [
+          "Use the Service for any illegal or unauthorized purpose",
+          "Attempt to gain unauthorized access to the Service or related systems",
+          "Make excessive requests to the Service that could impair performance",
+          "Reverse engineer, decompile, or disassemble the Service",
+          "Use the Service to violate GitHub's Terms of Service",
+          "Share your authentication credentials with others",
+          "Use automated tools to scrape or download data from the Service"
+        ]
+      },
+      "intellectualProperty": {
+        "title": "5. Intellectual Property",
+        "content": "The Service and its original content, features, and functionality are owned by Team Insights and are protected by international copyright, trademark, and other intellectual property laws."
+      },
+      "disclaimers": {
+        "title": "6. Disclaimers",
+        "intro": "THE SERVICE IS PROVIDED \"AS IS\" AND \"AS AVAILABLE\" WITHOUT WARRANTIES OF ANY KIND. WE DISCLAIM ALL WARRANTIES, INCLUDING BUT NOT LIMITED TO:",
+        "items": [
+          "Accuracy and completeness of analysis results",
+          "Uninterrupted or error-free service operation",
+          "Availability of GitHub API or third-party services",
+          "Fitness for a particular purpose",
+          "Non-infringement of third-party rights"
+        ],
+        "note": "Analysis results are provided for informational purposes only and should not be relied upon as the sole basis for important decisions."
+      },
+      "limitations": {
+        "title": "7. Limitation of Liability",
+        "content": "IN NO EVENT SHALL TEAM INSIGHTS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING OUT OF OR RELATED TO YOUR USE OF THE SERVICE. OUR TOTAL LIABILITY SHALL NOT EXCEED THE AMOUNT YOU PAID TO USE THE SERVICE (CURRENTLY $0)."
+      },
+      "serviceInterruptions": {
+        "title": "8. Service Interruptions",
+        "content": "We reserve the right to modify, suspend, or discontinue the Service at any time without notice. We are not liable for any modification, suspension, or discontinuance of the Service."
+      },
+      "dataAndPrivacy": {
+        "title": "9. Data and Privacy",
+        "content": "Your use of the Service is also governed by our Privacy Policy. By using the Service, you consent to the collection and use of information as described in our Privacy Policy."
+      },
+      "termination": {
+        "title": "10. Termination",
+        "content": "We may terminate or suspend your access to the Service immediately, without prior notice, for any reason, including breach of these Terms. Upon termination, your right to use the Service will immediately cease."
+      },
+      "governingLaw": {
+        "title": "11. Governing Law",
+        "content": "These Terms shall be governed by and construed in accordance with the laws of Japan, without regard to its conflict of law provisions."
+      },
+      "changes": {
+        "title": "12. Changes to Terms",
+        "content": "We reserve the right to modify these Terms at any time. We will notify users of material changes by posting the updated Terms on this page and updating the \"Last Updated\" date. Your continued use of the Service after such changes constitutes acceptance of the new Terms."
+      },
+      "contact": {
+        "title": "13. Contact",
+        "content": "If you have any questions about these Terms of Service, please contact us through"
+      }
+    }
   }
 }

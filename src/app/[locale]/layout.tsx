@@ -3,6 +3,7 @@ import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { locales } from "@/i18n/config";
 import { Header } from "@/presentation/components/Header";
+import { Footer } from "@/presentation/components/Footer";
 import { routing } from "@/i18n/routing";
 
 export function generateStaticParams() {
@@ -26,8 +27,11 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <Header />
-      {children}
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <div className="flex-1">{children}</div>
+        <Footer />
+      </div>
     </NextIntlClientProvider>
   );
 }
