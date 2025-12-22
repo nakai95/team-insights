@@ -21,7 +21,7 @@ const handleI18nRouting = createMiddleware(routing);
  * 4. Redirect authenticated users away from auth pages
  *
  * Route Patterns:
- * - Public: /[locale] (landing page)
+ * - Public: /[locale] (landing page), /[locale]/privacy, /[locale]/terms
  * - Auth pages: /[locale]/login, /[locale]/auth/error
  * - Protected: /[locale]/dashboard and all other routes
  */
@@ -48,7 +48,10 @@ export default auth((req) => {
   const isAuthPage =
     pathname.startsWith(`/${locale}/login`) ||
     pathname.startsWith(`/${locale}/auth/error`);
-  const isPublicRoute = pathname === `/${locale}`;
+  const isPublicRoute =
+    pathname === `/${locale}` ||
+    pathname === `/${locale}/privacy` ||
+    pathname === `/${locale}/terms`;
 
   // Handle session errors
   if (req.auth?.error && pathname !== `/${locale}/auth/error`) {

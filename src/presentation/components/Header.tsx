@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { UserProfile } from "./auth/UserProfile";
 import { LocaleSwitcher } from "./LocaleSwitcher";
 
@@ -11,7 +12,7 @@ import { LocaleSwitcher } from "./LocaleSwitcher";
  * Displays user profile with sign-in/sign-out buttons based on auth state.
  *
  * Features:
- * - Application branding (title and tagline)
+ * - Application branding (title and tagline) with link to home
  * - User authentication status
  * - Sign in/out buttons
  * - User avatar and name when authenticated
@@ -30,12 +31,15 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-8 py-4">
         <div className="flex items-center justify-between">
           {/* Left side: Branding */}
-          <div className="space-y-1">
+          <Link
+            href="/"
+            className="space-y-1 hover:opacity-80 transition-opacity"
+          >
             <h1 className="text-2xl font-bold">{t("appName")}</h1>
             <p className="text-sm text-muted-foreground">
               {t("appDescription")}
             </p>
-          </div>
+          </Link>
 
           {/* Right side: Locale Switcher and User Profile */}
           <div className="flex items-center gap-4">
