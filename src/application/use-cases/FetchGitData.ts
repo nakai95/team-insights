@@ -1,10 +1,10 @@
 import { Result, ok, err } from "@/lib/result";
-import { IGitOperations, GitCommit } from "@/domain/interfaces/IGitOperations";
 import {
-  IGitHubAPI,
+  IGitHubRepository,
+  GitCommit,
   PullRequest,
   ReviewComment,
-} from "@/domain/interfaces/IGitHubAPI";
+} from "@/domain/interfaces/IGitHubRepository";
 import { RepositoryUrl } from "@/domain/value-objects/RepositoryUrl";
 import { DateRange } from "@/domain/value-objects/DateRange";
 import { logger } from "@/lib/utils/logger";
@@ -17,7 +17,6 @@ import { getErrorMessage } from "@/lib/utils/errorUtils";
 export interface FetchGitDataInput {
   repositoryUrl: string;
   dateRange: DateRange;
-  tempDirectory: string;
 }
 
 /**
@@ -31,13 +30,10 @@ export interface FetchGitDataOutput {
 
 /**
  * Use case for fetching Git and GitHub data
- * Orchestrates repository cloning, commit parsing, and GitHub API calls
+ * Fetches commit history, pull requests, and review comments from GitHub API
  */
 export class FetchGitData {
-  constructor(
-    private readonly gitOperations: IGitOperations,
-    private readonly githubAPI: IGitHubAPI,
-  ) {}
+  constructor(private readonly githubRepository: IGitHubRepository) {}
 
   async execute(input: FetchGitDataInput): Promise<Result<FetchGitDataOutput>> {
     try {
@@ -61,30 +57,19 @@ export class FetchGitData {
 
       // Step 1: Validate GitHub access
       logger.debug("Validating GitHub access");
-      const accessResult = await this.githubAPI.validateAccess(owner, repo);
+      const accessResult = await this.githubRepository.validateAccess(
+        owner,
+        repo,
+      );
 
       if (!accessResult.ok) {
         return err(accessResult.error);
       }
 
-      // Step 2: Clone repository
-      logger.debug("Cloning repository", {
-        tempDirectory: input.tempDirectory,
-      });
-      const cloneResult = await this.gitOperations.clone(
-        input.repositoryUrl,
-        input.tempDirectory,
-        input.dateRange.start,
-      );
-
-      if (!cloneResult.ok) {
-        return err(cloneResult.error);
-      }
-
-      // Step 3: Fetch commit log
+      // Step 2: Fetch commit log from GitHub API
       logger.debug("Fetching commit log");
-      const logResult = await this.gitOperations.getLog(
-        input.tempDirectory,
+      const logResult = await this.githubRepository.getLog(
+        input.repositoryUrl,
         input.dateRange.start,
         input.dateRange.end,
       );
@@ -96,9 +81,9 @@ export class FetchGitData {
       const commits = logResult.value;
       logger.info(`Fetched ${commits.length} commits`);
 
-      // Step 4: Fetch pull requests
+      // Step 3: Fetch pull requests
       logger.debug("Fetching pull requests");
-      const prsResult = await this.githubAPI.getPullRequests(
+      const prsResult = await this.githubRepository.getPullRequests(
         owner,
         repo,
         input.dateRange.start,
@@ -111,10 +96,10 @@ export class FetchGitData {
       const pullRequests = prsResult.value;
       logger.info(`Fetched ${pullRequests.length} pull requests`);
 
-      // Step 5: Fetch review comments for all PRs
+      // Step 4: Fetch review comments for all PRs
       logger.debug("Fetching review comments");
       const prNumbers = pullRequests.map((pr) => pr.number);
-      const commentsResult = await this.githubAPI.getReviewComments(
+      const commentsResult = await this.githubRepository.getReviewComments(
         owner,
         repo,
         prNumbers,

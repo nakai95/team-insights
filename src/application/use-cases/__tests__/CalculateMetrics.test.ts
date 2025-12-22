@@ -1,7 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { CalculateMetrics } from "../CalculateMetrics";
-import { GitCommit } from "@/domain/interfaces/IGitOperations";
-import { PullRequest, ReviewComment } from "@/domain/interfaces/IGitHubAPI";
+import {
+  GitCommit,
+  PullRequest,
+  ReviewComment,
+} from "@/domain/interfaces/IGitHubRepository";
 
 describe("CalculateMetrics", () => {
   const calculateMetrics = new CalculateMetrics();
