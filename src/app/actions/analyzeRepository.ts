@@ -9,9 +9,7 @@ import {
 import { AnalyzeRepository } from "@/application/use-cases/AnalyzeRepository";
 import { FetchGitData } from "@/application/use-cases/FetchGitData";
 import { CalculateMetrics } from "@/application/use-cases/CalculateMetrics";
-import { SimpleGitAdapter } from "@/infrastructure/git/SimpleGitAdapter";
 import { OctokitAdapter } from "@/infrastructure/github/OctokitAdapter";
-import { TempDirectoryManager } from "@/infrastructure/filesystem/TempDirectoryManager";
 import { ContributorMapper } from "@/application/mappers/ContributorMapper";
 import { getErrorMessage } from "@/lib/utils/errorUtils";
 import { Result } from "@/lib/result";
@@ -79,18 +77,13 @@ export async function analyzeRepository(
     const sessionProvider = new NextAuthAdapter();
 
     // Initialize infrastructure dependencies
-    const gitOperations = new SimpleGitAdapter(sessionProvider);
-    const githubAPI = new OctokitAdapter(sessionProvider);
-    const tempDirManager = new TempDirectoryManager();
+    // OctokitAdapter implements IGitHubRepository (unified GitHub operations)
+    const githubAdapter = new OctokitAdapter(sessionProvider);
 
     // Initialize use cases
-    const fetchGitData = new FetchGitData(gitOperations, githubAPI);
+    const fetchGitData = new FetchGitData(githubAdapter);
     const calculateMetrics = new CalculateMetrics();
-    const analyzeRepo = new AnalyzeRepository(
-      fetchGitData,
-      calculateMetrics,
-      tempDirManager,
-    );
+    const analyzeRepo = new AnalyzeRepository(fetchGitData, calculateMetrics);
 
     // Execute analysis
     const result = await analyzeRepo.execute({

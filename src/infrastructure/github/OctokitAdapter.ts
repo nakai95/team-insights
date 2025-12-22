@@ -1,24 +1,32 @@
 import { Octokit } from "@octokit/rest";
 import {
-  IGitHubAPI,
+  IGitHubRepository,
+  GitCommit,
   PullRequest,
   ReviewComment,
   RateLimitInfo,
-} from "@/domain/interfaces/IGitHubAPI";
+} from "@/domain/interfaces/IGitHubRepository";
 import { ISessionProvider } from "@/domain/interfaces/ISessionProvider";
 import { Result, ok, err } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
 import { maskToken } from "@/lib/utils/tokenMasker";
+import { getErrorMessage } from "@/lib/utils/errorUtils";
 import { RateLimiter } from "./RateLimiter";
 
 /**
- * Adapter for GitHub API operations using Octokit
- * Implements IGitHubAPI interface with rate limiting and pagination
+ * GitHub repository adapter using Octokit
+ * Implements IGitHubRepository interface
  *
- * Modified to use ISessionProvider for OAuth token retrieval instead of
- * accepting tokens as method parameters.
+ * This adapter provides all GitHub-related operations:
+ * - Repository access validation
+ * - Commit history fetching (via GitHub API)
+ * - Pull request fetching
+ * - Review comment fetching
+ * - Rate limit management
+ *
+ * Suitable for serverless environments (no git binary required).
  */
-export class OctokitAdapter implements IGitHubAPI {
+export class OctokitAdapter implements IGitHubRepository {
   private rateLimiter = new RateLimiter();
 
   constructor(private sessionProvider: ISessionProvider) {}
@@ -345,6 +353,193 @@ export class OctokitAdapter implements IGitHubAPI {
             error?.message || String(error)
           }`,
         ),
+      );
+    }
+  }
+
+  // ============================================================================
+  // Commit Operations
+  // ============================================================================
+
+  /**
+   * Parse owner and repo from GitHub URL
+   */
+  private parseGitHubUrl(url: string): { owner: string; repo: string } | null {
+    // Match patterns like:
+    // - https://github.com/owner/repo
+    // - https://github.com/owner/repo.git
+    // - git@github.com:owner/repo.git
+    const httpsMatch = url.match(/github\.com\/([^\/]+)\/([^\/\.]+)/);
+    if (httpsMatch && httpsMatch[1] && httpsMatch[2]) {
+      return { owner: httpsMatch[1], repo: httpsMatch[2] };
+    }
+    return null;
+  }
+
+  /**
+   * Get commit log from GitHub API
+   * @param repoPath Repository URL (not a local path in this implementation)
+   * @param sinceDate Optional date to filter commits (inclusive)
+   * @param untilDate Optional end date to filter commits (inclusive)
+   */
+  async getLog(
+    repoPath: string,
+    sinceDate?: Date,
+    untilDate?: Date,
+  ): Promise<Result<GitCommit[]>> {
+    try {
+      const token = await this.getToken();
+      const parsed = this.parseGitHubUrl(repoPath);
+
+      if (!parsed) {
+        return err(new Error(`Invalid GitHub URL: ${repoPath}`));
+      }
+
+      const { owner, repo } = parsed;
+
+      logger.info("Fetching commits from GitHub API", {
+        owner,
+        repo,
+        sinceDate: sinceDate?.toISOString(),
+        untilDate: untilDate?.toISOString(),
+      });
+
+      const octokit = new Octokit({ auth: token });
+      const commits: GitCommit[] = [];
+
+      // Fetch commits with pagination
+      let page = 1;
+      const perPage = 100; // Max per page
+
+      while (true) {
+        const params: any = {
+          owner,
+          repo,
+          per_page: perPage,
+          page,
+        };
+
+        // Add date filters if provided
+        if (sinceDate) {
+          params.since = sinceDate.toISOString();
+        }
+        if (untilDate) {
+          params.until = untilDate.toISOString();
+        }
+
+        logger.debug(`Fetching commits page ${page}`);
+
+        // Wait if rate limit is low
+        await this.rateLimiter.waitIfNeeded();
+
+        const response = await octokit.rest.repos.listCommits(params);
+
+        // Update rate limit info after each request
+        const rateLimitResult = await this.getRateLimitStatus();
+        if (rateLimitResult.ok) {
+          this.rateLimiter.updateRateLimit(rateLimitResult.value);
+        }
+
+        if (response.data.length === 0) {
+          break; // No more commits
+        }
+
+        // Process each commit
+        for (const commitData of response.data) {
+          // Skip commits without SHA
+          if (!commitData.sha) {
+            continue;
+          }
+
+          // Skip merge commits to match SimpleGitAdapter behavior
+          if (commitData.parents && commitData.parents.length > 1) {
+            continue;
+          }
+
+          const commit = commitData.commit;
+          const author = commit.author?.name || "Unknown";
+          const email = commit.author?.email || "";
+          const date = new Date(
+            commit.author?.date || commitData.commit.committer?.date || "",
+          );
+          const message = commit.message?.split("\n")[0] || ""; // First line only
+
+          // Fetch detailed commit data to get file changes
+          logger.debug(`Fetching commit details for ${commitData.sha}`);
+
+          await this.rateLimiter.waitIfNeeded();
+
+          const detailResponse = await octokit.rest.repos.getCommit({
+            owner,
+            repo,
+            ref: commitData.sha,
+          });
+
+          // Update rate limit info after each request
+          const rateLimitResult2 = await this.getRateLimitStatus();
+          if (rateLimitResult2.ok) {
+            this.rateLimiter.updateRateLimit(rateLimitResult2.value);
+          }
+
+          const files = detailResponse.data.files || [];
+          let filesChanged = files.length;
+          let linesAdded = 0;
+          let linesDeleted = 0;
+
+          for (const file of files) {
+            linesAdded += file.additions || 0;
+            linesDeleted += file.deletions || 0;
+          }
+
+          commits.push({
+            hash: commitData.sha,
+            author,
+            email,
+            date,
+            message,
+            filesChanged,
+            linesAdded,
+            linesDeleted,
+          });
+        }
+
+        // Check if there are more pages
+        if (response.data.length < perPage) {
+          break; // Last page
+        }
+
+        page++;
+      }
+
+      logger.info(
+        `Successfully fetched ${commits.length} commits from GitHub API`,
+      );
+      return ok(commits);
+    } catch (error: any) {
+      logger.error("Failed to fetch commits from GitHub API", {
+        error: getErrorMessage(error),
+        status: error?.status,
+      });
+
+      // Handle specific error cases
+      if (error?.status === 403) {
+        return err(
+          new Error(
+            "GitHub API rate limit exceeded or insufficient permissions. Please try again later or verify your access rights.",
+          ),
+        );
+      }
+
+      if (error?.status === 404) {
+        return err(
+          new Error(
+            "Repository not found or you do not have permission to access it.",
+          ),
+        );
+      }
+
+      return err(
+        new Error(`Failed to fetch commits: ${getErrorMessage(error)}`),
       );
     }
   }

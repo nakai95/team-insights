@@ -1,4 +1,4 @@
-import { RateLimitInfo } from "@/domain/interfaces/IGitHubAPI";
+import { RateLimitInfo } from "@/domain/interfaces/IGitHubRepository";
 import { logger } from "@/lib/utils/logger";
 
 /**

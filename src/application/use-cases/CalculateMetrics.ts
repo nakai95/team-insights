@@ -1,12 +1,13 @@
 import { Result, ok, err } from "@/lib/result";
-import { GitCommit } from "@/domain/interfaces/IGitOperations";
-import { PullRequest, ReviewComment } from "@/domain/interfaces/IGitHubAPI";
+import {
+  GitCommit,
+  PullRequest,
+  ReviewComment,
+} from "@/domain/interfaces/IGitHubRepository";
 import { Contributor } from "@/domain/entities/Contributor";
 import { Email } from "@/domain/value-objects/Email";
 import { ImplementationActivity } from "@/domain/value-objects/ImplementationActivity";
 import { ReviewActivity } from "@/domain/value-objects/ReviewActivity";
-import { ActivitySnapshot } from "@/domain/value-objects/ActivitySnapshot";
-import { Period } from "@/domain/types";
 import { logger } from "@/lib/utils/logger";
 import { getErrorMessage } from "@/lib/utils/errorUtils";
 import { groupBy } from "@/lib/utils/collection";

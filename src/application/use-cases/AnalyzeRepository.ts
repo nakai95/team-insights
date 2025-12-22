@@ -4,7 +4,6 @@ import { RepositoryUrl } from "@/domain/value-objects/RepositoryUrl";
 import { DateRange } from "@/domain/value-objects/DateRange";
 import { FetchGitData, FetchGitDataInput } from "./FetchGitData";
 import { CalculateMetrics, CalculateMetricsInput } from "./CalculateMetrics";
-import { TempDirectoryManager } from "@/infrastructure/filesystem/TempDirectoryManager";
 import { logger } from "@/lib/utils/logger";
 import { getErrorMessage } from "@/lib/utils/errorUtils";
 import { v4 as uuidv4 } from "uuid";
@@ -35,14 +34,12 @@ export class AnalyzeRepository {
   constructor(
     private readonly fetchGitData: FetchGitData,
     private readonly calculateMetrics: CalculateMetrics,
-    private readonly tempDirManager: TempDirectoryManager,
   ) {}
 
   async execute(
     input: AnalyzeRepositoryInput,
   ): Promise<Result<AnalyzeRepositoryOutput>> {
     const startTime = Date.now();
-    let tempDir: string | null = null;
 
     try {
       logger.info("Starting AnalyzeRepository use case", {
@@ -80,22 +77,10 @@ export class AnalyzeRepository {
 
       let analysis = analysisResult.value;
 
-      // Step 4: Create temporary directory
-      const tempDirResult = await this.tempDirManager.create(
-        `repo-${analysisId}`,
-      );
-      if (!tempDirResult.ok) {
-        return err(tempDirResult.error);
-      }
-
-      tempDir = tempDirResult.value;
-      logger.info("Created temporary directory", { tempDir });
-
-      // Step 5: Fetch Git and GitHub data
+      // Step 4: Fetch Git and GitHub data
       const fetchInput: FetchGitDataInput = {
         repositoryUrl: input.repositoryUrl,
         dateRange,
-        tempDirectory: tempDir,
       };
 
       const fetchResult = await this.fetchGitData.execute(fetchInput);
@@ -160,12 +145,6 @@ export class AnalyzeRepository {
       return err(
         new Error(`Failed to analyze repository: ${getErrorMessage(error)}`),
       );
-    } finally {
-      // Clean up temporary directory
-      if (tempDir) {
-        logger.info("Cleaning up temporary directory", { tempDir });
-        await this.tempDirManager.remove(tempDir);
-      }
     }
   }
 

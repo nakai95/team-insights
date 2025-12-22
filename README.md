@@ -29,8 +29,7 @@ Visualize GitHub repository activity to understand team dynamics. Track commits,
 - **Charts**: Recharts
 - **Testing**: Vitest (unit) + Playwright (E2E)
 - **Code Quality**: ESLint + Prettier + Husky
-- **Git Operations**: simple-git
-- **GitHub API**: Octokit
+- **GitHub API**: Octokit (unified repository operations)
 
 ## Architecture
 
@@ -40,7 +39,7 @@ This project follows **Clean Architecture** principles:
 src/
 ├── domain/           # Business logic (entities, value objects, services)
 ├── application/      # Use cases and orchestration
-├── infrastructure/   # External integrations (Git, GitHub API, filesystem)
+├── infrastructure/   # External integrations (GitHub API, storage)
 └── app/             # Next.js UI (components, pages, Server Actions)
 ```
 
@@ -247,17 +246,16 @@ team-insights/
 │   │   ├── entities/        # Contributor, RepositoryAnalysis, IdentityMerge
 │   │   ├── value-objects/   # Email, DateRange, RepositoryUrl, etc.
 │   │   ├── services/        # ActivityAggregationService, ContributorService
-│   │   ├── interfaces/      # Port interfaces (IGitOperations, IGitHubAPI, IStoragePort)
+│   │   ├── interfaces/      # Port interfaces (IGitHubRepository, IStoragePort, ISessionProvider)
 │   │   └── types.ts         # Domain types and enums
 │   ├── application/         # Application layer (use cases)
 │   │   ├── use-cases/       # AnalyzeRepository, FetchGitData, CalculateMetrics, MergeIdentities
 │   │   ├── dto/             # Data transfer objects
 │   │   └── mappers/         # Entity to DTO mappers
 │   ├── infrastructure/      # Infrastructure layer (adapters)
-│   │   ├── git/             # SimpleGitAdapter, GitLogParser
-│   │   ├── github/          # OctokitAdapter
+│   │   ├── github/          # OctokitAdapter, RateLimiter
 │   │   ├── storage/         # LocalStorageAdapter
-│   │   └── filesystem/      # TempDirectoryManager
+│   │   └── session/         # NextAuthSessionProvider
 │   ├── presentation/        # Presentation layer (React components & hooks)
 │   │   ├── components/      # IdentityMerger, etc.
 │   │   └── hooks/           # useIdentityMerge
@@ -301,15 +299,16 @@ For production deployment, ensure you:
 
 ## Performance Considerations
 
-- **Large Repositories**: Analyzing repositories with 100+ contributors or 10+ years of history may take several minutes
+- **Large Repositories**: Analyzing repositories with 100+ contributors or 10+ years of history may take several minutes due to GitHub API pagination
 - **Date Range Warnings**: The UI will warn you when selecting date ranges > 2 years that may impact performance
-- **Token Rate Limits**: GitHub API has rate limits; use tokens to increase limits from 60 to 5000 requests/hour
+- **GitHub API Rate Limits**: OAuth tokens provide 5000 requests/hour; the application automatically handles rate limiting and delays requests when necessary
+- **Serverless Execution**: Analysis runs in serverless functions with built-in timeouts; very large repositories may require optimization
 
 ## Known Limitations
 
-- Server Actions process analysis synchronously; very large repositories may timeout
-- Git cloning happens on the server; requires sufficient disk space
-- GitHub API pagination is limited to 100 results per page
+- Server Actions process analysis synchronously; very large repositories may timeout in serverless environment
+- GitHub API pagination requires one request per commit for detailed file changes, which can be slow for large repositories
+- Rate limiting may cause delays when analyzing repositories with extensive history
 - Identity merge preferences are session-only (not persisted across page reloads)
 
 ## Contributing
