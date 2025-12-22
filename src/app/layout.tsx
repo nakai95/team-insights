@@ -22,7 +22,7 @@ export default function RootLayout({
 
   return (
     <html suppressHydrationWarning>
-      <body>
+      <head>
         {isProduction && adsenseId && (
           <Script
             async
@@ -31,6 +31,8 @@ export default function RootLayout({
             strategy="beforeInteractive"
           />
         )}
+      </head>
+      <body>
         <Providers>
           {children}
           <Toaster />
