@@ -22,13 +22,13 @@ Visualize GitHub repository activity to understand team dynamics. Track commits,
 
 ## Tech Stack
 
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript (strict mode)
 - **Authentication**: NextAuth.js v5 (OAuth 2.0)
 - **UI Components**: Radix UI + Tailwind CSS
 - **Charts**: Recharts
 - **Testing**: Vitest (unit) + Playwright (E2E)
-- **Code Quality**: ESLint + Prettier + Husky
+- **Code Quality**: ESLint 9 (flat config) + Prettier + Husky
 - **GitHub API**: Octokit (unified repository operations)
 
 ## Architecture
