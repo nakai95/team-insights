@@ -43,6 +43,7 @@ Follow-up TODOs: None - all principles fully defined
 - `src/infrastructure/` - External dependencies: Git (simple-git), GitHub API (@octokit/rest), filesystem
 - `src/presentation/` - UI components
 - `src/app/` - Next.js App Router (routes, server components)
+- `specs/` - Feature specifications and planning documents (excluded from compilation/linting)
 
 **Dependency Rules:**
 
@@ -85,6 +86,25 @@ Follow-up TODOs: None - all principles fully defined
 
 ### III. Test Strategy
 
+**Test File Organization (MANDATORY):**
+
+- Test files MUST be placed in `__tests__` directories within the same directory as the code being tested
+- Pattern: `src/domain/value-objects/__tests__/Email.test.ts` for testing `src/domain/value-objects/Email.ts`
+- DO NOT create separate `tests/unit/` directory structure
+- This keeps tests close to implementation and makes them easier to find
+
+**Examples:**
+
+```
+✅ CORRECT:
+src/domain/value-objects/Email.ts
+src/domain/value-objects/__tests__/Email.test.ts
+
+❌ INCORRECT:
+src/domain/value-objects/Email.ts
+tests/unit/domain/value-objects/Email.test.ts
+```
+
 **Unit Tests (Vitest) - Domain Layer:**
 
 - Domain layer tests are **MANDATORY** (ensures business logic correctness)
@@ -116,7 +136,7 @@ Follow-up TODOs: None - all principles fully defined
 - Domain: 80%+ (strict requirement)
 - Overall: Defer until codebase stabilizes
 
-**Rationale**: Domain logic is the heart of the application and must be tested thoroughly. Other layers provide diminishing returns for testing effort in early stages. E2E tests validate integration but should be kept minimal to avoid brittleness.
+**Rationale**: Domain logic is the heart of the application and must be tested thoroughly. Test files are co-located with implementation files to improve discoverability and maintainability. Other layers provide diminishing returns for testing effort in early stages. E2E tests validate integration but should be kept minimal to avoid brittleness.
 
 ### IV. Performance & Scalability
 
@@ -217,6 +237,12 @@ Follow-up TODOs: None - all principles fully defined
 - ESLint + Prettier auto-formatting MUST be configured
 - Pre-commit hooks (husky) MUST run lint + tests
 - Comments SHOULD be used only when intent is unclear (prefer self-documenting code)
+
+**Build Configuration:**
+
+- `specs/**/contracts/**` MUST be excluded from TypeScript compilation (`tsconfig.json`)
+- `specs/**/contracts/**` MUST be excluded from ESLint (`eslint.config.mjs`)
+- Contract files are documentation only, not executable code
 
 **Rationale**: These practices prevent common bugs, maintain code consistency, and establish quality gates. The prohibition on perfectionism recognizes that shipping functional software faster is more valuable than achieving theoretical perfection.
 
