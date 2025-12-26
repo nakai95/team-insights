@@ -55,6 +55,55 @@ pnpm test:domain    # Run domain layer tests only
 - Follow Next.js 15 conventions
 - Domain-driven design with clean architecture
 
+### String Literal Types - Enum Pattern (MANDATORY)
+
+When defining string literal union types, **ALWAYS** provide a constant object with the same name to avoid hardcoding strings:
+
+✅ **CORRECT** - Constant object with derived type:
+
+```typescript
+export const SizeBucket = {
+  S: "S",
+  M: "M",
+  L: "L",
+  XL: "XL",
+} as const;
+export type SizeBucket = (typeof SizeBucket)[keyof typeof SizeBucket];
+
+// Usage: SizeBucket.S instead of "S"
+const bucket = SizeBucket.fromPRs(SizeBucket.S, prs, total);
+```
+
+✅ **CORRECT** - Works for any string literal type:
+
+```typescript
+export const InsightType = {
+  OPTIMAL: "optimal",
+  NO_DIFFERENCE: "no_difference",
+  INSUFFICIENT_DATA: "insufficient_data",
+} as const;
+export type InsightType = (typeof InsightType)[keyof typeof InsightType];
+
+// Usage: InsightType.OPTIMAL instead of "optimal"
+if (insight.type === InsightType.OPTIMAL) { ... }
+```
+
+❌ **INCORRECT** - Hardcoded strings:
+
+```typescript
+const bucket = SizeBucket.fromPRs("S", prs, total); // Don't do this
+const insight = ThroughputInsight.create("optimal", msg, "S"); // Don't do this
+if (insight.type === "optimal") { ... } // Don't do this
+```
+
+**Rationale**:
+
+- Prevents typos (compile-time checking)
+- Enables IDE autocomplete
+- Makes refactoring safer (rename in one place)
+- Self-documenting code
+- Cleaner syntax than class static properties
+
 ## Build Configuration
 
 **Contract Files Exclusion**:

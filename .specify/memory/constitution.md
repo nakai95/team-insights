@@ -231,6 +231,67 @@ tests/unit/domain/value-objects/Email.test.ts
 - Premature abstraction (YAGNI: You Aren't Gonna Need It)
 - Perfectionism (ship at 80% quality, iterate based on feedback)
 - Business logic changes without tests
+- Hardcoded string literals for type unions (use enum-like constants instead)
+- Duplicate type definitions across multiple files (violates DRY and Single Source of Truth)
+
+**String Literal Types - Enum Pattern (MANDATORY):**
+
+When defining string literal union types, ALWAYS provide a constant object with the same name:
+
+```typescript
+// ✅ CORRECT - Constant object with derived type
+export const SizeBucket = {
+  S: "S",
+  M: "M",
+  L: "L",
+  XL: "XL",
+} as const;
+export type SizeBucket = (typeof SizeBucket)[keyof typeof SizeBucket];
+
+// Usage: SizeBucket.S instead of "S"
+const bucket = SizeBucket.fromPRs(SizeBucket.S, prs, total);
+if (data.bucket === SizeBucket.M) { ... }
+
+// ✅ CORRECT - Works for any string literal type
+export const InsightType = {
+  OPTIMAL: "optimal",
+  NO_DIFFERENCE: "no_difference",
+  INSUFFICIENT_DATA: "insufficient_data",
+} as const;
+export type InsightType = (typeof InsightType)[keyof typeof InsightType];
+
+// ❌ INCORRECT - Hardcoded strings
+const bucket = SizeBucket.fromPRs("S", prs, total);
+if (insight.type === "optimal") { ... }
+```
+
+**Rationale**: Compile-time safety, IDE autocomplete, refactoring safety, self-documenting code, cleaner syntax
+
+**Single Source of Truth for Type Definitions (MANDATORY):**
+
+When the same type definition is needed across multiple files, define it ONCE in the most appropriate location and import it elsewhere:
+
+```typescript
+// ✅ CORRECT - Single definition in SizeBucket.ts
+export const SizeBucketType = {
+  S: "S",
+  M: "M",
+  L: "L",
+  XL: "XL",
+} as const;
+export type SizeBucketType =
+  (typeof SizeBucketType)[keyof typeof SizeBucketType];
+
+// Other files import from the single source
+import { SizeBucketType } from "./SizeBucket";
+
+// ❌ INCORRECT - Duplicate definitions in multiple files
+// PRThroughputData.ts has: export const SizeBucket = { S: "S", M: "M", L: "L", XL: "XL" };
+// ThroughputInsight.ts has: export const PRSizeBucket = { S: "S", M: "M", L: "L", XL: "XL" };
+// SizeBucket.ts has: export const SizeBucketType = { S: "S", M: "M", L: "L", XL: "XL" };
+```
+
+**Rationale**: Duplicate type definitions violate the DRY (Don't Repeat Yourself) principle and create maintenance burden. When the definition needs to change, it must be updated in multiple places, increasing the risk of inconsistencies.
 
 **Required Practices:**
 

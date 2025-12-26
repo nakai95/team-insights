@@ -37,12 +37,12 @@ All paths are relative to repository root: `/Users/nakai/work/private/team-insig
 
 ### Domain Value Objects & Entities
 
-- [ ] T001 [P] Create PRThroughputData value object in src/domain/value-objects/PRThroughputData.ts
-- [ ] T002 [P] Create PRThroughputData test file in src/domain/value-objects/**tests**/PRThroughputData.test.ts
-- [ ] T003 [P] Create SizeBucket value object in src/domain/value-objects/SizeBucket.ts
-- [ ] T004 [P] Create SizeBucket test file in src/domain/value-objects/**tests**/SizeBucket.test.ts
-- [ ] T005 [P] Create ThroughputInsight value object in src/domain/value-objects/ThroughputInsight.ts
-- [ ] T006 [P] Create ThroughputInsight test file in src/domain/value-objects/**tests**/ThroughputInsight.test.ts
+- [x] T001 [P] Create PRThroughputData value object in src/domain/value-objects/PRThroughputData.ts
+- [x] T002 [P] Create PRThroughputData test file in src/domain/value-objects/**tests**/PRThroughputData.test.ts
+- [x] T003 [P] Create SizeBucket value object in src/domain/value-objects/SizeBucket.ts
+- [x] T004 [P] Create SizeBucket test file in src/domain/value-objects/**tests**/SizeBucket.test.ts
+- [x] T005 [P] Create ThroughputInsight value object in src/domain/value-objects/ThroughputInsight.ts
+- [x] T006 [P] Create ThroughputInsight test file in src/domain/value-objects/**tests**/ThroughputInsight.test.ts
 - [ ] T007 Create PRThroughput entity in src/domain/entities/PRThroughput.ts (depends on T001, T003, T005)
 - [ ] T008 Create PRThroughput test file in src/domain/entities/**tests**/PRThroughput.test.ts (depends on T007)
 
