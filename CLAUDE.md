@@ -41,11 +41,22 @@ tests/unit/domain/value-objects/Email.test.ts
 ## Commands
 
 ```bash
-pnpm test           # Run all tests
-pnpm run lint       # Run ESLint
-pnpm type-check     # TypeScript type checking
-pnpm test:domain    # Run domain layer tests only
+pnpm test                    # Run all tests (vitest run)
+pnpm test:unit               # Run tests in tests/unit directory
+pnpm test:domain             # Run tests in tests/unit/domain directory (NOTE: does NOT include src/domain/__tests__)
+pnpm test:watch              # Run tests in watch mode
+pnpm test:coverage           # Run tests with coverage report
+pnpm test:e2e                # Run Playwright E2E tests
+pnpm test:e2e:ui             # Run Playwright E2E tests with UI
+pnpm run lint                # Run ESLint
+pnpm type-check              # TypeScript type checking (tsc --noEmit)
 ```
+
+**Important Notes:**
+
+- Tests in `src/**/__tests__/` directories are run by `pnpm test` (runs all vitest tests)
+- To run specific test files: `pnpm test <path-to-test-file>`
+- `pnpm test:domain` only covers `tests/unit/domain/`, NOT `src/domain/__tests__/`
 
 ## Code Style
 

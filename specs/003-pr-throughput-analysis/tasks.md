@@ -43,20 +43,20 @@ All paths are relative to repository root: `/Users/nakai/work/private/team-insig
 - [x] T004 [P] Create SizeBucket test file in src/domain/value-objects/**tests**/SizeBucket.test.ts
 - [x] T005 [P] Create ThroughputInsight value object in src/domain/value-objects/ThroughputInsight.ts
 - [x] T006 [P] Create ThroughputInsight test file in src/domain/value-objects/**tests**/ThroughputInsight.test.ts
-- [ ] T007 Create PRThroughput entity in src/domain/entities/PRThroughput.ts (depends on T001, T003, T005)
-- [ ] T008 Create PRThroughput test file in src/domain/entities/**tests**/PRThroughput.test.ts (depends on T007)
+- [x] T007 Create PRThroughput entity in src/domain/entities/PRThroughput.ts (depends on T001, T003, T005)
+- [x] T008 Create PRThroughput test file in src/domain/entities/**tests**/PRThroughput.test.ts (depends on T007)
 
 ### Application Layer - Use Cases & DTOs
 
-- [ ] T009 Create ThroughputResult DTO in src/application/dto/ThroughputResult.ts (depends on T007)
-- [ ] T010 Create CalculateThroughputMetrics use case in src/application/use-cases/CalculateThroughputMetrics.ts (depends on T007, T009)
-- [ ] T011 Create CalculateThroughputMetrics test file in src/application/use-cases/**tests**/CalculateThroughputMetrics.test.ts (depends on T010)
+- [x] T009 Create ThroughputResult DTO in src/application/dto/ThroughputResult.ts (depends on T007)
+- [x] T010 Create CalculateThroughputMetrics use case in src/application/use-cases/CalculateThroughputMetrics.ts (depends on T007, T009)
+- [x] T011 Create CalculateThroughputMetrics test file in src/application/use-cases/**tests**/CalculateThroughputMetrics.test.ts (depends on T010)
 
 ### Infrastructure Layer - API Integration
 
-- [ ] T012 Extend PullRequest interface in src/domain/interfaces/IGitHubRepository.ts to add mergedAt, additions, deletions, changedFiles fields
-- [ ] T013 Update OctokitAdapter.getPullRequests() in src/infrastructure/github/OctokitAdapter.ts to fetch detailed PR statistics via pulls.get() for merged PRs (depends on T012)
-- [ ] T014 Update OctokitAdapter tests in src/infrastructure/github/**tests**/OctokitAdapter.test.ts to verify new throughput fields (depends on T013)
+- [x] T012 Extend PullRequest interface in src/domain/interfaces/IGitHubRepository.ts to add mergedAt, additions, deletions, changedFiles fields
+- [x] T013 Update OctokitAdapter.getPullRequests() in src/infrastructure/github/OctokitAdapter.ts to fetch detailed PR statistics via pulls.get() for merged PRs (depends on T012)
+- [x] T014 Update OctokitAdapter tests in src/infrastructure/github/**tests**/OctokitAdapter.test.ts to verify new throughput fields (depends on T013)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 

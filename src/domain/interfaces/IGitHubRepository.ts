@@ -24,6 +24,10 @@ export interface PullRequest {
   createdAt: Date;
   state: "open" | "closed" | "merged";
   reviewCommentCount: number;
+  mergedAt?: Date;
+  additions?: number;
+  deletions?: number;
+  changedFiles?: number;
 }
 
 /**
