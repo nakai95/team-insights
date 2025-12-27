@@ -147,26 +147,26 @@ All paths are relative to repository root: `/Users/nakai/work/private/team-insig
 
 ### Testing & Quality
 
-- [ ] T034 [P] Create E2E test for happy path in tests/e2e/pr-throughput-happy-path.spec.ts (verify section visible, scatter plot renders, table displays, insight shows)
-- [ ] T035 [P] Create E2E test for empty state in tests/e2e/pr-throughput-empty-state.spec.ts (verify empty state message displays)
-- [ ] T036 [P] Create E2E test for performance with 1000+ PRs in tests/e2e/pr-throughput-performance.spec.ts (verify dashboard loads < 3 seconds, chart renders smoothly)
-- [ ] T037 Run all domain layer tests and verify 80%+ coverage (pnpm test:domain)
-- [ ] T038 Run full test suite and verify all tests pass (pnpm test)
+- [x] T034 [P] Create E2E test for happy path in tests/e2e/pr-throughput-happy-path.spec.ts (verify section visible, scatter plot renders, table displays, insight shows)
+- [x] T035 [P] Create E2E test for empty state in tests/e2e/pr-throughput-empty-state.spec.ts (verify empty state message displays)
+- [x] T036 [P] Create E2E test for performance with 1000+ PRs in tests/e2e/pr-throughput-performance.spec.ts (verify dashboard loads < 3 seconds, chart renders smoothly)
+- [x] T037 Run all domain layer tests and verify 80%+ coverage (pnpm test:domain)
+- [x] T038 Run full test suite and verify all tests pass (pnpm test)
 
 ### Code Quality & Documentation
 
-- [ ] T039 [P] Run type check and fix any TypeScript errors (pnpm type-check)
-- [ ] T040 [P] Run ESLint and fix any linting issues (pnpm run lint)
-- [ ] T041 [P] Add accessibility features: ARIA labels, keyboard navigation, screen reader support to all components
-- [ ] T042 Verify mobile responsive layout works for all components
-- [ ] T043 [P] Add code comments for complex business logic in domain layer
-- [ ] T044 Update CLAUDE.md via agent context script to reflect new feature
+- [x] T039 [P] Run type check and fix any TypeScript errors (pnpm type-check)
+- [x] T040 [P] Run ESLint and fix any linting issues (pnpm run lint)
+- [x] T041 [P] Add accessibility features: ARIA labels, keyboard navigation, screen reader support to all components
+- [x] T042 Verify mobile responsive layout works for all components
+- [x] T043 [P] Add code comments for complex business logic in domain layer
+- [x] T044 Update CLAUDE.md via agent context script to reflect new feature
 
 ### Deployment Verification
 
-- [ ] T045 Run development build and verify feature works locally (pnpm dev)
-- [ ] T046 Run production build and verify no build errors (pnpm build)
-- [ ] T047 Manual testing checklist: scatter plot data accuracy, tooltip correctness, bucket calculations, insight logic, empty state handling
+- [x] T045 Run development build and verify feature works locally (pnpm dev)
+- [x] T046 Run production build and verify no build errors (pnpm build)
+- [x] T047 Manual testing checklist: scatter plot data accuracy, tooltip correctness, bucket calculations, insight logic, empty state handling
 
 ---
 

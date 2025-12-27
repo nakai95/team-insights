@@ -67,8 +67,16 @@ export function InsightMessage({ insight }: InsightMessageProps) {
       : t(config.messageKey);
 
   return (
-    <Alert className={config.className}>
-      <IconComponent className={`h-4 w-4 ${config.iconClassName}`} />
+    <Alert
+      className={config.className}
+      role="status"
+      aria-live="polite"
+      aria-label={`Insight: ${title}`}
+    >
+      <IconComponent
+        className={`h-4 w-4 ${config.iconClassName}`}
+        aria-hidden="true"
+      />
       <AlertTitle>{title}</AlertTitle>
       <AlertDescription>{message}</AlertDescription>
     </Alert>

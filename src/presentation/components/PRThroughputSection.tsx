@@ -42,7 +42,7 @@ export function PRThroughputSection({ throughput }: PRThroughputSectionProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t("title")}</CardTitle>
+        <CardTitle id="pr-throughput-title">{t("title")}</CardTitle>
         <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
 
@@ -50,7 +50,11 @@ export function PRThroughputSection({ throughput }: PRThroughputSectionProps) {
         {showEmptyState ? (
           <EmptyState />
         ) : (
-          <div className="space-y-6">
+          <div
+            className="space-y-6"
+            role="region"
+            aria-labelledby="pr-throughput-title"
+          >
             {/* Summary Statistics */}
             <SummaryStats
               averageLeadTimeDays={throughput.averageLeadTimeDays}
@@ -60,14 +64,22 @@ export function PRThroughputSection({ throughput }: PRThroughputSectionProps) {
 
             {/* Scatter Plot: PR Size vs Lead Time */}
             {throughput.scatterData && throughput.scatterData.length > 0 && (
-              <div className="mt-6">
+              <div
+                className="mt-6"
+                role="img"
+                aria-label="PR Size vs Lead Time Scatter Plot"
+              >
                 <PRSizeVsLeadTimeChart data={throughput.scatterData} />
               </div>
             )}
 
             {/* Size Bucket Analysis: Table and Bar Chart */}
             {throughput.sizeBuckets && throughput.sizeBuckets.length > 0 && (
-              <div className="mt-6">
+              <div
+                className="mt-6"
+                role="region"
+                aria-label="Size Bucket Analysis"
+              >
                 <SizeBucketAnalysis
                   sizeBuckets={throughput.sizeBuckets}
                   optimalBucket={throughput.insight?.optimalBucket}
