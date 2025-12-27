@@ -93,11 +93,11 @@ All paths are relative to repository root: `/Users/nakai/work/private/team-insig
 
 ### Implementation for User Story 2
 
-- [ ] T021 [P] [US2] Create PRSizeVsLeadTimeChart component in src/presentation/components/PRSizeVsLeadTimeChart.tsx using Recharts ScatterChart
-- [ ] T022 [P] [US2] Create custom tooltip component for scatter chart showing PR number, size, and lead time
-- [ ] T023 [US2] Add React.memo optimization to PRSizeVsLeadTimeChart and disable animations for 500+ data points (depends on T021)
-- [ ] T024 [US2] Integrate PRSizeVsLeadTimeChart into PRThroughputSection component in src/presentation/components/PRThroughputSection.tsx (depends on T021, T023)
-- [ ] T025 [US2] Add useMemo for scatter data transformation in PRThroughputSection to optimize performance (depends on T024)
+- [x] T021 [P] [US2] Create PRSizeVsLeadTimeChart component in src/presentation/components/PRSizeVsLeadTimeChart.tsx using Recharts ScatterChart
+- [x] T022 [P] [US2] Create custom tooltip component for scatter chart showing PR number, size, and lead time
+- [x] T023 [US2] Add React.memo optimization to PRSizeVsLeadTimeChart and disable animations for 500+ data points (depends on T021)
+- [x] T024 [US2] Integrate PRSizeVsLeadTimeChart into PRThroughputSection component in src/presentation/components/PRThroughputSection.tsx (depends on T021, T023)
+- [x] T025 [US2] Add useMemo for scatter data transformation in PRThroughputSection to optimize performance (depends on T024)
 
 **Checkpoint**: User Story 2 complete - scatter plot visible, tooltip works, performs well with large datasets
 

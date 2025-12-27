@@ -11,6 +11,7 @@ import {
 import { ThroughputResult } from "@/application/dto/ThroughputResult";
 import { SummaryStats } from "./SummaryStats";
 import { EmptyState } from "./EmptyState";
+import { PRSizeVsLeadTimeChart } from "./PRSizeVsLeadTimeChart";
 
 export interface PRThroughputSectionProps {
   /**
@@ -25,10 +26,10 @@ export interface PRThroughputSectionProps {
  *
  * Displays:
  * - Summary statistics (average, median, count)
+ * - Scatter plot (PR size vs lead time) - User Story 2
  * - Empty state when no merged PRs available
  *
- * Future enhancements (User Stories 2-4):
- * - Scatter plot (PR size vs lead time)
+ * Future enhancements (User Stories 3-4):
  * - Size bucket table and bar chart
  * - Automated insight message
  */
@@ -50,12 +51,21 @@ export function PRThroughputSection({ throughput }: PRThroughputSectionProps) {
           <EmptyState />
         ) : (
           <div className="space-y-6">
+            {/* Summary Statistics */}
             <SummaryStats
               averageLeadTimeDays={throughput.averageLeadTimeDays}
               medianLeadTimeDays={throughput.medianLeadTimeDays}
               totalMergedPRs={throughput.totalMergedPRs}
             />
-            {/* Future: Scatter plot, size bucket analysis, and insights will be added here */}
+
+            {/* Scatter Plot: PR Size vs Lead Time */}
+            {throughput.scatterData && throughput.scatterData.length > 0 && (
+              <div className="mt-6">
+                <PRSizeVsLeadTimeChart data={throughput.scatterData} />
+              </div>
+            )}
+
+            {/* Future: Size bucket table, bar chart, and insights will be added here */}
           </div>
         )}
       </CardContent>

@@ -225,6 +225,18 @@
       "medianLeadTime": "中央値リードタイム",
       "totalMergedPRs": "総マージPR数",
       "days": "日"
+    },
+    "scatterChart": {
+      "xAxisName": "PRサイズ",
+      "xAxisLabel": "PRサイズ（総変更行数）",
+      "yAxisName": "リードタイム",
+      "yAxisLabel": "リードタイム（時間）",
+      "seriesName": "プルリクエスト",
+      "tooltip": {
+        "prNumber": "PR #{number}",
+        "size": "サイズ: {lines}行",
+        "leadTime": "リードタイム: {hours}時間"
+      }
     }
   },
   "errors": {

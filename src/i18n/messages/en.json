@@ -225,6 +225,18 @@
       "medianLeadTime": "Median Lead Time",
       "totalMergedPRs": "Total Merged PRs",
       "days": "days"
+    },
+    "scatterChart": {
+      "xAxisName": "PR Size",
+      "xAxisLabel": "PR Size (Total Lines Changed)",
+      "yAxisName": "Lead Time",
+      "yAxisLabel": "Lead Time (Hours)",
+      "seriesName": "Pull Requests",
+      "tooltip": {
+        "prNumber": "PR #{number}",
+        "size": "Size: {lines} lines",
+        "leadTime": "Lead Time: {hours} hours"
+      }
     }
   },
   "errors": {
