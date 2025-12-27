@@ -14,6 +14,7 @@ import {
 import { ContributorList } from "./ContributorList";
 import { ImplementationActivityChart } from "./ImplementationActivityChart";
 import { IdentityMerger } from "@/presentation/components/IdentityMerger";
+import { PRThroughputSection } from "@/presentation/components/PRThroughputSection";
 import { GitBranch, GitPullRequest, MessageSquare, Users } from "lucide-react";
 
 export interface DashboardProps {
@@ -180,6 +181,9 @@ export function Dashboard({ result }: DashboardProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* PR Throughput Analysis */}
+      <PRThroughputSection throughput={result.throughput} />
 
       {/* Contributor List */}
       <ContributorList contributors={contributors} />

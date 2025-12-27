@@ -11,6 +11,12 @@
     "welcomeDescription": "Sign in with your GitHub account to analyze repository contributor activity and gain insights into development patterns.",
     "helpText": "This application uses secure GitHub OAuth to access repository data. We only request read access to public repositories.",
     "redirectNotice": "You will be redirected to the dashboard after signing in.",
+    "envToken": {
+      "title": "Development Mode:",
+      "authenticated": "Authenticated via GITHUB_TOKEN",
+      "description": "You are using environment variable authentication for local development.",
+      "goToDashboard": "Go to Dashboard"
+    },
     "errors": {
       "AccessDenied": {
         "title": "Authorization Cancelled",
@@ -215,6 +221,66 @@
     "reviews": "Reviews",
     "linesChanged": "Lines Changed",
     "score": "Score"
+  },
+  "prThroughput": {
+    "title": "PR Throughput Analysis",
+    "description": "Relationship between PR size and merge time",
+    "emptyState": "No merged PRs available for throughput analysis",
+    "summaryStats": {
+      "averageLeadTime": "Average Lead Time",
+      "medianLeadTime": "Median Lead Time",
+      "totalMergedPRs": "Total Merged PRs",
+      "days": "days"
+    },
+    "scatterChart": {
+      "xAxisName": "PR Size",
+      "xAxisLabel": "PR Size (Total Lines Changed)",
+      "yAxisName": "Lead Time",
+      "yAxisLabel": "Lead Time (Hours)",
+      "seriesName": "Pull Requests",
+      "tooltip": {
+        "prNumber": "PR #{number}",
+        "size": "Size: {lines} lines",
+        "leadTime": "Lead Time: {hours} hours"
+      }
+    },
+    "sizeBucketAnalysis": {
+      "title": "PR Size Category Analysis",
+      "description": "Compare lead times across different PR size categories"
+    },
+    "sizeBucketTable": {
+      "headers": {
+        "bucket": "Size",
+        "lineRange": "Line Range",
+        "averageLeadTime": "Avg Lead Time",
+        "prCount": "PR Count",
+        "percentage": "Percentage"
+      },
+      "days": "days"
+    },
+    "sizeBucketChart": {
+      "xAxisLabel": "PR Size Category",
+      "yAxisLabel": "Average Lead Time (Days)",
+      "tooltip": {
+        "bucket": "Size",
+        "lineRange": "Line Range",
+        "averageLeadTime": "Avg Lead Time",
+        "prCount": "PR Count",
+        "days": "days"
+      }
+    },
+    "insight": {
+      "title": {
+        "optimal": "Optimal PR Size Found",
+        "noDifference": "No Clear Difference",
+        "insufficientData": "Insufficient Data"
+      },
+      "message": {
+        "optimal": "{bucketName} PRs merge fastest on average. Consider breaking larger changes into smaller pull requests.",
+        "noDifference": "PR size has minimal impact on lead time. All size categories show similar merge speeds.",
+        "insufficientData": "Not enough data to determine optimal PR size. Analyze at least 10 merged PRs for meaningful insights."
+      }
+    }
   },
   "errors": {
     "AUTHENTICATION_REQUIRED": "Authentication required. Please sign in.",

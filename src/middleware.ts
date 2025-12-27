@@ -2,6 +2,7 @@ import { auth } from "@/infrastructure/auth/auth.config";
 import { NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
+import { isEnvTokenMode } from "@/infrastructure/auth/env.schema";
 
 const { locales, defaultLocale } = routing;
 
@@ -35,7 +36,9 @@ export default auth((req) => {
   }
 
   // Step 2: Authentication logic
-  const isAuthenticated = !!req.auth;
+  // Check both OAuth session and environment token mode
+  const isEnvToken = isEnvTokenMode();
+  const isAuthenticated = isEnvToken || !!req.auth;
   const pathname = req.nextUrl.pathname;
 
   // Extract locale from pathname (e.g., /en/dashboard -> en)
@@ -53,8 +56,8 @@ export default auth((req) => {
     pathname === `/${locale}/privacy` ||
     pathname === `/${locale}/terms`;
 
-  // Handle session errors
-  if (req.auth?.error && pathname !== `/${locale}/auth/error`) {
+  // Handle session errors (skip in env token mode)
+  if (!isEnvToken && req.auth?.error && pathname !== `/${locale}/auth/error`) {
     return NextResponse.redirect(
       new URL(`/${locale}/auth/error`, req.nextUrl.origin),
     );
@@ -75,7 +78,8 @@ export default auth((req) => {
   }
 
   // Redirect authenticated users away from auth pages to dashboard
-  if (isAuthenticated && isAuthPage && !req.auth?.error) {
+  // In env token mode, allow access to login page to show status
+  if (isAuthenticated && isAuthPage && !req.auth?.error && !isEnvToken) {
     return NextResponse.redirect(
       new URL(`/${locale}/dashboard`, req.nextUrl.origin),
     );

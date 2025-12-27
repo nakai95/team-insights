@@ -11,6 +11,12 @@
     "welcomeDescription": "GitHubアカウントでサインインして、リポジトリのContributorの活動を分析し、開発プロセスを改善するヒントを得ましょう。",
     "helpText": "このアプリケーションは、GitHub OAuthを使用してリポジトリデータに安全にアクセスします。パブリックリポジトリへの読み取りアクセスのみをリクエストします。",
     "redirectNotice": "サインイン後、ダッシュボードにリダイレクトされます。",
+    "envToken": {
+      "title": "開発モード:",
+      "authenticated": "GITHUB_TOKENで認証されています",
+      "description": "ローカル開発のために環境変数認証を使用しています。",
+      "goToDashboard": "ダッシュボードへ"
+    },
     "errors": {
       "AccessDenied": {
         "title": "認証がキャンセルされました",
@@ -215,6 +221,66 @@
     "reviews": "レビュー",
     "linesChanged": "変更行数",
     "score": "スコア"
+  },
+  "prThroughput": {
+    "title": "PRスループット分析",
+    "description": "PRサイズとマージ時間の関係",
+    "emptyState": "スループット分析に利用できるマージ済みPRがありません",
+    "summaryStats": {
+      "averageLeadTime": "平均リードタイム",
+      "medianLeadTime": "中央値リードタイム",
+      "totalMergedPRs": "総マージPR数",
+      "days": "日"
+    },
+    "scatterChart": {
+      "xAxisName": "PRサイズ",
+      "xAxisLabel": "PRサイズ（総変更行数）",
+      "yAxisName": "リードタイム",
+      "yAxisLabel": "リードタイム（時間）",
+      "seriesName": "プルリクエスト",
+      "tooltip": {
+        "prNumber": "PR #{number}",
+        "size": "サイズ: {lines}行",
+        "leadTime": "リードタイム: {hours}時間"
+      }
+    },
+    "sizeBucketAnalysis": {
+      "title": "PRサイズカテゴリ分析",
+      "description": "異なるPRサイズカテゴリ間でリードタイムを比較"
+    },
+    "sizeBucketTable": {
+      "headers": {
+        "bucket": "サイズ",
+        "lineRange": "行数範囲",
+        "averageLeadTime": "平均リードタイム",
+        "prCount": "PR数",
+        "percentage": "割合"
+      },
+      "days": "日"
+    },
+    "sizeBucketChart": {
+      "xAxisLabel": "PRサイズカテゴリ",
+      "yAxisLabel": "平均リードタイム（日）",
+      "tooltip": {
+        "bucket": "サイズ",
+        "lineRange": "行数範囲",
+        "averageLeadTime": "平均リードタイム",
+        "prCount": "PR数",
+        "days": "日"
+      }
+    },
+    "insight": {
+      "title": {
+        "optimal": "最適なPRサイズが見つかりました",
+        "noDifference": "明確な差はありません",
+        "insufficientData": "データ不足"
+      },
+      "message": {
+        "optimal": "{bucketName}のPRが平均して最速でマージされます。より大きな変更は小さなプルリクエストに分割することを検討してください。",
+        "noDifference": "PRサイズはリードタイムにほとんど影響しません。すべてのサイズカテゴリで同様のマージ速度を示しています。",
+        "insufficientData": "最適なPRサイズを判断するのに十分なデータがありません。意味のある洞察を得るには、少なくとも10件のマージ済みPRを分析してください。"
+      }
+    }
   },
   "errors": {
     "AUTHENTICATION_REQUIRED": "認証が必要です。サインインしてください。",

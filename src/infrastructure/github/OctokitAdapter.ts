@@ -165,14 +165,45 @@ export class OctokitAdapter implements IGitHubRepository {
             state = pr.merged_at ? "merged" : "closed";
           }
 
-          pullRequests.push({
-            number: pr.number,
-            title: pr.title,
-            author: pr.user?.login || "unknown",
-            createdAt,
-            state,
-            reviewCommentCount: 0, // Will be populated separately
-          });
+          // For merged PRs, fetch detailed statistics via pulls.get()
+          // This is necessary because pulls.list() doesn't reliably return additions/deletions
+          if (state === "merged" && pr.merged_at) {
+            await this.rateLimiter.waitIfNeeded();
+
+            const detailResponse = await octokit.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: pr.number,
+            });
+
+            const rateLimitResult = await this.getRateLimitStatus();
+            if (rateLimitResult.ok) {
+              this.rateLimiter.updateRateLimit(rateLimitResult.value);
+            }
+
+            pullRequests.push({
+              number: pr.number,
+              title: pr.title,
+              author: pr.user?.login || "unknown",
+              createdAt,
+              state,
+              reviewCommentCount: 0, // Will be populated separately
+              mergedAt: new Date(pr.merged_at),
+              additions: detailResponse.data.additions,
+              deletions: detailResponse.data.deletions,
+              changedFiles: detailResponse.data.changed_files,
+            });
+          } else {
+            // For non-merged PRs, we don't need detailed statistics
+            pullRequests.push({
+              number: pr.number,
+              title: pr.title,
+              author: pr.user?.login || "unknown",
+              createdAt,
+              state,
+              reviewCommentCount: 0, // Will be populated separately
+            });
+          }
         }
 
         // Check if there are more pages

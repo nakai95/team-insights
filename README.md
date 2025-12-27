@@ -109,6 +109,88 @@ The application requests the following scopes:
 - `user:email` - Access user email addresses
 - `repo` - Access to public and private repositories
 
+## Alternative Authentication: Environment Token (Development Only)
+
+For local development, you can use a GitHub Personal Access Token instead of setting up OAuth. This simplifies the setup process but is only available in development mode.
+
+### Security Warning
+
+⚠️ **This method is for local development only and is automatically disabled in production.**
+
+- Never commit your token to version control
+- Never deploy with GITHUB_TOKEN set
+- Tokens provide full access to your GitHub account
+- OAuth is more secure and recommended for production use
+
+### Setup Steps
+
+1. **Generate a Personal Access Token**:
+   - Go to [GitHub Settings → Developer Settings → Personal Access Tokens → Tokens (classic)](https://github.com/settings/tokens)
+   - Click "Generate new token (classic)"
+   - Give it a descriptive name: `Team Insights Development`
+   - Select the following scopes:
+     - `read:user` - Read user profile information
+     - `user:email` - Access user email addresses
+     - `repo` - Access to public and private repositories
+   - Click "Generate token" and copy it immediately (you won't see it again)
+
+2. **Configure Environment**:
+
+   Add to your `.env.local` file:
+
+   ```bash
+   # GitHub Personal Access Token (Development Only)
+   GITHUB_TOKEN=ghp_your_token_here
+   ```
+
+   Note: When using `GITHUB_TOKEN`, the OAuth credentials (`AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`, `AUTH_SECRET`) become optional.
+
+3. **Run Development Server**:
+
+   ```bash
+   pnpm dev
+   ```
+
+4. **Access Application**:
+   - Visit [http://localhost:3000](http://localhost:3000)
+   - You'll see "Authenticated via GITHUB_TOKEN" message on the login page
+   - Click "Go to Dashboard" - no need to sign in, you're automatically authenticated
+
+### When to Use Environment Token
+
+✅ **Good for**:
+
+- Quick local development setup without OAuth app creation
+- Testing without OAuth configuration
+- Temporary contributor access
+- CI/CD environments for automated testing
+
+❌ **Not suitable for**:
+
+- Production deployments (automatically disabled)
+- Shared development environments
+- Long-term development (OAuth is more secure with session management)
+
+### OAuth vs Environment Token Comparison
+
+| Feature                 | OAuth                       | Environment Token             |
+| ----------------------- | --------------------------- | ----------------------------- |
+| **Security**            | ✅ High (delegated access)  | ⚠️ Medium (full token access) |
+| **Setup Complexity**    | Medium (requires OAuth app) | Low (just generate token)     |
+| **User Management**     | Multi-user support          | Single user only              |
+| **Production Ready**    | ✅ Yes                      | ❌ No (auto-disabled)         |
+| **Session Expiry**      | 7 days with auto-refresh    | No expiry (manual rotation)   |
+| **Token Scope Control** | OAuth app scopes            | Token scopes                  |
+
+### Switching Between Auth Modes
+
+To switch from environment token back to OAuth:
+
+1. Remove `GITHUB_TOKEN` from `.env.local`
+2. Add OAuth credentials (`AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`, `AUTH_SECRET`)
+3. Restart the development server
+4. Use the GitHub OAuth flow as normal
+
 ## Getting Started
 
 ### Development Server
