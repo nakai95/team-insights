@@ -16,7 +16,7 @@ import { getErrorMessage } from "@/lib/utils/errorUtils";
 import { Result } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
 import { mapErrorCode } from "./errorMapping";
-import { NextAuthAdapter } from "@/infrastructure/auth/NextAuthAdapter";
+import { createSessionProvider } from "@/infrastructure/auth/SessionProviderFactory";
 
 /**
  * Server Action for analyzing a GitHub repository
@@ -74,8 +74,8 @@ export async function analyzeRepository(
       }
     }
 
-    // Initialize session provider
-    const sessionProvider = new NextAuthAdapter();
+    // Initialize session provider (auto-selects based on environment)
+    const sessionProvider = createSessionProvider();
 
     // Initialize infrastructure dependencies
     // OctokitAdapter implements IGitHubRepository (unified GitHub operations)

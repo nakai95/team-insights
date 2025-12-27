@@ -11,6 +11,12 @@
     "welcomeDescription": "GitHubアカウントでサインインして、リポジトリのContributorの活動を分析し、開発プロセスを改善するヒントを得ましょう。",
     "helpText": "このアプリケーションは、GitHub OAuthを使用してリポジトリデータに安全にアクセスします。パブリックリポジトリへの読み取りアクセスのみをリクエストします。",
     "redirectNotice": "サインイン後、ダッシュボードにリダイレクトされます。",
+    "envToken": {
+      "title": "開発モード:",
+      "authenticated": "GITHUB_TOKENで認証されています",
+      "description": "ローカル開発のために環境変数認証を使用しています。",
+      "goToDashboard": "ダッシュボードへ"
+    },
     "errors": {
       "AccessDenied": {
         "title": "認証がキャンセルされました",

@@ -11,6 +11,12 @@
     "welcomeDescription": "Sign in with your GitHub account to analyze repository contributor activity and gain insights into development patterns.",
     "helpText": "This application uses secure GitHub OAuth to access repository data. We only request read access to public repositories.",
     "redirectNotice": "You will be redirected to the dashboard after signing in.",
+    "envToken": {
+      "title": "Development Mode:",
+      "authenticated": "Authenticated via GITHUB_TOKEN",
+      "description": "You are using environment variable authentication for local development.",
+      "goToDashboard": "Go to Dashboard"
+    },
     "errors": {
       "AccessDenied": {
         "title": "Authorization Cancelled",
