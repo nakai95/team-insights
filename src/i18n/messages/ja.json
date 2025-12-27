@@ -262,6 +262,18 @@
         "prCount": "PR数",
         "days": "日"
       }
+    },
+    "insight": {
+      "title": {
+        "optimal": "最適なPRサイズが見つかりました",
+        "noDifference": "明確な差はありません",
+        "insufficientData": "データ不足"
+      },
+      "message": {
+        "optimal": "{bucketName}のPRが平均して最速でマージされます。より大きな変更は小さなプルリクエストに分割することを検討してください。",
+        "noDifference": "PRサイズはリードタイムにほとんど影響しません。すべてのサイズカテゴリで同様のマージ速度を示しています。",
+        "insufficientData": "最適なPRサイズを判断するのに十分なデータがありません。意味のある洞察を得るには、少なくとも10件のマージ済みPRを分析してください。"
+      }
     }
   },
   "errors": {

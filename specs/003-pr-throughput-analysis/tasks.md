@@ -133,9 +133,9 @@ All paths are relative to repository root: `/Users/nakai/work/private/team-insig
 
 ### Implementation for User Story 4
 
-- [ ] T031 [P] [US4] Create InsightMessage component in src/presentation/components/InsightMessage.tsx with conditional styling (green for optimal, blue for no_difference, yellow for insufficient_data)
-- [ ] T032 [P] [US4] Add appropriate icons to InsightMessage component based on insight type (success, info, warning)
-- [ ] T033 [US4] Integrate InsightMessage into PRThroughputSection component in src/presentation/components/PRThroughputSection.tsx (depends on T031, T032)
+- [x] T031 [P] [US4] Create InsightMessage component in src/presentation/components/InsightMessage.tsx with conditional styling (green for optimal, blue for no_difference, yellow for insufficient_data)
+- [x] T032 [P] [US4] Add appropriate icons to InsightMessage component based on insight type (success, info, warning)
+- [x] T033 [US4] Integrate InsightMessage into PRThroughputSection component in src/presentation/components/PRThroughputSection.tsx (depends on T031, T032)
 
 **Checkpoint**: User Story 4 complete - insight message displays with appropriate styling and icons
 

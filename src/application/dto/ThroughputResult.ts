@@ -31,7 +31,7 @@ export interface SizeBucketData {
  */
 export interface ThroughputInsightData {
   type: InsightType;
-  message: string;
+  message: string; // English message for debugging/logs
   optimalBucket: SizeBucketType | null;
 }
 

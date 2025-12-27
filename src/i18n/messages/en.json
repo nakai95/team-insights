@@ -262,6 +262,18 @@
         "prCount": "PR Count",
         "days": "days"
       }
+    },
+    "insight": {
+      "title": {
+        "optimal": "Optimal PR Size Found",
+        "noDifference": "No Clear Difference",
+        "insufficientData": "Insufficient Data"
+      },
+      "message": {
+        "optimal": "{bucketName} PRs merge fastest on average. Consider breaking larger changes into smaller pull requests.",
+        "noDifference": "PR size has minimal impact on lead time. All size categories show similar merge speeds.",
+        "insufficientData": "Not enough data to determine optimal PR size. Analyze at least 10 merged PRs for meaningful insights."
+      }
     }
   },
   "errors": {

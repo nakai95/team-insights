@@ -13,6 +13,7 @@ import { SummaryStats } from "./SummaryStats";
 import { EmptyState } from "./EmptyState";
 import { PRSizeVsLeadTimeChart } from "./PRSizeVsLeadTimeChart";
 import { SizeBucketAnalysis } from "./SizeBucketAnalysis";
+import { InsightMessage } from "./InsightMessage";
 
 export interface PRThroughputSectionProps {
   /**
@@ -29,10 +30,8 @@ export interface PRThroughputSectionProps {
  * - Summary statistics (average, median, count) - User Story 1
  * - Scatter plot (PR size vs lead time) - User Story 2
  * - Size bucket table and bar chart - User Story 3
+ * - Automated insight message - User Story 4
  * - Empty state when no merged PRs available
- *
- * Future enhancements (User Story 4):
- * - Automated insight message
  */
 export function PRThroughputSection({ throughput }: PRThroughputSectionProps) {
   const t = useTranslations("prThroughput");
@@ -76,7 +75,10 @@ export function PRThroughputSection({ throughput }: PRThroughputSectionProps) {
               </div>
             )}
 
-            {/* Future: Automated insight message will be added here (User Story 4) */}
+            {/* Automated Insight Message - User Story 4 */}
+            {throughput.insight && (
+              <InsightMessage insight={throughput.insight} />
+            )}
           </div>
         )}
       </CardContent>
