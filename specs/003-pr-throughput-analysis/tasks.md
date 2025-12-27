@@ -72,12 +72,12 @@ All paths are relative to repository root: `/Users/nakai/work/private/team-insig
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Extend AnalysisResult DTO in src/application/dto/AnalysisResult.ts to add optional throughput field
-- [ ] T016 [US1] Extend AnalyzeRepository use case in src/application/use-cases/AnalyzeRepository.ts to call CalculateThroughputMetrics and populate throughput field (depends on T010, T015)
-- [ ] T017 [US1] Create SummaryStats component in src/presentation/components/SummaryStats.tsx to display average, median, and count metrics
-- [ ] T018 [US1] Create EmptyState component in src/presentation/components/EmptyState.tsx for no merged PRs scenario
-- [ ] T019 [US1] Create PRThroughputSection component in src/presentation/components/PRThroughputSection.tsx with summary stats and empty state handling (depends on T017, T018)
-- [ ] T020 [US1] Integrate PRThroughputSection into Dashboard in src/app/[locale]/components/Dashboard.tsx after Review Activity section (depends on T019)
+- [x] T015 [US1] Extend AnalysisResult DTO in src/application/dto/AnalysisResult.ts to add optional throughput field
+- [x] T016 [US1] Extend AnalyzeRepository use case in src/application/use-cases/AnalyzeRepository.ts to call CalculateThroughputMetrics and populate throughput field (depends on T010, T015)
+- [x] T017 [US1] Create SummaryStats component in src/presentation/components/SummaryStats.tsx to display average, median, and count metrics
+- [x] T018 [US1] Create EmptyState component in src/presentation/components/EmptyState.tsx for no merged PRs scenario
+- [x] T019 [US1] Create PRThroughputSection component in src/presentation/components/PRThroughputSection.tsx with summary stats and empty state handling (depends on T017, T018)
+- [x] T020 [US1] Integrate PRThroughputSection into Dashboard in src/app/[locale]/components/Dashboard.tsx after Review Activity section (depends on T019)
 
 **Checkpoint**: User Story 1 complete - basic metrics visible on dashboard, empty state works
 

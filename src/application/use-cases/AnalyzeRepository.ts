@@ -4,6 +4,8 @@ import { RepositoryUrl } from "@/domain/value-objects/RepositoryUrl";
 import { DateRange } from "@/domain/value-objects/DateRange";
 import { FetchGitData, FetchGitDataInput } from "./FetchGitData";
 import { CalculateMetrics, CalculateMetricsInput } from "./CalculateMetrics";
+import { CalculateThroughputMetrics } from "./CalculateThroughputMetrics";
+import { ThroughputResult } from "@/application/dto/ThroughputResult";
 import { logger } from "@/lib/utils/logger";
 import { getErrorMessage } from "@/lib/utils/errorUtils";
 import { v4 as uuidv4 } from "uuid";
@@ -24,6 +26,7 @@ export interface AnalyzeRepositoryInput {
 export interface AnalyzeRepositoryOutput {
   analysis: RepositoryAnalysis;
   analysisTimeMs: number;
+  throughput?: ThroughputResult; // Optional PR throughput analysis
 }
 
 /**
@@ -34,6 +37,7 @@ export class AnalyzeRepository {
   constructor(
     private readonly fetchGitData: FetchGitData,
     private readonly calculateMetrics: CalculateMetrics,
+    private readonly calculateThroughputMetrics: CalculateThroughputMetrics,
   ) {}
 
   async execute(
@@ -116,7 +120,27 @@ export class AnalyzeRepository {
 
       const { contributors } = calculateResult.value;
 
-      // Step 7: Complete analysis
+      // Step 7: Calculate PR throughput metrics
+      let throughput: ThroughputResult | undefined;
+      const throughputResult = this.calculateThroughputMetrics.execute(
+        input.repositoryUrl,
+        pullRequests,
+        dateRange,
+      );
+
+      if (throughputResult.ok) {
+        throughput = throughputResult.value;
+        logger.info("PR throughput metrics calculated successfully", {
+          totalMergedPRs: throughput.totalMergedPRs,
+        });
+      } else {
+        // Log the error but don't fail the entire analysis
+        logger.warn("Failed to calculate PR throughput metrics", {
+          error: throughputResult.error.message,
+        });
+      }
+
+      // Step 8: Complete analysis
       const completeResult = analysis.complete(contributors);
       if (!completeResult.ok) {
         return err(completeResult.error);
@@ -136,6 +160,7 @@ export class AnalyzeRepository {
       return ok({
         analysis,
         analysisTimeMs,
+        throughput,
       });
     } catch (error) {
       logger.error("AnalyzeRepository use case failed", {

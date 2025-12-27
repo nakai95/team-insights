@@ -216,6 +216,17 @@
     "linesChanged": "変更行数",
     "score": "スコア"
   },
+  "prThroughput": {
+    "title": "PRスループット分析",
+    "description": "PRサイズとマージ時間の関係",
+    "emptyState": "スループット分析に利用できるマージ済みPRがありません",
+    "summaryStats": {
+      "averageLeadTime": "平均リードタイム",
+      "medianLeadTime": "中央値リードタイム",
+      "totalMergedPRs": "総マージPR数",
+      "days": "日"
+    }
+  },
   "errors": {
     "AUTHENTICATION_REQUIRED": "認証が必要です。サインインしてください。",
     "TOKEN_EXPIRED": "セッションが期限切れになりました。再度サインインしてください。",

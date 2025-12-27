@@ -216,6 +216,17 @@
     "linesChanged": "Lines Changed",
     "score": "Score"
   },
+  "prThroughput": {
+    "title": "PR Throughput Analysis",
+    "description": "Relationship between PR size and merge time",
+    "emptyState": "No merged PRs available for throughput analysis",
+    "summaryStats": {
+      "averageLeadTime": "Average Lead Time",
+      "medianLeadTime": "Median Lead Time",
+      "totalMergedPRs": "Total Merged PRs",
+      "days": "days"
+    }
+  },
   "errors": {
     "AUTHENTICATION_REQUIRED": "Authentication required. Please sign in.",
     "TOKEN_EXPIRED": "Your session has expired. Please sign in again.",

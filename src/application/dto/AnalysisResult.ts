@@ -1,4 +1,5 @@
 import { ContributorDto } from "./ContributorDto";
+import { ThroughputResult } from "./ThroughputResult";
 
 /**
  * DTO for successful repository analysis response
@@ -23,6 +24,7 @@ export interface AnalysisResult {
     totalReviewComments: number;
     analysisTimeMs: number;
   };
+  throughput?: ThroughputResult; // Optional PR throughput analysis
 }
 
 /**
