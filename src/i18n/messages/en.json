@@ -237,6 +237,31 @@
         "size": "Size: {lines} lines",
         "leadTime": "Lead Time: {hours} hours"
       }
+    },
+    "sizeBucketAnalysis": {
+      "title": "PR Size Category Analysis",
+      "description": "Compare lead times across different PR size categories"
+    },
+    "sizeBucketTable": {
+      "headers": {
+        "bucket": "Size",
+        "lineRange": "Line Range",
+        "averageLeadTime": "Avg Lead Time",
+        "prCount": "PR Count",
+        "percentage": "Percentage"
+      },
+      "days": "days"
+    },
+    "sizeBucketChart": {
+      "xAxisLabel": "PR Size Category",
+      "yAxisLabel": "Average Lead Time (Days)",
+      "tooltip": {
+        "bucket": "Size",
+        "lineRange": "Line Range",
+        "averageLeadTime": "Avg Lead Time",
+        "prCount": "PR Count",
+        "days": "days"
+      }
     }
   },
   "errors": {

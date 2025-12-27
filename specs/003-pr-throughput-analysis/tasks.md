@@ -113,11 +113,11 @@ All paths are relative to repository root: `/Users/nakai/work/private/team-insig
 
 ### Implementation for User Story 3
 
-- [ ] T026 [P] [US3] Create SizeBucketTable component in src/presentation/components/SizeBucketTable.tsx displaying bucket, line range, average lead time, PR count, percentage
-- [ ] T027 [P] [US3] Create SizeBucketBarChart component in src/presentation/components/SizeBucketBarChart.tsx using Recharts BarChart
-- [ ] T028 [US3] Add logic to highlight optimal bucket in bar chart (if available from insight) in SizeBucketBarChart component (depends on T027)
-- [ ] T029 [US3] Create SizeBucketAnalysis wrapper component in src/presentation/components/SizeBucketAnalysis.tsx combining table and bar chart with responsive layout (depends on T026, T027, T028)
-- [ ] T030 [US3] Integrate SizeBucketAnalysis into PRThroughputSection component in src/presentation/components/PRThroughputSection.tsx (depends on T029)
+- [x] T026 [P] [US3] Create SizeBucketTable component in src/presentation/components/SizeBucketTable.tsx displaying bucket, line range, average lead time, PR count, percentage
+- [x] T027 [P] [US3] Create SizeBucketBarChart component in src/presentation/components/SizeBucketBarChart.tsx using Recharts BarChart
+- [x] T028 [US3] Add logic to highlight optimal bucket in bar chart (if available from insight) in SizeBucketBarChart component (depends on T027)
+- [x] T029 [US3] Create SizeBucketAnalysis wrapper component in src/presentation/components/SizeBucketAnalysis.tsx combining table and bar chart with responsive layout (depends on T026, T027, T028)
+- [x] T030 [US3] Integrate SizeBucketAnalysis into PRThroughputSection component in src/presentation/components/PRThroughputSection.tsx (depends on T029)
 
 **Checkpoint**: User Story 3 complete - size bucket table and bar chart visible, layout responsive
 

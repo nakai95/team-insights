@@ -237,6 +237,31 @@
         "size": "サイズ: {lines}行",
         "leadTime": "リードタイム: {hours}時間"
       }
+    },
+    "sizeBucketAnalysis": {
+      "title": "PRサイズカテゴリ分析",
+      "description": "異なるPRサイズカテゴリ間でリードタイムを比較"
+    },
+    "sizeBucketTable": {
+      "headers": {
+        "bucket": "サイズ",
+        "lineRange": "行数範囲",
+        "averageLeadTime": "平均リードタイム",
+        "prCount": "PR数",
+        "percentage": "割合"
+      },
+      "days": "日"
+    },
+    "sizeBucketChart": {
+      "xAxisLabel": "PRサイズカテゴリ",
+      "yAxisLabel": "平均リードタイム（日）",
+      "tooltip": {
+        "bucket": "サイズ",
+        "lineRange": "行数範囲",
+        "averageLeadTime": "平均リードタイム",
+        "prCount": "PR数",
+        "days": "日"
+      }
     }
   },
   "errors": {

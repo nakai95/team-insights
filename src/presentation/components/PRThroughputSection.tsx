@@ -12,6 +12,7 @@ import { ThroughputResult } from "@/application/dto/ThroughputResult";
 import { SummaryStats } from "./SummaryStats";
 import { EmptyState } from "./EmptyState";
 import { PRSizeVsLeadTimeChart } from "./PRSizeVsLeadTimeChart";
+import { SizeBucketAnalysis } from "./SizeBucketAnalysis";
 
 export interface PRThroughputSectionProps {
   /**
@@ -25,12 +26,12 @@ export interface PRThroughputSectionProps {
  * Main PR Throughput Analysis Section Component
  *
  * Displays:
- * - Summary statistics (average, median, count)
+ * - Summary statistics (average, median, count) - User Story 1
  * - Scatter plot (PR size vs lead time) - User Story 2
+ * - Size bucket table and bar chart - User Story 3
  * - Empty state when no merged PRs available
  *
- * Future enhancements (User Stories 3-4):
- * - Size bucket table and bar chart
+ * Future enhancements (User Story 4):
  * - Automated insight message
  */
 export function PRThroughputSection({ throughput }: PRThroughputSectionProps) {
@@ -65,7 +66,17 @@ export function PRThroughputSection({ throughput }: PRThroughputSectionProps) {
               </div>
             )}
 
-            {/* Future: Size bucket table, bar chart, and insights will be added here */}
+            {/* Size Bucket Analysis: Table and Bar Chart */}
+            {throughput.sizeBuckets && throughput.sizeBuckets.length > 0 && (
+              <div className="mt-6">
+                <SizeBucketAnalysis
+                  sizeBuckets={throughput.sizeBuckets}
+                  optimalBucket={throughput.insight?.optimalBucket}
+                />
+              </div>
+            )}
+
+            {/* Future: Automated insight message will be added here (User Story 4) */}
           </div>
         )}
       </CardContent>
