@@ -80,7 +80,9 @@ export function SizeBucketTable({
               <TableRow
                 key={bucket.bucket}
                 className={
-                  isHighlighted ? "bg-green-50 font-semibold" : undefined
+                  isHighlighted
+                    ? "bg-green-50 dark:bg-green-950 font-semibold"
+                    : undefined
                 }
               >
                 <TableCell className="font-medium">{bucket.bucket}</TableCell>
