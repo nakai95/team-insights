@@ -7,6 +7,7 @@ Auto-generated from all feature plans. Last updated: 2025-12-25
 - TypeScript 5.3 / Next.js 15 (App Router)
 - React 18.3, Recharts 3.5.0, @octokit/rest 22.0.1
 - NextAuth v5 beta.30 (session data in encrypted JWT, no database)
+- next-themes 0.4.6 (theme management with SSR safety)
 - ESLint 9 with flat config (eslint.config.mjs)
 
 ## Project Structure
@@ -125,6 +126,7 @@ if (insight.type === "optimal") { ... } // Don't do this
 
 ## Recent Changes
 
+- 2025-12-30: Added light/dark mode toggle with next-themes integration
 - 2025-12-25: Added PR Throughput Analysis feature (003-pr-throughput-analysis)
 - 2025-12-23: Upgraded to Next.js 15.5.9 and ESLint 9.39.2
 - 002-github-oauth: Added GitHub OAuth integration

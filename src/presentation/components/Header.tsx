@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { UserProfile } from "./auth/UserProfile";
 import { LocaleSwitcher } from "./LocaleSwitcher";
+import { ThemeToggle } from "./ThemeToggle";
 
 /**
  * Header Component
@@ -41,8 +42,9 @@ export function Header() {
             </p>
           </Link>
 
-          {/* Right side: Locale Switcher and User Profile */}
+          {/* Right side: Theme Toggle, Locale Switcher and User Profile */}
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <LocaleSwitcher />
             <UserProfile />
           </div>
