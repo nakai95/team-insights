@@ -11,7 +11,10 @@ import { logger } from "@/lib/utils/logger";
 
 export type AnalysisState =
   | { status: "idle" }
-  | { status: "loading" }
+  | {
+      status: "loading";
+      dateRange?: { start: string; end: string };
+    }
   | { status: "success"; data: AnalysisResult }
   | { status: "error"; error: AnalysisError };
 
@@ -54,7 +57,38 @@ export function useAnalysis(): UseAnalysisReturn {
   }, []);
 
   const analyze = useCallback(async (request: AnalysisRequest) => {
-    setState({ status: "loading" });
+    // Calculate effective date range (apply default if not provided)
+    let effectiveDateRange: { start: string; end: string };
+
+    if (request.dateRange) {
+      // If dateRange is provided, fill in missing values with defaults
+      const startValue: string =
+        request.dateRange.start ||
+        (new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0] as string);
+      const endValue: string =
+        request.dateRange.end ||
+        (new Date().toISOString().split("T")[0] as string);
+
+      effectiveDateRange = {
+        start: startValue,
+        end: endValue,
+      };
+    } else {
+      // No dateRange provided, use default 6 months
+      effectiveDateRange = {
+        start: new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0] as string,
+        end: new Date().toISOString().split("T")[0] as string,
+      };
+    }
+
+    setState({
+      status: "loading",
+      dateRange: effectiveDateRange,
+    });
 
     try {
       const result = await analyzeRepository(request);

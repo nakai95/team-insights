@@ -194,9 +194,11 @@
   "progress": {
     "title": "分析進行中",
     "message": "リポジトリを分析しています...",
+    "dateRangeMessage": "{start} から {end} までのデータを解析中",
     "percentComplete": "{percent}% 完了",
     "steps": {
       "cloning": "リポジトリをクローン中",
+      "validating": "リポジトリへのアクセスを確認中",
       "commits": "コミット履歴を取得中",
       "pullRequests": "プルリクエストを分析中",
       "reviews": "レビューコメントを処理中",

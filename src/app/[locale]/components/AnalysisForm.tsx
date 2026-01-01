@@ -63,10 +63,10 @@ export function AnalysisForm({
     const request: AnalysisRequest = {
       repositoryUrl: repositoryUrl.trim(),
       dateRange:
-        startDate && endDate
+        startDate || endDate
           ? {
-              start: startDate,
-              end: endDate,
+              start: startDate || "",
+              end: endDate || "",
             }
           : undefined,
     };
