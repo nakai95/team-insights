@@ -102,6 +102,44 @@ interface GitHubGraphQLError {
   };
 }
 
+interface GitHubGraphQLCommit {
+  oid: string;
+  author: {
+    name: string;
+    email: string;
+    date: string;
+  } | null;
+  message: string;
+  additions: number;
+  deletions: number;
+  changedFilesIfAvailable: number;
+  parents: {
+    totalCount: number;
+  };
+}
+
+interface GitHubGraphQLCommitsResponse {
+  repository: {
+    defaultBranchRef: {
+      target: {
+        history: {
+          nodes: GitHubGraphQLCommit[];
+          pageInfo: {
+            hasNextPage: boolean;
+            endCursor: string | null;
+          };
+        };
+      };
+    } | null;
+  };
+  rateLimit: {
+    limit: number;
+    cost: number;
+    remaining: number;
+    resetAt: string;
+  };
+}
+
 /**
  * GraphQL query for fetching pull requests with all required data
  */
@@ -146,6 +184,50 @@ const PULL_REQUESTS_QUERY = `
         pageInfo {
           hasNextPage
           endCursor
+        }
+      }
+    }
+    rateLimit {
+      limit
+      cost
+      remaining
+      resetAt
+    }
+  }
+`;
+
+/**
+ * GraphQL query for fetching commits with full details
+ * Includes file changes, additions, and deletions in a single query
+ */
+const COMMITS_QUERY = `
+  query GetCommits($owner: String!, $repo: String!, $first: Int!, $after: String, $since: GitTimestamp, $until: GitTimestamp) {
+    repository(owner: $owner, name: $repo) {
+      defaultBranchRef {
+        target {
+          ... on Commit {
+            history(first: $first, after: $after, since: $since, until: $until) {
+              nodes {
+                oid
+                author {
+                  name
+                  email
+                  date
+                }
+                message
+                additions
+                deletions
+                changedFilesIfAvailable
+                parents(first: 2) {
+                  totalCount
+                }
+              }
+              pageInfo {
+                hasNextPage
+                endCursor
+              }
+            }
+          }
         }
       }
     }
@@ -207,6 +289,7 @@ const REVIEW_COMMENTS_QUERY = `
  */
 export class OctokitAdapter implements IGitHubRepository {
   private rateLimiter = new RateLimiter();
+  private readonly BATCH_SIZE = 15; // Number of PRs to fetch in parallel per batch
 
   constructor(private sessionProvider: ISessionProvider) {}
 
@@ -239,7 +322,6 @@ export class OctokitAdapter implements IGitHubRepository {
       // Try to get repository info to validate access
       await octokit.rest.repos.get({ owner, repo });
 
-      logger.info("GitHub token validation successful");
       return ok(true);
     } catch (error: any) {
       logger.error("GitHub token validation failed", {
@@ -450,69 +532,183 @@ export class OctokitAdapter implements IGitHubRepository {
   ): Promise<Result<ReviewComment[]>> {
     try {
       const token = await this.getToken();
-      logger.debug("Fetching review comments via GraphQL", {
+      const startTime = Date.now();
+
+      logger.debug("Fetching review comments via GraphQL (parallel batching)", {
         owner,
         repo,
         prCount: pullRequestNumbers.length,
+        batchSize: this.BATCH_SIZE,
       });
 
       const octokit = new Octokit({ auth: token });
       const allComments: ReviewComment[] = [];
+      const allErrors: Error[] = [];
 
-      // Fetch comments for each PR using GraphQL
-      for (const prNumber of pullRequestNumbers) {
-        let hasNextPage = true;
-        let cursor: string | null = null;
+      // Split PRs into batches for parallel processing
+      const batches = this.createBatches(pullRequestNumbers, this.BATCH_SIZE);
 
-        while (hasNextPage) {
-          // Wait if rate limit is low
-          await this.rateLimiter.waitIfNeeded();
+      logger.debug(
+        `Processing ${batches.length} batches of ${this.BATCH_SIZE} PRs each`,
+      );
 
-          // Execute GraphQL query
-          const response: GitHubGraphQLReviewCommentsResponse =
-            await octokit.graphql<GitHubGraphQLReviewCommentsResponse>(
-              REVIEW_COMMENTS_QUERY,
-              {
-                owner,
-                repo,
-                prNumber,
-                first: 100,
-                after: cursor,
-              },
-            );
+      // Process batches sequentially, PRs within batch in parallel
+      for (let i = 0; i < batches.length; i++) {
+        const batch = batches[i]!;
 
-          // Transform GraphQL response to domain entities
-          const comments = response.repository.pullRequest.comments.nodes.map(
-            (comment) => ({
-              id: parseInt(comment.id, 10), // Convert GraphQL string ID to number
-              author: comment.author?.login ?? "unknown",
-              createdAt: new Date(comment.createdAt),
-              body: comment.body,
-              pullRequestNumber: prNumber,
-            }),
-          );
-
-          allComments.push(...comments);
-
-          // Check if more pages exist
-          hasNextPage =
-            response.repository.pullRequest.comments.pageInfo.hasNextPage;
-          cursor = response.repository.pullRequest.comments.pageInfo.endCursor;
-
-          // Update rate limit info from GraphQL response
-          this.rateLimiter.updateRateLimit({
-            limit: response.rateLimit.limit,
-            remaining: response.rateLimit.remaining,
-            resetAt: new Date(response.rateLimit.resetAt),
+        // Check rate limit before processing batch
+        if (this.rateLimiter.getRemainingPercentage() < 10) {
+          logger.warn("Rate limit running low, waiting before next batch", {
+            remaining: this.rateLimiter.getRateLimitInfo()?.remaining,
           });
+          await this.rateLimiter.waitIfNeeded();
         }
+
+        // Fetch comments for all PRs in this batch concurrently
+        const { comments, errors } = await this.fetchCommentsForBatch(
+          octokit,
+          owner,
+          repo,
+          batch,
+        );
+
+        allComments.push(...comments);
+        allErrors.push(...errors);
       }
 
-      logger.info(`Fetched ${allComments.length} review comments via GraphQL`);
+      // Calculate performance metrics
+      const duration = Date.now() - startTime;
+      const durationSeconds = (duration / 1000).toFixed(2);
+
+      // Log summary
+      if (allErrors.length > 0) {
+        logger.warn(`Completed with ${allErrors.length} errors`, {
+          totalComments: allComments.length,
+          totalErrors: allErrors.length,
+          errorMessages: allErrors.map((e) => e.message),
+        });
+      }
+
+      logger.info(
+        `Fetched ${allComments.length} review comments from ${pullRequestNumbers.length} PRs in ${durationSeconds}s`,
+      );
+
       return ok(allComments);
     } catch (error: unknown) {
       return this.handleGraphQLError(error, "fetching review comments");
     }
+  }
+
+  /**
+   * Split array into batches of specified size
+   * @private
+   */
+  private createBatches<T>(items: T[], batchSize: number): T[][] {
+    const batches: T[][] = [];
+    for (let i = 0; i < items.length; i += batchSize) {
+      batches.push(items.slice(i, i + batchSize));
+    }
+    return batches;
+  }
+
+  /**
+   * Fetch review comments for a single PR with pagination
+   * Returns Result type for error handling
+   * @private
+   */
+  private async fetchCommentsForPR(
+    octokit: Octokit,
+    owner: string,
+    repo: string,
+    prNumber: number,
+  ): Promise<Result<ReviewComment[]>> {
+    const comments: ReviewComment[] = [];
+    let hasNextPage = true;
+    let cursor: string | null = null;
+
+    try {
+      while (hasNextPage) {
+        await this.rateLimiter.waitIfNeeded();
+
+        const response: GitHubGraphQLReviewCommentsResponse =
+          await octokit.graphql<GitHubGraphQLReviewCommentsResponse>(
+            REVIEW_COMMENTS_QUERY,
+            {
+              owner,
+              repo,
+              prNumber,
+              first: 100,
+              after: cursor,
+            },
+          );
+
+        // Transform GraphQL response to domain entities
+        const pageComments = response.repository.pullRequest.comments.nodes.map(
+          (comment) => ({
+            id: parseInt(comment.id, 10),
+            author: comment.author?.login ?? "unknown",
+            createdAt: new Date(comment.createdAt),
+            body: comment.body,
+            pullRequestNumber: prNumber,
+          }),
+        );
+
+        comments.push(...pageComments);
+
+        // Check if more pages exist
+        hasNextPage =
+          response.repository.pullRequest.comments.pageInfo.hasNextPage;
+        cursor = response.repository.pullRequest.comments.pageInfo.endCursor;
+
+        // Update rate limit info from GraphQL response
+        this.rateLimiter.updateRateLimit({
+          limit: response.rateLimit.limit,
+          remaining: response.rateLimit.remaining,
+          resetAt: new Date(response.rateLimit.resetAt),
+        });
+      }
+
+      return ok(comments);
+    } catch (error: unknown) {
+      logger.error(`Failed to fetch comments for PR #${prNumber}`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return err(
+        new Error(`Failed to fetch comments for PR #${prNumber}: ${error}`),
+      );
+    }
+  }
+
+  /**
+   * Fetch review comments for a batch of PRs in parallel
+   * @private
+   */
+  private async fetchCommentsForBatch(
+    octokit: Octokit,
+    owner: string,
+    repo: string,
+    prNumbers: number[],
+  ): Promise<{ comments: ReviewComment[]; errors: Error[] }> {
+    const results = await Promise.allSettled(
+      prNumbers.map((prNumber) =>
+        this.fetchCommentsForPR(octokit, owner, repo, prNumber),
+      ),
+    );
+
+    const comments: ReviewComment[] = [];
+    const errors: Error[] = [];
+
+    for (const result of results) {
+      if (result.status === "fulfilled" && result.value.ok) {
+        comments.push(...result.value.value);
+      } else if (result.status === "fulfilled" && !result.value.ok) {
+        errors.push(result.value.error);
+      } else if (result.status === "rejected") {
+        errors.push(new Error(String(result.reason)));
+      }
+    }
+
+    return { comments, errors };
   }
 
   /**
@@ -594,151 +790,89 @@ export class OctokitAdapter implements IGitHubRepository {
       }
 
       const { owner, repo } = parsed;
-
-      logger.info("Fetching commits from GitHub API", {
-        owner,
-        repo,
-        sinceDate: sinceDate?.toISOString(),
-        untilDate: untilDate?.toISOString(),
-      });
+      const startTime = Date.now();
 
       const octokit = new Octokit({ auth: token });
       const commits: GitCommit[] = [];
 
-      // Fetch commits with pagination
-      let page = 1;
-      const perPage = 100; // Max per page
+      let hasNextPage = true;
+      let cursor: string | null = null;
 
-      while (true) {
-        const params: any = {
-          owner,
-          repo,
-          per_page: perPage,
-          page,
-        };
-
-        // Add date filters if provided
-        if (sinceDate) {
-          params.since = sinceDate.toISOString();
-        }
-        if (untilDate) {
-          params.until = untilDate.toISOString();
-        }
-
-        logger.debug(`Fetching commits page ${page}`);
-
-        // Wait if rate limit is low
+      while (hasNextPage) {
         await this.rateLimiter.waitIfNeeded();
 
-        const response = await octokit.rest.repos.listCommits(params);
-
-        // Update rate limit info after each request
-        const rateLimitResult = await this.getRateLimitStatus();
-        if (rateLimitResult.ok) {
-          this.rateLimiter.updateRateLimit(rateLimitResult.value);
-        }
-
-        if (response.data.length === 0) {
-          break; // No more commits
-        }
-
-        // Process each commit
-        for (const commitData of response.data) {
-          // Skip commits without SHA
-          if (!commitData.sha) {
-            continue;
-          }
-
-          // Skip merge commits to match SimpleGitAdapter behavior
-          if (commitData.parents && commitData.parents.length > 1) {
-            continue;
-          }
-
-          const commit = commitData.commit;
-          const author = commit.author?.name || "Unknown";
-          const email = commit.author?.email || "";
-          const date = new Date(
-            commit.author?.date || commitData.commit.committer?.date || "",
-          );
-          const message = commit.message?.split("\n")[0] || ""; // First line only
-
-          // Fetch detailed commit data to get file changes
-          logger.debug(`Fetching commit details for ${commitData.sha}`);
-
-          await this.rateLimiter.waitIfNeeded();
-
-          const detailResponse = await octokit.rest.repos.getCommit({
+        // Execute GraphQL query with all commit details in one request
+        const response: GitHubGraphQLCommitsResponse =
+          await octokit.graphql<GitHubGraphQLCommitsResponse>(COMMITS_QUERY, {
             owner,
             repo,
-            ref: commitData.sha,
+            first: 100,
+            after: cursor,
+            since: sinceDate?.toISOString(),
+            until: untilDate?.toISOString(),
           });
 
-          // Update rate limit info after each request
-          const rateLimitResult2 = await this.getRateLimitStatus();
-          if (rateLimitResult2.ok) {
-            this.rateLimiter.updateRateLimit(rateLimitResult2.value);
+        // Check if repository has a default branch
+        if (!response.repository.defaultBranchRef) {
+          logger.warn("Repository has no default branch or is empty");
+          break;
+        }
+
+        // Transform GraphQL response to domain entities
+        const commitNodes =
+          response.repository.defaultBranchRef.target.history.nodes;
+
+        for (const commitData of commitNodes) {
+          // Skip merge commits (parents.totalCount > 1)
+          if (commitData.parents.totalCount > 1) {
+            continue;
           }
 
-          const files = detailResponse.data.files || [];
-          let filesChanged = files.length;
-          let linesAdded = 0;
-          let linesDeleted = 0;
-
-          for (const file of files) {
-            linesAdded += file.additions || 0;
-            linesDeleted += file.deletions || 0;
-          }
+          const author = commitData.author?.name || "Unknown";
+          const email = commitData.author?.email || "";
+          const date = new Date(commitData.author?.date || "");
+          const message = commitData.message.split("\n")[0] || ""; // First line only
 
           commits.push({
-            hash: commitData.sha,
+            hash: commitData.oid,
             author,
             email,
             date,
             message,
-            filesChanged,
-            linesAdded,
-            linesDeleted,
+            filesChanged: commitData.changedFilesIfAvailable,
+            linesAdded: commitData.additions,
+            linesDeleted: commitData.deletions,
           });
         }
 
-        // Check if there are more pages
-        if (response.data.length < perPage) {
-          break; // Last page
-        }
+        // Update pagination state
+        hasNextPage =
+          response.repository.defaultBranchRef.target.history.pageInfo
+            .hasNextPage;
+        cursor =
+          response.repository.defaultBranchRef.target.history.pageInfo
+            .endCursor;
 
-        page++;
+        // Update rate limit info from GraphQL response
+        this.rateLimiter.updateRateLimit({
+          limit: response.rateLimit.limit,
+          remaining: response.rateLimit.remaining,
+          resetAt: new Date(response.rateLimit.resetAt),
+        });
       }
 
+      const duration = Date.now() - startTime;
       logger.info(
-        `Successfully fetched ${commits.length} commits from GitHub API`,
+        `Successfully fetched ${commits.length} commits via GraphQL in ${(duration / 1000).toFixed(2)}s`,
       );
       return ok(commits);
     } catch (error: any) {
-      logger.error("Failed to fetch commits from GitHub API", {
+      logger.error("Failed to fetch commits via GraphQL", {
         error: getErrorMessage(error),
         status: error?.status,
       });
 
-      // Handle specific error cases
-      if (error?.status === 403) {
-        return err(
-          new Error(
-            "GitHub API rate limit exceeded or insufficient permissions. Please try again later or verify your access rights.",
-          ),
-        );
-      }
-
-      if (error?.status === 404) {
-        return err(
-          new Error(
-            "Repository not found or you do not have permission to access it.",
-          ),
-        );
-      }
-
-      return err(
-        new Error(`Failed to fetch commits: ${getErrorMessage(error)}`),
-      );
+      return this.handleGraphQLError(error, "fetching commits");
     }
   }
 }
