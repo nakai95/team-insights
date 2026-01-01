@@ -4,6 +4,9 @@ Auto-generated from all feature plans. Last updated: 2025-12-25
 
 ## Active Technologies
 
+- TypeScript 5.3, Next.js 15 (App Router) + @octokit/rest 22.0.1 (includes built-in GraphQL support via `octokit.graphql()`) (004-github-api-graphql)
+- N/A (stateless API calls) (004-github-api-graphql)
+
 - TypeScript 5.3 / Next.js 15 (App Router)
 - React 18.3, Recharts 3.5.0, @octokit/rest 22.0.1
 - NextAuth v5 beta.30 (session data in encrypted JWT, no database)
@@ -126,11 +129,10 @@ if (insight.type === "optimal") { ... } // Don't do this
 
 ## Recent Changes
 
+- 004-github-api-graphql: Added TypeScript 5.3, Next.js 15 (App Router) + @octokit/rest 22.0.1 (includes built-in GraphQL support via `octokit.graphql()`)
+
 - 2025-12-30: Added light/dark mode toggle with next-themes integration
 - 2025-12-25: Added PR Throughput Analysis feature (003-pr-throughput-analysis)
-- 2025-12-23: Upgraded to Next.js 15.5.9 and ESLint 9.39.2
-- 002-github-oauth: Added GitHub OAuth integration
-- 001-dev-activity-dashboard: Initial dashboard implementation
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

@@ -1,0 +1,113 @@
+# GitHub GraphQL Query: Review Comments for Specific PRs
+#
+# Purpose: Fetch review comments when pagination is needed beyond first 100 comments
+# Use Case: Large PRs with 100+ review comments requiring additional fetching
+# Replaces: REST API pulls.listReviewComments() for individual PRs
+#
+# Variables:
+#   $owner: String!      - Repository owner
+#   $repo: String!       - Repository name
+#   $prNumber: Int!      - Pull request number
+#   $first: Int!         - Number of comments to fetch (max 100)
+#   $after: String       - Pagination cursor (null for first page)
+#
+# Returns:
+#   - Review comment metadata: id, body, author, createdAt
+#   - Pagination info for additional comments
+#
+# Rate Limit Cost: ~1 point per query
+# Usage: Called only when PR has 100+ comments (rare case)
+
+query GetReviewComments(
+  $owner: String!
+  $repo: String!
+  $prNumber: Int!
+  $first: Int!
+  $after: String
+) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $prNumber) {
+      number
+      comments(first: $first, after: $after) {
+        nodes {
+          id
+          body
+          createdAt
+          author {
+            login
+          }
+        }
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+      }
+    }
+  }
+
+  # Rate Limit Status
+  rateLimit {
+    limit
+    cost
+    remaining
+    resetAt
+  }
+}
+
+# Example Response Structure:
+# {
+#   "data": {
+#     "repository": {
+#       "pullRequest": {
+#         "number": 1234,
+#         "comments": {
+#           "nodes": [
+#             {
+#               "id": "MDEyOklzc3VlQ29tbWVudDEyMzQ1Njc4OQ==",
+#               "body": "Please add tests for this change",
+#               "createdAt": "2025-12-02T10:30:00Z",
+#               "author": { "login": "reviewer1" }
+#             },
+#             {
+#               "id": "MDEyOklzc3VlQ29tbWVudDk4NzY1NDMyMQ==",
+#               "body": "Tests added in commit abc123",
+#               "createdAt": "2025-12-02T11:00:00Z",
+#               "author": { "login": "johndoe" }
+#             }
+#           ],
+#           "pageInfo": {
+#             "hasNextPage": true,
+#             "endCursor": "Y3Vyc29yOnYyOpK5MjAyNS0xMi0wMlQxMTowMDowMFo="
+#           }
+#         }
+#       }
+#     },
+#     "rateLimit": {
+#       "limit": 5000,
+#       "cost": 1,
+#       "remaining": 4999,
+#       "resetAt": "2026-01-01T12:00:00Z"
+#     }
+#   }
+# }
+
+# Implementation Notes:
+# 1. This query is OPTIONAL - only used when PR has 100+ comments
+# 2. Most PRs have < 100 comments, so pull-requests.graphql covers them
+# 3. Use this query for additional comment pages if needed
+# 4. Maintain same error handling as main PR query
+
+# When to Use:
+# - Initial PR query returns comments.pageInfo.hasNextPage = true
+# - Call this query with PR number and endCursor to fetch next page
+# - Repeat until hasNextPage = false
+
+# Error Handling:
+# - NOT_FOUND: PR doesn't exist → Return empty comments array
+# - FORBIDDEN: No access to repository → 403 error
+# - AUTHENTICATION_FAILURE: Invalid token → 401 error
+
+# Performance Notes:
+# - Very low rate limit cost (1 point per query)
+# - Rarely needed (most PRs have < 100 comments)
+# - Can be called in parallel for multiple PRs if needed
