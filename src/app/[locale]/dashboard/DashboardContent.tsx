@@ -43,7 +43,9 @@ export default function DashboardContent() {
         {state.status === "idle" && <AnalysisForm onSubmit={analyze} />}
 
         {/* Loading State: Show Progress */}
-        {state.status === "loading" && <ProgressIndicator />}
+        {state.status === "loading" && (
+          <ProgressIndicator dateRange={state.dateRange} />
+        )}
 
         {/* Error State: Show Error Message */}
         {state.status === "error" && (

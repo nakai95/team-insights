@@ -14,6 +14,10 @@ import { Loader2 } from "lucide-react";
 export interface ProgressIndicatorProps {
   message?: string;
   progress?: number;
+  dateRange?: {
+    start: string; // ISO 8601 date string
+    end: string; // ISO 8601 date string
+  };
 }
 
 /**
@@ -23,9 +27,18 @@ export interface ProgressIndicatorProps {
 export function ProgressIndicator({
   message,
   progress,
+  dateRange,
 }: ProgressIndicatorProps) {
   const t = useTranslations("progress");
   const displayMessage = message || t("message");
+
+  // Format date range for display
+  const dateRangeText = dateRange
+    ? t("dateRangeMessage", {
+        start: new Date(dateRange.start).toLocaleDateString(),
+        end: new Date(dateRange.end).toLocaleDateString(),
+      })
+    : null;
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
@@ -34,7 +47,14 @@ export function ProgressIndicator({
           <Loader2 className="h-5 w-5 animate-spin" />
           {t("title")}
         </CardTitle>
-        <CardDescription>{displayMessage}</CardDescription>
+        <CardDescription>
+          {displayMessage}
+          {dateRangeText && (
+            <span className="block mt-1 text-sm font-medium">
+              {dateRangeText}
+            </span>
+          )}
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {progress !== undefined && (
@@ -47,7 +67,7 @@ export function ProgressIndicator({
         )}
         <div className="text-sm text-muted-foreground space-y-1">
           <ul className="list-disc list-inside space-y-1 ml-2">
-            <li>{t("steps.cloning")}</li>
+            <li>{t("steps.validating")}</li>
             <li>{t("steps.commits")}</li>
             <li>{t("steps.pullRequests")}</li>
             <li>{t("steps.reviews")}</li>

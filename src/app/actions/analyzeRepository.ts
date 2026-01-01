@@ -50,18 +50,31 @@ export async function analyzeRepository(
 
     if (request.dateRange) {
       try {
-        dateRangeStart = new Date(request.dateRange.start);
-        dateRangeEnd = new Date(request.dateRange.end);
+        // Only parse non-empty strings
+        if (request.dateRange.start) {
+          dateRangeStart = new Date(request.dateRange.start);
+          if (isNaN(dateRangeStart.getTime())) {
+            return {
+              ok: false,
+              error: {
+                code: AnalysisErrorCode.INVALID_URL,
+                message: "Invalid start date format",
+              },
+            };
+          }
+        }
 
-        // Validate dates
-        if (isNaN(dateRangeStart.getTime()) || isNaN(dateRangeEnd.getTime())) {
-          return {
-            ok: false,
-            error: {
-              code: AnalysisErrorCode.INVALID_URL,
-              message: "Invalid date format in date range",
-            },
-          };
+        if (request.dateRange.end) {
+          dateRangeEnd = new Date(request.dateRange.end);
+          if (isNaN(dateRangeEnd.getTime())) {
+            return {
+              ok: false,
+              error: {
+                code: AnalysisErrorCode.INVALID_URL,
+                message: "Invalid end date format",
+              },
+            };
+          }
         }
       } catch (error) {
         return {

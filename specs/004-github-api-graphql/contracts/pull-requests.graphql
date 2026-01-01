@@ -1,0 +1,156 @@
+# GitHub GraphQL Query: Pull Requests with Review Comments
+#
+# Purpose: Fetch all pull request data required for PR Throughput Analysis
+# Replaces: Multiple REST API calls (pulls.list, pulls.get, pulls.listReviewComments)
+# Performance: Single query fetches 100 PRs with all metadata and review comments
+#
+# Variables:
+#   $owner: String!       - Repository owner (e.g., "facebook")
+#   $repo: String!        - Repository name (e.g., "react")
+#   $first: Int!          - Number of PRs to fetch (max 100)
+#   $after: String        - Pagination cursor (null for first page)
+#   $sinceDate: DateTime  - Filter PRs created after this date (optional)
+#
+# Returns:
+#   - PR metadata: number, title, author, state, dates
+#   - Code changes: additions, deletions, changedFiles
+#   - Review data: review count, review comments
+#   - Pagination: pageInfo for next page cursor
+#
+# Rate Limit Cost: ~1-2 points per PR (100-200 points for 100 PRs)
+# Compared to REST: ~300+ API calls → 1 GraphQL query
+
+query GetPullRequestsWithComments(
+  $owner: String!
+  $repo: String!
+  $first: Int!
+  $after: String
+  $sinceDate: DateTime
+) {
+  repository(owner: $owner, name: $repo) {
+    pullRequests(
+      first: $first
+      after: $after
+      orderBy: { field: CREATED_AT, direction: DESC }
+    ) {
+      nodes {
+        # Core PR Metadata
+        number
+        title
+        state
+        createdAt
+        mergedAt
+
+        # Author Information
+        author {
+          login
+        }
+
+        # Code Change Statistics
+        additions
+        deletions
+        changedFiles
+
+        # Review Data
+        reviews {
+          totalCount
+        }
+
+        # Review Comments (nested query)
+        comments(first: 100) {
+          nodes {
+            id
+            body
+            createdAt
+            author {
+              login
+            }
+          }
+          pageInfo {
+            hasNextPage
+            endCursor
+          }
+        }
+      }
+
+      # Pagination Info
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+
+  # Rate Limit Status (for monitoring)
+  rateLimit {
+    limit
+    cost
+    remaining
+    resetAt
+  }
+}
+
+# Example Response Structure:
+# {
+#   "data": {
+#     "repository": {
+#       "pullRequests": {
+#         "nodes": [
+#           {
+#             "number": 1234,
+#             "title": "Fix bug in component",
+#             "state": "MERGED",
+#             "createdAt": "2025-12-01T10:00:00Z",
+#             "mergedAt": "2025-12-02T15:30:00Z",
+#             "author": { "login": "johndoe" },
+#             "additions": 150,
+#             "deletions": 50,
+#             "changedFiles": 5,
+#             "reviews": { "totalCount": 3 },
+#             "comments": {
+#               "nodes": [
+#                 {
+#                   "id": "MDEyOklzc3VlQ29tbWVudDEyMzQ1Njc4OQ==",
+#                   "body": "LGTM",
+#                   "createdAt": "2025-12-02T14:00:00Z",
+#                   "author": { "login": "reviewer1" }
+#                 }
+#               ],
+#               "pageInfo": { "hasNextPage": false, "endCursor": null }
+#             }
+#           }
+#         ],
+#         "pageInfo": {
+#           "hasNextPage": true,
+#           "endCursor": "Y3Vyc29yOnYyOpK5MjAyNS0xMi0wMVQxMDowMDowMFo="
+#         }
+#       }
+#     },
+#     "rateLimit": {
+#       "limit": 5000,
+#       "cost": 120,
+#       "remaining": 4880,
+#       "resetAt": "2026-01-01T12:00:00Z"
+#     }
+#   }
+# }
+
+# Implementation Notes:
+# 1. Use cursor-based pagination (pageInfo.endCursor) for fetching next page
+# 2. Early termination: Stop when createdAt < sinceDate (PRs sorted descending)
+# 3. Handle null author (deleted users): Map to "unknown"
+# 4. State mapping: "MERGED" → "closed" with non-null mergedAt
+# 5. Review comments pagination: If hasNextPage, fetch additional pages separately
+# 6. Rate limit monitoring: Check remaining points before next query
+
+# Error Handling:
+# - NOT_FOUND: Repository doesn't exist or user lacks access → 404
+# - FORBIDDEN: User doesn't have permission → 403
+# - AUTHENTICATION_FAILURE: Invalid token → 401
+# - RATE_LIMITED: Exceeded rate limit → Retry after resetAt
+
+# Performance Optimization:
+# - Fetch 100 PRs per query (GitHub max)
+# - Nested review comments (max 100 per PR)
+# - Sort by CREATED_AT DESC for early termination with sinceDate
+# - Monitor rate limit cost and adjust batch size if needed

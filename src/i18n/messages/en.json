@@ -194,9 +194,11 @@
   "progress": {
     "title": "Analysis in Progress",
     "message": "Analyzing repository...",
+    "dateRangeMessage": "Analyzing data from {start} to {end}",
     "percentComplete": "{percent}% complete",
     "steps": {
       "cloning": "Cloning repository",
+      "validating": "Validating repository access",
       "commits": "Fetching commit history",
       "pullRequests": "Analyzing pull requests",
       "reviews": "Processing review comments",
