@@ -71,63 +71,102 @@ As a user of the existing PR Throughput feature, I need the system to work exact
 
 ---
 
+### User Story 4 - Fast Commit Data Retrieval (Priority: P1)
+
+As a developer using the Dev Activity Dashboard, I need to see commit data load quickly so that I can analyze developer activity without waiting for slow data fetches.
+
+**Why this priority**: Commit fetching also suffers from the same sequential REST API performance issues as PR fetching. Migrating to GraphQL provides consistent performance improvements across all features.
+
+**Independent Test**: Can be tested by navigating to the Dev Activity Dashboard, authenticating with GitHub, and measuring the time from request to commit data display. Monitor network requests to verify GraphQL queries replace multiple REST calls.
+
+**Acceptance Scenarios**:
+
+1. **Given** a repository with 100+ commits, **When** a user loads the Dev Activity Dashboard, **Then** the commit data should load within 1 second
+2. **Given** a date range filter (sinceDate/untilDate), **When** fetching commits, **Then** the GraphQL query should apply date filters efficiently without client-side filtering
+3. **Given** large repositories with 1000+ commits, **When** loading commit data, **Then** the system should handle pagination efficiently and exclude merge commits
+
+---
+
 ### Edge Cases
 
 - What happens when GitHub GraphQL API rate limits are exceeded?
-- How does the system handle repositories with no pull requests?
+- How does the system handle repositories with no pull requests or commits?
 - What happens when a repository has PRs with incomplete or missing data (deleted users, private forks)?
-- How does pagination handle very large repositories (10,000+ PRs)?
+- What happens when commits have null author data (deleted users)?
+- How does pagination handle very large repositories (10,000+ PRs or commits)?
 - What happens when GitHub API returns partial data or timeouts during a GraphQL query?
 - How does the system handle repositories where the user has limited access permissions?
+- How does the system handle empty repositories with no default branch?
 
 ## Requirements
 
 ### Functional Requirements
 
+#### Pull Request Data (PR Throughput Analysis)
+
 - **FR-001**: System MUST fetch all PR data required for Throughput Analysis in a single GraphQL query (or minimum number of queries for pagination)
 - **FR-002**: System MUST complete PR data retrieval within 1 second for repositories with up to 100 pull requests
 - **FR-003**: System MUST handle pagination for repositories exceeding the GraphQL query result limit (typically 100 items per page)
-- **FR-004**: System MUST maintain the existing interface contract so that calling code requires no modifications
-- **FR-005**: System MUST pass all existing unit and integration tests without modification
-- **FR-006**: System MUST retrieve all PR fields currently used by the Throughput Analysis feature: PR number, title, author, created date, merged date, review count, comment count, changed files count, additions, deletions, and merge status
-- **FR-007**: System MUST handle GitHub API errors gracefully with the same error handling behavior as the REST implementation
-- **FR-008**: System MUST respect GitHub API rate limits and provide appropriate error messages when limits are exceeded
-- **FR-009**: System MUST support the same authentication mechanisms as the current REST implementation (OAuth tokens)
+- **FR-004**: System MUST retrieve all PR fields currently used by the Throughput Analysis feature: PR number, title, author, created date, merged date, review count, comment count, changed files count, additions, deletions, and merge status
+- **FR-005**: System MUST support parallel batch processing for review comments (batch size: 15 PRs per batch) to improve performance while respecting rate limits
+
+#### Commit Data (Dev Activity Dashboard)
+
+- **FR-006**: System MUST fetch all commit data required for Dev Activity Dashboard in a single GraphQL query (or minimum number of queries for pagination)
+- **FR-007**: System MUST complete commit data retrieval within 1 second for repositories with up to 1000 commits
+- **FR-008**: System MUST retrieve all commit fields: hash, author, email, date, message, filesChanged, linesAdded, linesDeleted
+- **FR-009**: System MUST exclude merge commits (commits with multiple parents) automatically
+- **FR-010**: System MUST support date range filtering (sinceDate/untilDate) via GraphQL query parameters
+- **FR-011**: System MUST handle repositories with no default branch gracefully (empty repositories)
+
+#### General Requirements
+
+- **FR-012**: System MUST maintain the existing interface contract so that calling code requires no modifications
+- **FR-013**: System MUST pass all existing unit and integration tests without modification
+- **FR-014**: System MUST handle GitHub API errors gracefully with the same error handling behavior as the REST implementation
+- **FR-015**: System MUST respect GitHub API rate limits and provide appropriate error messages when limits are exceeded
+- **FR-016**: System MUST support the same authentication mechanisms as the current REST implementation (OAuth tokens)
+- **FR-017**: System MUST handle null author data (deleted users) with "unknown" fallback for both PRs and commits
 
 ### Key Entities
 
 - **Pull Request**: Represents a GitHub pull request with metadata including author, timestamps, review activity, code changes, and merge status. Required for calculating throughput metrics.
-- **Repository**: Represents a GitHub repository containing pull requests. Used to scope PR queries and manage pagination.
+- **Commit**: Represents a GitHub commit with metadata including hash, author, email, date, message, and code change statistics. Required for calculating developer activity metrics. Excludes merge commits.
+- **Review Comment**: Represents a comment on a pull request, including author, body, creation date, and associated PR number. Fetched in parallel batches for performance.
+- **Repository**: Represents a GitHub repository containing pull requests and commits. Used to scope queries and manage pagination.
 - **GraphQL Query Result**: Represents the response from GitHub GraphQL API, including paginated data and cursor information for fetching additional pages.
 
 ## Success Criteria
 
 ### Measurable Outcomes
 
-- **SC-001**: PR data retrieval completes in under 1 second for repositories with up to 1000 pull requests (improvement from current 15 seconds)
-- **SC-002**: Number of API requests reduced by at least 90% compared to REST implementation (from multiple sequential requests to 1-3 GraphQL queries)
+- **SC-001**: PR and commit data retrieval completes in under 1 second for repositories with up to 1000 items (improvement from current 15 seconds for PRs)
+- **SC-002**: Number of API requests reduced by at least 90% compared to REST implementation (from 100+ sequential requests to 1-3 GraphQL queries)
 - **SC-003**: All existing functionality remains unchanged - 100% of current test suite passes without modification
 - **SC-004**: System handles repositories of any size without timeout errors or performance degradation
 - **SC-005**: API rate limit consumption reduced by at least 80% for typical repository analysis workflows
+- **SC-006**: Commit fetching completes within 1 second for repositories with up to 1000 commits, excluding merge commits automatically
+- **SC-007**: Review comments batch processing achieves sub-second retrieval for up to 100 PRs with parallel batches of 15 PRs
 
 ## Assumptions
 
-- GitHub GraphQL API provides all necessary PR fields available in REST API
+- GitHub GraphQL API provides all necessary PR and commit fields available in REST API
 - Octokit library's graphql() method is stable and production-ready
 - Current GitHub OAuth authentication tokens are compatible with GraphQL API
 - Existing error handling patterns are sufficient for GraphQL-specific errors
 - GraphQL pagination using cursor-based approach is suitable for large result sets
 - No changes are needed to the domain layer or use case interfaces
+- Parallel batch processing (15 PRs per batch) provides optimal balance between performance and rate limit consumption
+- Merge commits can be reliably identified by checking parent count (>1)
 
 ## Out of Scope
 
-- Migration of other GitHub API integrations beyond PR data fetching
-- Changes to the PR Throughput Analysis UI or dashboard
-- Performance optimizations unrelated to API migration
+- Changes to the PR Throughput Analysis or Dev Activity Dashboard UI
+- Performance optimizations unrelated to API migration (e.g., client-side caching, memoization)
 - Caching strategies (should be handled separately if needed)
 - Real-time data updates or webhooks
 - Changes to authentication or authorization mechanisms
-- Migration of GitHub API calls in other features (e.g., Dev Activity Dashboard)
+- Migration of other GitHub operations beyond data fetching (e.g., creating PRs, adding comments)
 
 ## Dependencies
 

@@ -7,11 +7,16 @@
 
 ## Summary
 
-Migrate GitHub API integration from REST to GraphQL to improve performance by consolidating multiple sequential REST API calls into single GraphQL queries. Primary goal is to reduce PR data retrieval time from 15 seconds to under 1 second for repositories with up to 1000 PRs, while maintaining complete backward compatibility with existing functionality.
+Migrate GitHub API integration from REST to GraphQL to improve performance by consolidating multiple sequential REST API calls into single GraphQL queries. Primary goals are to reduce PR data retrieval time from 15 seconds to under 1 second and provide equivalent performance improvements for commit data fetching, while maintaining complete backward compatibility with existing functionality.
 
-**Current Implementation**: OctokitAdapter uses REST API with sequential calls to `pulls.list()`, `pulls.get()`, and `pulls.listReviewComments()`, resulting in 100+ API calls for large repositories.
+**Current Implementation**: OctokitAdapter uses REST API with sequential calls to `pulls.list()`, `pulls.get()`, `pulls.listReviewComments()` for PR data, and multiple `repos.listCommits()` calls for commit data, resulting in 100+ API calls for large repositories.
 
-**Target Implementation**: GraphQL queries to fetch all required PR data (metadata, review comments, change statistics) in 1-3 paginated queries, reducing API requests by 90%+ and achieving sub-1-second load times.
+**Target Implementation**:
+
+- GraphQL queries to fetch all required PR data (metadata, review comments, change statistics) in 1-3 paginated queries
+- GraphQL queries to fetch all commit data (hash, author, date, message, code changes) in 1-2 paginated queries with automatic merge commit exclusion
+- Parallel batch processing for review comments (15 PRs per batch) to optimize performance
+- Reducing API requests by 90%+ and achieving sub-1-second load times for both PRs and commits
 
 ## Technical Context
 
@@ -24,8 +29,10 @@ Migrate GitHub API integration from REST to GraphQL to improve performance by co
 **Performance Goals**:
 
 - PR data retrieval < 1 second for repos with up to 1000 PRs (current: 15 seconds)
+- Commit data retrieval < 1 second for repos with up to 1000 commits
 - API request reduction: 90%+ (from 100+ REST calls to 1-3 GraphQL queries)
 - API rate limit consumption: 80%+ reduction
+- Review comments batch processing: sub-second retrieval for up to 100 PRs (15 PRs per parallel batch)
   **Constraints**:
 - Must maintain existing `IGitHubRepository` interface contract
 - All 30 existing unit tests must pass without modification
@@ -149,7 +156,8 @@ specs/004-github-api-graphql/
 ├── quickstart.md        # Phase 1 output: Migration guide and testing approach
 ├── contracts/           # Phase 1 output: GraphQL query schemas
 │   ├── pull-requests.graphql    # PR list query with pagination
-│   └── review-comments.graphql   # Review comments batch query
+│   ├── review-comments.graphql  # Review comments batch query
+│   └── commits.graphql           # Commit history query with date filters
 └── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
 
@@ -206,11 +214,13 @@ All constitutional principles are satisfied (see Constitution Check section abov
 
 **Key Findings**:
 
-1. **GraphQL Query Design**: Single query replaces 100+ REST calls
+1. **GraphQL Query Design**: Single query replaces 100+ REST calls for both PRs and commits
 2. **Pagination Strategy**: Cursor-based with early termination for date filtering
-3. **Error Handling**: Map GraphQL errors to REST equivalents (401, 403, 404)
-4. **Type Safety**: Manual TypeScript types (no code generation dependencies)
-5. **Testing Strategy**: Update mocks to GraphQL response structures
+3. **Batch Processing**: Parallel batches of 15 PRs for review comments to balance performance and rate limits
+4. **Merge Commit Filtering**: Server-side filtering using parent count (>1) for automatic exclusion
+5. **Error Handling**: Map GraphQL errors to REST equivalents (401, 403, 404)
+6. **Type Safety**: Manual TypeScript types (no code generation dependencies)
+7. **Testing Strategy**: Update mocks to GraphQL response structures
 
 **Decisions Made**:
 
@@ -218,6 +228,9 @@ All constitutional principles are satisfied (see Constitution Check section abov
 - Manual type definitions (avoid code generation complexity)
 - Maintain same pagination behavior (early termination for sinceDate)
 - Transform GraphQL responses to existing domain entities
+- Implement parallel batch processing for review comments (15 PRs per batch)
+- Handle null author data with "unknown" fallback
+- Exclude merge commits automatically via parent count check
 
 ---
 
@@ -234,20 +247,30 @@ All constitutional principles are satisfied (see Constitution Check section abov
 
 - `GitHubGraphQLPullRequest`: Complete PR response structure
 - `GitHubGraphQLPullRequestsResponse`: Paginated response wrapper
+- `GitHubGraphQLCommit`: Complete commit response structure with parent count
+- `GitHubGraphQLCommitsResponse`: Paginated commit response wrapper
+- `GitHubGraphQLReviewCommentsResponse`: Batch review comments response
 - Transformation functions: GraphQL → Domain entities
 - Validation rules for runtime safety
 
 **API Contracts**:
 
 1. **pull-requests.graphql**: Fetches 100 PRs with metadata, code changes, and review comments
-   - Variables: owner, repo, first (100), after (cursor), sinceDate (optional)
+   - Variables: owner, repo, first (100), after (cursor)
    - Returns: PR nodes, pagination info, rate limit status
    - Cost: ~100-200 points per query
 
-2. **review-comments.graphql**: Optional query for PRs with 100+ comments
+2. **review-comments.graphql**: Batch query for PRs with 100+ comments (parallel processing)
    - Variables: owner, repo, prNumber, first (100), after (cursor)
    - Returns: Review comment nodes, pagination info
-   - Cost: ~1 point per query (rarely used)
+   - Cost: ~1 point per query (batched: 15 PRs in parallel)
+   - Batch size: 15 PRs per parallel batch (optimal for rate limit balance)
+
+3. **commits.graphql**: Fetches 100 commits with full details and parent count
+   - Variables: owner, repo, first (100), after (cursor), since (GitTimestamp), until (GitTimestamp)
+   - Returns: Commit nodes with author, message, code changes, parent count, pagination info
+   - Cost: ~100-200 points per query
+   - Automatic merge commit exclusion: Filter commits where parents.totalCount > 1
 
 **Implementation Guide**:
 
