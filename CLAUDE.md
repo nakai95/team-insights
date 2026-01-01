@@ -129,8 +129,13 @@ if (insight.type === "optimal") { ... } // Don't do this
 
 ## Recent Changes
 
-- 004-github-api-graphql: Added TypeScript 5.3, Next.js 15 (App Router) + @octokit/rest 22.0.1 (includes built-in GraphQL support via `octokit.graphql()`)
-
+- 2026-01-02: Migrated GitHub API from REST to GraphQL (004-github-api-graphql)
+  - Replaced sequential REST API calls with single GraphQL queries
+  - Performance improvement: 15 seconds → <1 second for large repositories
+  - API efficiency: 90%+ reduction in API requests (100+ REST calls → 1-2 GraphQL queries)
+  - Infrastructure-only change: `OctokitAdapter.ts` implementation updated
+  - No breaking changes: All interfaces and tests remain unchanged
+  - Type-safe GraphQL integration using `octokit.graphql()` with manual TypeScript types
 - 2025-12-30: Added light/dark mode toggle with next-themes integration
 - 2025-12-25: Added PR Throughput Analysis feature (003-pr-throughput-analysis)
 

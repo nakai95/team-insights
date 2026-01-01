@@ -10,11 +10,13 @@ const mockPullsList = vi.fn();
 const mockPullsGet = vi.fn();
 const mockPullsListReviewComments = vi.fn();
 const mockRateLimitGet = vi.fn();
+const mockGraphql = vi.fn();
 
 // Mock the Octokit class
 vi.mock("@octokit/rest", () => {
   return {
     Octokit: class MockOctokit {
+      graphql = mockGraphql;
       rest = {
         repos: {
           get: mockReposGet,
@@ -33,6 +35,64 @@ vi.mock("@octokit/rest", () => {
     },
   };
 });
+
+// Helper function to create mock GraphQL response for pull requests
+interface MockPRNode {
+  number?: number;
+  title?: string;
+  author?: { login: string } | null;
+  createdAt?: string;
+  state?: "OPEN" | "CLOSED" | "MERGED";
+  mergedAt?: string | null;
+  additions?: number;
+  deletions?: number;
+  changedFiles?: number;
+  reviews?: { totalCount: number };
+  comments?: {
+    nodes: Array<{
+      id: string;
+      author: { login: string } | null;
+      createdAt: string;
+      body: string;
+    }>;
+    pageInfo: { hasNextPage: boolean; endCursor: string | null };
+  };
+}
+
+function createMockGraphQLPRResponse(
+  prs: MockPRNode[],
+  pageInfo?: { hasNextPage: boolean; endCursor: string | null },
+) {
+  return {
+    repository: {
+      pullRequests: {
+        nodes: prs.map((pr) => ({
+          number: pr.number ?? 1,
+          title: pr.title ?? "Test PR",
+          author: pr.author ?? { login: "testuser" },
+          createdAt: pr.createdAt ?? "2024-01-01T00:00:00Z",
+          state: pr.state ?? "OPEN",
+          mergedAt: pr.mergedAt ?? null,
+          additions: pr.additions ?? 0,
+          deletions: pr.deletions ?? 0,
+          changedFiles: pr.changedFiles ?? 0,
+          reviews: pr.reviews ?? { totalCount: 0 },
+          comments: pr.comments ?? {
+            nodes: [],
+            pageInfo: { hasNextPage: false, endCursor: null },
+          },
+        })),
+        pageInfo: pageInfo ?? { hasNextPage: false, endCursor: null },
+      },
+    },
+    rateLimit: {
+      limit: 5000,
+      cost: 1,
+      remaining: 4999,
+      resetAt: new Date(Date.now() + 3600000).toISOString(),
+    },
+  };
+}
 
 /**
  * OctokitAdapter Unit Tests
@@ -142,9 +202,7 @@ describe("OctokitAdapter", () => {
     });
 
     it("should return empty array when no PRs exist", async () => {
-      mockPullsList.mockResolvedValue({
-        data: [],
-      });
+      mockGraphql.mockResolvedValue(createMockGraphQLPRResponse([]));
 
       const result = await adapter.getPullRequests("owner", "repo");
 
@@ -155,18 +213,17 @@ describe("OctokitAdapter", () => {
     });
 
     it("should fetch and transform open PRs correctly", async () => {
-      mockPullsList.mockResolvedValue({
-        data: [
+      mockGraphql.mockResolvedValue(
+        createMockGraphQLPRResponse([
           {
             number: 1,
             title: "Test PR",
-            user: { login: "testuser" },
-            created_at: "2024-01-01T00:00:00Z",
-            state: "open",
-            merged_at: null,
+            author: { login: "testuser" },
+            createdAt: "2024-01-01T00:00:00Z",
+            state: "OPEN",
           },
-        ],
-      });
+        ]),
+      );
 
       const result = await adapter.getPullRequests("owner", "repo");
 
@@ -180,31 +237,29 @@ describe("OctokitAdapter", () => {
           createdAt: new Date("2024-01-01T00:00:00Z"),
           state: "open",
           reviewCommentCount: 0,
+          additions: 0,
+          deletions: 0,
+          changedFiles: 0,
         });
       }
     });
 
     it("should fetch detailed stats for merged PRs", async () => {
-      mockPullsList.mockResolvedValue({
-        data: [
+      mockGraphql.mockResolvedValue(
+        createMockGraphQLPRResponse([
           {
             number: 2,
             title: "Merged PR",
-            user: { login: "testuser" },
-            created_at: "2024-01-01T00:00:00Z",
-            state: "closed",
-            merged_at: "2024-01-02T00:00:00Z",
+            author: { login: "testuser" },
+            createdAt: "2024-01-01T00:00:00Z",
+            state: "MERGED",
+            mergedAt: "2024-01-02T00:00:00Z",
+            additions: 100,
+            deletions: 50,
+            changedFiles: 5,
           },
-        ],
-      });
-
-      mockPullsGet.mockResolvedValue({
-        data: {
-          additions: 100,
-          deletions: 50,
-          changed_files: 5,
-        },
-      });
+        ]),
+      );
 
       const result = await adapter.getPullRequests("owner", "repo");
 
@@ -224,34 +279,75 @@ describe("OctokitAdapter", () => {
           changedFiles: 5,
         });
       }
-      expect(mockPullsGet).toHaveBeenCalledWith({
-        owner: "owner",
-        repo: "repo",
-        pull_number: 2,
-      });
+    });
+
+    it("should handle cursor-based pagination correctly", async () => {
+      // First page with cursor
+      mockGraphql
+        .mockResolvedValueOnce(
+          createMockGraphQLPRResponse([{ number: 1, title: "PR 1" }], {
+            hasNextPage: true,
+            endCursor: "cursor123",
+          }),
+        )
+        // Second page, no more pages
+        .mockResolvedValueOnce(
+          createMockGraphQLPRResponse([{ number: 2, title: "PR 2" }], {
+            hasNextPage: false,
+            endCursor: null,
+          }),
+        );
+
+      const result = await adapter.getPullRequests("owner", "repo");
+
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value).toHaveLength(2);
+        expect(result.value[0]?.number).toBe(1);
+        expect(result.value[1]?.number).toBe(2);
+      }
+
+      // Verify pagination was called correctly
+      expect(mockGraphql).toHaveBeenCalledTimes(2);
+      expect(mockGraphql).toHaveBeenNthCalledWith(
+        1,
+        expect.any(String),
+        expect.objectContaining({
+          owner: "owner",
+          repo: "repo",
+          first: 100,
+          after: null,
+        }),
+      );
+      expect(mockGraphql).toHaveBeenNthCalledWith(
+        2,
+        expect.any(String),
+        expect.objectContaining({
+          owner: "owner",
+          repo: "repo",
+          first: 100,
+          after: "cursor123",
+        }),
+      );
     });
 
     it("should filter PRs by sinceDate", async () => {
-      mockPullsList.mockResolvedValue({
-        data: [
+      mockGraphql.mockResolvedValue(
+        createMockGraphQLPRResponse([
           {
             number: 1,
             title: "Recent PR",
-            user: { login: "testuser" },
-            created_at: "2024-01-10T00:00:00Z",
-            state: "open",
-            merged_at: null,
+            createdAt: "2024-01-10T00:00:00Z",
+            state: "OPEN",
           },
           {
             number: 2,
             title: "Old PR",
-            user: { login: "testuser" },
-            created_at: "2024-01-01T00:00:00Z",
-            state: "open",
-            merged_at: null,
+            createdAt: "2024-01-01T00:00:00Z",
+            state: "OPEN",
           },
-        ],
-      });
+        ]),
+      );
 
       const sinceDate = new Date("2024-01-05T00:00:00Z");
       const result = await adapter.getPullRequests("owner", "repo", sinceDate);
@@ -275,7 +371,8 @@ describe("OctokitAdapter", () => {
     });
 
     it("should handle 403 permission error", async () => {
-      mockPullsList.mockRejectedValue({
+      mockGraphql.mockRejectedValue({
+        errors: [{ type: "FORBIDDEN" }],
         status: 403,
         message: "Forbidden",
       });
@@ -291,7 +388,8 @@ describe("OctokitAdapter", () => {
     });
 
     it("should handle 404 not found error", async () => {
-      mockPullsList.mockRejectedValue({
+      mockGraphql.mockRejectedValue({
+        errors: [{ type: "NOT_FOUND" }],
         status: 404,
         message: "Not Found",
       });
@@ -320,8 +418,25 @@ describe("OctokitAdapter", () => {
     });
 
     it("should return empty array when no comments exist", async () => {
-      mockPullsListReviewComments.mockResolvedValue({
-        data: [],
+      mockGraphql.mockResolvedValue({
+        repository: {
+          pullRequest: {
+            number: 1,
+            comments: {
+              nodes: [],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
+            },
+          },
+        },
+        rateLimit: {
+          limit: 5000,
+          cost: 1,
+          remaining: 4999,
+          resetAt: new Date(Date.now() + 3600000).toISOString(),
+        },
       });
 
       const result = await adapter.getReviewComments("owner", "repo", [1]);
@@ -333,15 +448,32 @@ describe("OctokitAdapter", () => {
     });
 
     it("should fetch and transform review comments correctly", async () => {
-      mockPullsListReviewComments.mockResolvedValue({
-        data: [
-          {
-            id: 123,
-            user: { login: "reviewer" },
-            created_at: "2024-01-01T00:00:00Z",
-            body: "Please fix this",
+      mockGraphql.mockResolvedValue({
+        repository: {
+          pullRequest: {
+            number: 1,
+            comments: {
+              nodes: [
+                {
+                  id: "123",
+                  author: { login: "reviewer" },
+                  createdAt: "2024-01-01T00:00:00Z",
+                  body: "Please fix this",
+                },
+              ],
+              pageInfo: {
+                hasNextPage: false,
+                endCursor: null,
+              },
+            },
           },
-        ],
+        },
+        rateLimit: {
+          limit: 5000,
+          cost: 1,
+          remaining: 4999,
+          resetAt: new Date(Date.now() + 3600000).toISOString(),
+        },
       });
 
       const result = await adapter.getReviewComments("owner", "repo", [1]);
@@ -360,26 +492,60 @@ describe("OctokitAdapter", () => {
     });
 
     it("should fetch comments for multiple PRs", async () => {
-      mockPullsListReviewComments
+      mockGraphql
         .mockResolvedValueOnce({
-          data: [
-            {
-              id: 1,
-              user: { login: "reviewer1" },
-              created_at: "2024-01-01T00:00:00Z",
-              body: "Comment on PR 1",
+          repository: {
+            pullRequest: {
+              number: 1,
+              comments: {
+                nodes: [
+                  {
+                    id: "1",
+                    author: { login: "reviewer1" },
+                    createdAt: "2024-01-01T00:00:00Z",
+                    body: "Comment on PR 1",
+                  },
+                ],
+                pageInfo: {
+                  hasNextPage: false,
+                  endCursor: null,
+                },
+              },
             },
-          ],
+          },
+          rateLimit: {
+            limit: 5000,
+            cost: 1,
+            remaining: 4999,
+            resetAt: new Date(Date.now() + 3600000).toISOString(),
+          },
         })
         .mockResolvedValueOnce({
-          data: [
-            {
-              id: 2,
-              user: { login: "reviewer2" },
-              created_at: "2024-01-02T00:00:00Z",
-              body: "Comment on PR 2",
+          repository: {
+            pullRequest: {
+              number: 2,
+              comments: {
+                nodes: [
+                  {
+                    id: "2",
+                    author: { login: "reviewer2" },
+                    createdAt: "2024-01-02T00:00:00Z",
+                    body: "Comment on PR 2",
+                  },
+                ],
+                pageInfo: {
+                  hasNextPage: false,
+                  endCursor: null,
+                },
+              },
             },
-          ],
+          },
+          rateLimit: {
+            limit: 5000,
+            cost: 1,
+            remaining: 4998,
+            resetAt: new Date(Date.now() + 3600000).toISOString(),
+          },
         });
 
       const result = await adapter.getReviewComments("owner", "repo", [1, 2]);
@@ -404,9 +570,13 @@ describe("OctokitAdapter", () => {
     });
 
     it("should handle 403 permission error", async () => {
-      mockPullsListReviewComments.mockRejectedValue({
-        status: 403,
-        message: "Forbidden",
+      mockGraphql.mockRejectedValue({
+        errors: [
+          {
+            type: "FORBIDDEN",
+            message: "Resource not accessible by integration",
+          },
+        ],
       });
 
       const result = await adapter.getReviewComments("owner", "repo", [1]);

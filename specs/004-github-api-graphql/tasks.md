@@ -36,7 +36,7 @@
 
 **⚠️ CRITICAL**: Type definitions must be complete before implementation begins
 
-- [ ] T001 [P] Add GraphQL response type definitions to src/infrastructure/github/OctokitAdapter.ts (interfaces: GitHubGraphQLPullRequest, GitHubGraphQLPullRequestsResponse, GitHubGraphQLError)
+- [x] T001 [P] Add GraphQL response type definitions to src/infrastructure/github/OctokitAdapter.ts (interfaces: GitHubGraphQLPullRequest, GitHubGraphQLPullRequestsResponse, GitHubGraphQLError)
 
 **Checkpoint**: Type definitions complete - implementation can now begin
 
@@ -52,15 +52,15 @@
 
 ### Implementation for User Story 1
 
-- [ ] T002 [US1] Define GraphQL query constant for pull requests in src/infrastructure/github/OctokitAdapter.ts (based on contracts/pull-requests.graphql)
-- [ ] T003 [US1] Replace REST API calls in getPullRequests() method with GraphQL query in src/infrastructure/github/OctokitAdapter.ts
-- [ ] T004 [US1] Implement GraphQL response transformation to domain PullRequest entities in src/infrastructure/github/OctokitAdapter.ts
-- [ ] T005 [US1] Implement cursor-based pagination with early termination for sinceDate filter in src/infrastructure/github/OctokitAdapter.ts
-- [ ] T006 [US1] Handle null author values (deleted users) with "unknown" fallback in src/infrastructure/github/OctokitAdapter.ts
-- [ ] T007 [US1] Map GraphQL PR state values (OPEN, CLOSED, MERGED) to domain states (open, closed) in src/infrastructure/github/OctokitAdapter.ts
-- [ ] T008 [US1] Add GraphQL error handler method handleGraphQLError() in src/infrastructure/github/OctokitAdapter.ts
-- [ ] T009 [US1] Map GraphQL errors (NOT_FOUND, FORBIDDEN, AUTHENTICATION_FAILURE) to REST-equivalent error messages in src/infrastructure/github/OctokitAdapter.ts
-- [ ] T010 [US1] Update rate limit tracking to use rateLimit data from GraphQL response in src/infrastructure/github/OctokitAdapter.ts
+- [x] T002 [US1] Define GraphQL query constant for pull requests in src/infrastructure/github/OctokitAdapter.ts (based on contracts/pull-requests.graphql)
+- [x] T003 [US1] Replace REST API calls in getPullRequests() method with GraphQL query in src/infrastructure/github/OctokitAdapter.ts
+- [x] T004 [US1] Implement GraphQL response transformation to domain PullRequest entities in src/infrastructure/github/OctokitAdapter.ts
+- [x] T005 [US1] Implement cursor-based pagination with early termination for sinceDate filter in src/infrastructure/github/OctokitAdapter.ts
+- [x] T006 [US1] Handle null author values (deleted users) with "unknown" fallback in src/infrastructure/github/OctokitAdapter.ts
+- [x] T007 [US1] Map GraphQL PR state values (OPEN, CLOSED, MERGED) to domain states (open, closed) in src/infrastructure/github/OctokitAdapter.ts
+- [x] T008 [US1] Add GraphQL error handler method handleGraphQLError() in src/infrastructure/github/OctokitAdapter.ts
+- [x] T009 [US1] Map GraphQL errors (NOT_FOUND, FORBIDDEN, AUTHENTICATION_FAILURE) to REST-equivalent error messages in src/infrastructure/github/OctokitAdapter.ts
+- [x] T010 [US1] Update rate limit tracking to use rateLimit data from GraphQL response in src/infrastructure/github/OctokitAdapter.ts
 
 **Checkpoint**: User Story 1 complete - PR data now fetches via GraphQL with 90%+ performance improvement
 
@@ -76,10 +76,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T011 [US2] Update GraphQL query to include nested review comments (first 100) in src/infrastructure/github/OctokitAdapter.ts
-- [ ] T012 [US2] Update GraphQL query to include code change statistics (additions, deletions, changedFiles) in src/infrastructure/github/OctokitAdapter.ts
-- [ ] T013 [US2] Add review comment transformation in GraphQL response mapper in src/infrastructure/github/OctokitAdapter.ts
-- [ ] T014 [US2] Implement getReviewComments() method using GraphQL for PRs with 100+ comments in src/infrastructure/github/OctokitAdapter.ts (based on contracts/review-comments.graphql)
+- [x] T011 [US2] Update GraphQL query to include nested review comments (first 100) in src/infrastructure/github/OctokitAdapter.ts
+- [x] T012 [US2] Update GraphQL query to include code change statistics (additions, deletions, changedFiles) in src/infrastructure/github/OctokitAdapter.ts
+- [x] T013 [US2] Add review comment transformation in GraphQL response mapper in src/infrastructure/github/OctokitAdapter.ts
+- [x] T014 [US2] Implement getReviewComments() method using GraphQL for PRs with 100+ comments in src/infrastructure/github/OctokitAdapter.ts (based on contracts/review-comments.graphql)
 
 **Checkpoint**: User Story 2 complete - All PR data now fetched in single request, 90%+ API call reduction achieved
 
@@ -95,19 +95,19 @@
 
 ### Implementation for User Story 3
 
-- [ ] T015 [US3] Update test mocks in src/infrastructure/github/**tests**/OctokitAdapter.test.ts to return GraphQL response structures instead of REST
-- [ ] T016 [US3] Create mock GraphQL response helper function in src/infrastructure/github/**tests**/OctokitAdapter.test.ts
-- [ ] T017 [US3] Update "fetch open PRs" test mocks to use GraphQL structure in src/infrastructure/github/**tests**/OctokitAdapter.test.ts
-- [ ] T018 [US3] Update "fetch merged PRs" test mocks to use GraphQL structure in src/infrastructure/github/**tests**/OctokitAdapter.test.ts
-- [ ] T019 [US3] Update pagination test mocks to use GraphQL cursor-based pagination in src/infrastructure/github/**tests**/OctokitAdapter.test.ts
-- [ ] T020 [US3] Update error handling test mocks to use GraphQL error structure in src/infrastructure/github/**tests**/OctokitAdapter.test.ts
-- [ ] T021 [US3] Update date filtering test mocks to use GraphQL structure in src/infrastructure/github/**tests**/OctokitAdapter.test.ts
-- [ ] T022 [US3] Verify all 30 unit tests pass with `pnpm test` command
-- [ ] T023 [US3] Run TypeScript type checking with `pnpm type-check` command
-- [ ] T024 [US3] Manual testing: Test with repository containing 100+ PRs (e.g., facebook/react) and verify load time < 1 second
-- [ ] T025 [US3] Manual testing: Test with empty repository and verify no errors occur
-- [ ] T026 [US3] Manual testing: Test with private repository (no access) and verify "Access denied" error message displays
-- [ ] T027 [US3] Manual testing: Test pagination with repository containing 500+ PRs and verify all PRs load correctly
+- [x] T015 [US3] Update test mocks in src/infrastructure/github/**tests**/OctokitAdapter.test.ts to return GraphQL response structures instead of REST
+- [x] T016 [US3] Create mock GraphQL response helper function in src/infrastructure/github/**tests**/OctokitAdapter.test.ts
+- [x] T017 [US3] Update "fetch open PRs" test mocks to use GraphQL structure in src/infrastructure/github/**tests**/OctokitAdapter.test.ts
+- [x] T018 [US3] Update "fetch merged PRs" test mocks to use GraphQL structure in src/infrastructure/github/**tests**/OctokitAdapter.test.ts
+- [x] T019 [US3] Update pagination test mocks to use GraphQL cursor-based pagination in src/infrastructure/github/**tests**/OctokitAdapter.test.ts
+- [x] T020 [US3] Update error handling test mocks to use GraphQL error structure in src/infrastructure/github/**tests**/OctokitAdapter.test.ts
+- [x] T021 [US3] Update date filtering test mocks to use GraphQL structure in src/infrastructure/github/**tests**/OctokitAdapter.test.ts
+- [x] T022 [US3] Verify all 30 unit tests pass with `pnpm test` command
+- [x] T023 [US3] Run TypeScript type checking with `pnpm type-check` command
+- [ ] T024 [US3] Manual testing: Test with repository containing 100+ PRs (e.g., facebook/react) and verify load time < 1 second (MANUAL TEST - requires user action)
+- [ ] T025 [US3] Manual testing: Test with empty repository and verify no errors occur (MANUAL TEST - requires user action)
+- [ ] T026 [US3] Manual testing: Test with private repository (no access) and verify "Access denied" error message displays (MANUAL TEST - requires user action)
+- [ ] T027 [US3] Manual testing: Test pagination with repository containing 500+ PRs and verify all PRs load correctly (MANUAL TEST - requires user action)
 
 **Checkpoint**: User Story 3 complete - All tests pass, backward compatibility verified, migration complete
 
@@ -117,15 +117,15 @@
 
 **Purpose**: Final validation and documentation updates
 
-- [ ] T028 [P] Verify no changes to domain layer files in src/domain/
-- [ ] T029 [P] Verify no changes to application layer files in src/application/
-- [ ] T030 [P] Verify no changes to presentation layer files in src/presentation/
-- [ ] T031 Run full test suite with `pnpm test` to confirm all tests pass
-- [ ] T032 Run ESLint with `pnpm run lint` to verify code quality
-- [ ] T033 Verify performance: Measure actual PR fetch time for 100 PRs (target: < 1 second)
-- [ ] T034 Verify API efficiency: Count GraphQL queries for 100 PRs (target: 1-2 queries vs 100+ REST calls)
-- [ ] T035 Review quickstart.md validation checklist and confirm all steps completed
-- [ ] T036 Update CLAUDE.md with GraphQL migration notes (add to "Recent Changes" section)
+- [x] T028 [P] Verify no changes to domain layer files in src/domain/
+- [x] T029 [P] Verify no changes to application layer files in src/application/
+- [x] T030 [P] Verify no changes to presentation layer files in src/presentation/
+- [x] T031 Run full test suite with `pnpm test` to confirm all tests pass
+- [x] T032 Run ESLint with `pnpm run lint` to verify code quality
+- [ ] T033 Verify performance: Measure actual PR fetch time for 100 PRs (target: < 1 second) (MANUAL TEST - requires user action)
+- [ ] T034 Verify API efficiency: Count GraphQL queries for 100 PRs (target: 1-2 queries vs 100+ REST calls) (MANUAL TEST - requires user action)
+- [x] T035 Review quickstart.md validation checklist and confirm all steps completed
+- [x] T036 Update CLAUDE.md with GraphQL migration notes (add to "Recent Changes" section)
 
 ---
 
