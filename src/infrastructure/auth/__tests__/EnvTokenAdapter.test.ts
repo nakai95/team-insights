@@ -1,20 +1,31 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
+
+// Mock @octokit/graphql BEFORE importing EnvTokenAdapter
+vi.mock("@octokit/graphql");
+
+import { graphql, GraphqlResponseError } from "@octokit/graphql";
 import { EnvTokenAdapter } from "../EnvTokenAdapter";
 
-// Create mock function for getAuthenticated
-const mockGetAuthenticated = vi.fn();
+const mockGraphql = vi.mocked(graphql);
 
-// Mock Octokit - only mock external API calls, not logging
-vi.mock("@octokit/rest", () => ({
-  Octokit: vi.fn(function (this: any) {
-    this.rest = {
-      users: {
-        getAuthenticated: mockGetAuthenticated,
-      },
-    };
-    return this;
-  }),
-}));
+// Helper to create GraphqlResponseError instances for testing
+function createGraphqlError(
+  message: string,
+  status: string,
+): GraphqlResponseError<Record<string, unknown>> {
+  const proto = GraphqlResponseError.prototype;
+  const error = Object.create(proto) as GraphqlResponseError<
+    Record<string, unknown>
+  >;
+  Error.captureStackTrace(error, createGraphqlError);
+  error.name = "GraphqlResponseError";
+  error.message = message;
+  (error as any).headers = { status };
+  (error as any).request = { query: "", variables: {} };
+  (error as any).response = { data: null, errors: [] };
+  (error as any).errors = [];
+  return error;
+}
 
 describe("EnvTokenAdapter", () => {
   const originalNodeEnv = process.env.NODE_ENV;
@@ -116,14 +127,14 @@ describe("EnvTokenAdapter", () => {
     });
 
     it("should return access token after fetching user info", async () => {
-      mockGetAuthenticated.mockResolvedValue({
-        data: {
+      mockGraphql.mockResolvedValue({
+        viewer: {
           login: "testuser",
           name: "Test User",
           email: "test@example.com",
           id: 12345,
         },
-      } as any);
+      });
 
       const adapter = new EnvTokenAdapter();
       const result = await adapter.getAccessToken();
@@ -135,14 +146,14 @@ describe("EnvTokenAdapter", () => {
     });
 
     it("should cache user info after first fetch", async () => {
-      mockGetAuthenticated.mockResolvedValue({
-        data: {
+      mockGraphql.mockResolvedValue({
+        viewer: {
           login: "testuser",
           name: "Test User",
           email: "test@example.com",
           id: 12345,
         },
-      } as any);
+      });
 
       const adapter = new EnvTokenAdapter();
 
@@ -152,12 +163,12 @@ describe("EnvTokenAdapter", () => {
       await adapter.getAccessToken();
 
       // Should only fetch once
-      expect(mockGetAuthenticated).toHaveBeenCalledTimes(1);
+      expect(mockGraphql).toHaveBeenCalledTimes(1);
     });
 
     it("should return error for invalid token (401)", async () => {
-      mockGetAuthenticated.mockRejectedValue(
-        new Error("Request failed with status code 401"),
+      mockGraphql.mockRejectedValue(
+        createGraphqlError("Bad credentials", "401"),
       );
 
       const adapter = new EnvTokenAdapter();
@@ -172,9 +183,7 @@ describe("EnvTokenAdapter", () => {
     });
 
     it("should return error for insufficient permissions (403)", async () => {
-      mockGetAuthenticated.mockRejectedValue(
-        new Error("Request failed with status code 403"),
-      );
+      mockGraphql.mockRejectedValue(createGraphqlError("Forbidden", "403"));
 
       const adapter = new EnvTokenAdapter();
       const result = await adapter.getAccessToken();
@@ -187,7 +196,7 @@ describe("EnvTokenAdapter", () => {
     });
 
     it("should return error for network failures", async () => {
-      mockGetAuthenticated.mockRejectedValue(new Error("Network error"));
+      mockGraphql.mockRejectedValue(new Error("Network error"));
 
       const adapter = new EnvTokenAdapter();
       const result = await adapter.getAccessToken();
@@ -202,7 +211,7 @@ describe("EnvTokenAdapter", () => {
 
     it("should handle non-Error exceptions", async () => {
       // Mock a non-Error rejection (e.g., a string or number)
-      mockGetAuthenticated.mockRejectedValue("String error");
+      mockGraphql.mockRejectedValue("String error");
 
       const adapter = new EnvTokenAdapter();
       const result = await adapter.getAccessToken();
@@ -232,13 +241,16 @@ describe("EnvTokenAdapter", () => {
       const mockUserData = {
         login: "testuser",
         name: "Test User",
-        email: "test@example.com",
         id: 12345,
       };
 
-      mockGetAuthenticated.mockResolvedValue({
-        data: mockUserData,
-      } as any);
+      mockGraphql.mockResolvedValue({
+        viewer: {
+          login: "testuser",
+          name: "Test User",
+          id: 12345,
+        },
+      });
 
       const adapter = new EnvTokenAdapter();
       await adapter.getAccessToken();
@@ -257,8 +269,8 @@ describe("EnvTokenAdapter", () => {
       (process.env as { GITHUB_TOKEN?: string }).GITHUB_TOKEN =
         "ghp_1234567890abcdef";
 
-      mockGetAuthenticated.mockRejectedValue(
-        new Error("Request failed with status code 401"),
+      mockGraphql.mockRejectedValue(
+        createGraphqlError("Bad credentials", "401"),
       );
 
       const adapter = new EnvTokenAdapter();

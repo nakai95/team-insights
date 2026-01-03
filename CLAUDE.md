@@ -4,11 +4,8 @@ Auto-generated from all feature plans. Last updated: 2025-12-25
 
 ## Active Technologies
 
-- TypeScript 5.3, Next.js 15 (App Router) + @octokit/rest 22.0.1 (includes built-in GraphQL support via `octokit.graphql()`) (004-github-api-graphql)
-- N/A (stateless API calls) (004-github-api-graphql)
-
-- TypeScript 5.3 / Next.js 15 (App Router)
-- React 18.3, Recharts 3.5.0, @octokit/rest 22.0.1
+- TypeScript 5.3, Next.js 15 (App Router) + @octokit/graphql 9.0.3
+- React 18.3, Recharts 3.5.0
 - NextAuth v5 beta.30 (session data in encrypted JWT, no database)
 - next-themes 0.4.6 (theme management with SSR safety)
 - ESLint 9 with flat config (eslint.config.mjs)
@@ -129,13 +126,17 @@ if (insight.type === "optimal") { ... } // Don't do this
 
 ## Recent Changes
 
+- 2026-01-04: Completed migration from @octokit/rest to @octokit/graphql
+  - Replaced all REST API calls with GraphQL queries (validateAccess, getRateLimitStatus, user authentication)
+  - Simplified authentication with direct `graphql()` function usage (no Octokit class instantiation)
+  - Removed @octokit/rest dependency from package.json
+  - Performance: All API operations now use GraphQL for consistency
+  - Infrastructure-only change: `OctokitAdapter.ts` and `EnvTokenAdapter.ts` implementation updated
+  - No breaking changes: All interfaces and tests remain unchanged
 - 2026-01-02: Migrated GitHub API from REST to GraphQL (004-github-api-graphql)
   - Replaced sequential REST API calls with single GraphQL queries
   - Performance improvement: 15 seconds → <1 second for large repositories
   - API efficiency: 90%+ reduction in API requests (100+ REST calls → 1-2 GraphQL queries)
-  - Infrastructure-only change: `OctokitAdapter.ts` implementation updated
-  - No breaking changes: All interfaces and tests remain unchanged
-  - Type-safe GraphQL integration using `octokit.graphql()` with manual TypeScript types
 - 2025-12-30: Added light/dark mode toggle with next-themes integration
 - 2025-12-25: Added PR Throughput Analysis feature (003-pr-throughput-analysis)
 

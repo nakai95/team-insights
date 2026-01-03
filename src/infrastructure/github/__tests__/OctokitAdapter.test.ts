@@ -1,40 +1,39 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { OctokitAdapter } from "../OctokitAdapter";
 import { MockSessionProvider } from "../../auth/__mocks__/MockSessionProvider";
 
-// Create mock functions that will be used by the mock Octokit instance
-const mockReposGet = vi.fn();
-const mockReposListCommits = vi.fn();
-const mockReposGetCommit = vi.fn();
-const mockPullsList = vi.fn();
-const mockPullsGet = vi.fn();
-const mockPullsListReviewComments = vi.fn();
-const mockRateLimitGet = vi.fn();
-const mockGraphql = vi.fn();
+// Mock the @octokit/graphql module BEFORE importing OctokitAdapter
+vi.mock("@octokit/graphql");
 
-// Mock the Octokit class
-vi.mock("@octokit/rest", () => {
-  return {
-    Octokit: class MockOctokit {
-      graphql = mockGraphql;
-      rest = {
-        repos: {
-          get: mockReposGet,
-          listCommits: mockReposListCommits,
-          getCommit: mockReposGetCommit,
-        },
-        pulls: {
-          list: mockPullsList,
-          get: mockPullsGet,
-          listReviewComments: mockPullsListReviewComments,
-        },
-        rateLimit: {
-          get: mockRateLimitGet,
-        },
-      };
-    },
-  };
-});
+// Now we can import and get the mocked graphql
+import { graphql, GraphqlResponseError } from "@octokit/graphql";
+import { OctokitAdapter } from "../OctokitAdapter";
+
+const mockGraphql = vi.mocked(graphql);
+const mockGraphqlDefaults = vi.fn();
+
+// Setup graphql.defaults to return a mock function that delegates to mockGraphql
+(mockGraphql as any).defaults =
+  mockGraphqlDefaults.mockReturnValue(mockGraphql);
+
+// Helper to create GraphqlResponseError instances for testing
+function createGraphqlError(
+  message: string,
+  errors: Array<{ type?: string; message?: string }>,
+  status?: string,
+): GraphqlResponseError<Record<string, unknown>> {
+  // Create a proper GraphqlResponseError using Object.create
+  const proto = GraphqlResponseError.prototype;
+  const error = Object.create(proto) as GraphqlResponseError<
+    Record<string, unknown>
+  >;
+  Error.captureStackTrace(error, createGraphqlError);
+  error.name = "GraphqlResponseError";
+  error.message = message;
+  (error as any).errors = errors;
+  (error as any).request = { query: "", variables: {} };
+  (error as any).headers = status ? { status } : {};
+  return error;
+}
 
 // Helper function to create mock GraphQL response for pull requests
 interface MockPRNode {
@@ -160,8 +159,8 @@ describe("OctokitAdapter", () => {
 
   describe("validateAccess", () => {
     it("should return success when repository access is valid", async () => {
-      mockReposGet.mockResolvedValue({
-        data: { id: 123, name: "test-repo" },
+      mockGraphql.mockResolvedValue({
+        repository: { id: "123" },
       });
 
       const result = await adapter.validateAccess("owner", "repo");
@@ -170,10 +169,13 @@ describe("OctokitAdapter", () => {
       if (result.ok) {
         expect(result.value).toBe(true);
       }
-      expect(mockReposGet).toHaveBeenCalledWith({
-        owner: "owner",
-        repo: "repo",
-      });
+      expect(mockGraphql).toHaveBeenCalledWith(
+        expect.stringContaining("ValidateRepoAccess"),
+        expect.objectContaining({
+          owner: "owner",
+          repo: "repo",
+        }),
+      );
     });
 
     it("should return error when session is not available", async () => {
@@ -187,25 +189,14 @@ describe("OctokitAdapter", () => {
       }
     });
 
-    it("should return error for 401 unauthorized", async () => {
-      mockReposGet.mockRejectedValue({
-        status: 401,
-        message: "Unauthorized",
-      });
-
-      const result = await adapter.validateAccess("owner", "repo");
-
-      expect(result.ok).toBe(false);
-      if (!result.ok) {
-        expect(result.error.message).toContain("Invalid GitHub token");
-      }
-    });
-
-    it("should return error for 404 not found", async () => {
-      mockReposGet.mockRejectedValue({
-        status: 404,
-        message: "Not Found",
-      });
+    it("should return error for NOT_FOUND GraphQL error", async () => {
+      mockGraphql.mockRejectedValue(
+        createGraphqlError(
+          "Not Found",
+          [{ type: "NOT_FOUND", message: "Not Found" }],
+          "404",
+        ),
+      );
 
       const result = await adapter.validateAccess("owner", "repo");
 
@@ -215,11 +206,14 @@ describe("OctokitAdapter", () => {
       }
     });
 
-    it("should return error for 403 forbidden", async () => {
-      mockReposGet.mockRejectedValue({
-        status: 403,
-        message: "Forbidden",
-      });
+    it("should return error for FORBIDDEN GraphQL error", async () => {
+      mockGraphql.mockRejectedValue(
+        createGraphqlError(
+          "Forbidden",
+          [{ type: "FORBIDDEN", message: "Forbidden" }],
+          "403",
+        ),
+      );
 
       const result = await adapter.validateAccess("owner", "repo");
 
@@ -230,22 +224,26 @@ describe("OctokitAdapter", () => {
         );
       }
     });
+
+    it("should return error for AUTHENTICATION_FAILURE GraphQL error", async () => {
+      mockGraphql.mockRejectedValue(
+        createGraphqlError(
+          "Unauthorized",
+          [{ type: "AUTHENTICATION_FAILURE", message: "Unauthorized" }],
+          "401",
+        ),
+      );
+
+      const result = await adapter.validateAccess("owner", "repo");
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.message).toContain("Invalid GitHub token");
+      }
+    });
   });
 
   describe("getPullRequests", () => {
-    beforeEach(() => {
-      // Mock rate limit to avoid rate limiting behavior
-      mockRateLimitGet.mockResolvedValue({
-        data: {
-          rate: {
-            limit: 5000,
-            remaining: 4999,
-            reset: Math.floor(Date.now() / 1000) + 3600,
-          },
-        },
-      });
-    });
-
     it("should return empty array when no PRs exist", async () => {
       mockGraphql.mockResolvedValue(createMockGraphQLPRResponse([]));
 
@@ -416,11 +414,13 @@ describe("OctokitAdapter", () => {
     });
 
     it("should handle 403 permission error", async () => {
-      mockGraphql.mockRejectedValue({
-        errors: [{ type: "FORBIDDEN" }],
-        status: 403,
-        message: "Forbidden",
-      });
+      mockGraphql.mockRejectedValue(
+        createGraphqlError(
+          "Forbidden",
+          [{ type: "FORBIDDEN", message: "Forbidden" }],
+          "403",
+        ),
+      );
 
       const result = await adapter.getPullRequests("owner", "repo");
 
@@ -433,11 +433,13 @@ describe("OctokitAdapter", () => {
     });
 
     it("should handle 404 not found error", async () => {
-      mockGraphql.mockRejectedValue({
-        errors: [{ type: "NOT_FOUND" }],
-        status: 404,
-        message: "Not Found",
-      });
+      mockGraphql.mockRejectedValue(
+        createGraphqlError(
+          "Not Found",
+          [{ type: "NOT_FOUND", message: "Not Found" }],
+          "404",
+        ),
+      );
 
       const result = await adapter.getPullRequests("owner", "repo");
 
@@ -449,19 +451,6 @@ describe("OctokitAdapter", () => {
   });
 
   describe("getReviewComments", () => {
-    beforeEach(() => {
-      // Mock rate limit to avoid rate limiting behavior
-      mockRateLimitGet.mockResolvedValue({
-        data: {
-          rate: {
-            limit: 5000,
-            remaining: 4999,
-            reset: Math.floor(Date.now() / 1000) + 3600,
-          },
-        },
-      });
-    });
-
     it("should return empty array when no comments exist", async () => {
       mockGraphql.mockResolvedValue({
         repository: {
@@ -637,14 +626,13 @@ describe("OctokitAdapter", () => {
 
   describe("getRateLimitStatus", () => {
     it("should fetch and transform rate limit info correctly", async () => {
-      const resetTimestamp = Math.floor(Date.now() / 1000) + 3600;
-      mockRateLimitGet.mockResolvedValue({
-        data: {
-          rate: {
-            limit: 5000,
-            remaining: 4999,
-            reset: resetTimestamp,
-          },
+      const resetDate = new Date(Date.now() + 3600000).toISOString();
+      mockGraphql.mockResolvedValue({
+        rateLimit: {
+          limit: 5000,
+          cost: 1,
+          remaining: 4999,
+          resetAt: resetDate,
         },
       });
 
@@ -655,7 +643,7 @@ describe("OctokitAdapter", () => {
         expect(result.value).toEqual({
           limit: 5000,
           remaining: 4999,
-          resetAt: new Date(resetTimestamp * 1000),
+          resetAt: new Date(resetDate),
         });
       }
     });
@@ -672,7 +660,7 @@ describe("OctokitAdapter", () => {
     });
 
     it("should handle API error", async () => {
-      mockRateLimitGet.mockRejectedValue({
+      mockGraphql.mockRejectedValue({
         message: "API Error",
       });
 
@@ -785,9 +773,13 @@ describe("OctokitAdapter", () => {
     });
 
     it("should handle 403 rate limit error", async () => {
-      mockGraphql.mockRejectedValue({
-        errors: [{ type: "FORBIDDEN", message: "Rate limit exceeded" }],
-      });
+      mockGraphql.mockRejectedValue(
+        createGraphqlError(
+          "Forbidden",
+          [{ type: "FORBIDDEN", message: "Rate limit exceeded" }],
+          "403",
+        ),
+      );
 
       const result = await adapter.getLog("https://github.com/owner/repo");
 
@@ -800,9 +792,13 @@ describe("OctokitAdapter", () => {
     });
 
     it("should handle 404 not found error", async () => {
-      mockGraphql.mockRejectedValue({
-        errors: [{ type: "NOT_FOUND", message: "Repository not found" }],
-      });
+      mockGraphql.mockRejectedValue(
+        createGraphqlError(
+          "Not Found",
+          [{ type: "NOT_FOUND", message: "Repository not found" }],
+          "404",
+        ),
+      );
 
       const result = await adapter.getLog("https://github.com/owner/repo");
 
@@ -906,9 +902,7 @@ describe("OctokitAdapter", () => {
             },
           });
 
-        const mockOctokit = { graphql: mockGraphql };
         const result = await (adapter as any)["fetchCommentsForPR"](
-          mockOctokit,
           "owner",
           "repo",
           1,
@@ -927,9 +921,7 @@ describe("OctokitAdapter", () => {
       it("should return error on GraphQL failure", async () => {
         mockGraphql.mockRejectedValueOnce(new Error("GraphQL error"));
 
-        const mockOctokit = { graphql: mockGraphql };
         const result = await (adapter as any)["fetchCommentsForPR"](
-          mockOctokit,
           "owner",
           "repo",
           1,
@@ -960,9 +952,7 @@ describe("OctokitAdapter", () => {
           },
         });
 
-        const mockOctokit = { graphql: mockGraphql };
         const result = await (adapter as any)["fetchCommentsForPR"](
-          mockOctokit,
           "owner",
           "repo",
           1,
@@ -1003,10 +993,9 @@ describe("OctokitAdapter", () => {
           },
         });
 
-        const mockOctokit = { graphql: mockGraphql };
         const { comments, errors } = await (adapter as any)[
           "fetchCommentsForBatch"
-        ](mockOctokit, "owner", "repo", [1, 2, 3]);
+        ]("owner", "repo", [1, 2, 3]);
 
         expect(comments).toHaveLength(3);
         expect(errors).toHaveLength(0);
@@ -1068,10 +1057,9 @@ describe("OctokitAdapter", () => {
             },
           });
 
-        const mockOctokit = { graphql: mockGraphql };
         const { comments, errors } = await (adapter as any)[
           "fetchCommentsForBatch"
-        ](mockOctokit, "owner", "repo", [1, 2, 3]);
+        ]("owner", "repo", [1, 2, 3]);
 
         expect(comments.length).toBeGreaterThan(0); // Some succeeded
         expect(errors).toHaveLength(1); // One failed
@@ -1079,10 +1067,9 @@ describe("OctokitAdapter", () => {
       });
 
       it("should handle empty PR list", async () => {
-        const mockOctokit = { graphql: mockGraphql };
         const { comments, errors } = await (adapter as any)[
           "fetchCommentsForBatch"
-        ](mockOctokit, "owner", "repo", []);
+        ]("owner", "repo", []);
 
         expect(comments).toHaveLength(0);
         expect(errors).toHaveLength(0);

@@ -1,4 +1,4 @@
-import { Octokit } from "@octokit/rest";
+import { graphql, GraphqlResponseError } from "@octokit/graphql";
 import { ISessionProvider } from "@/domain/interfaces/ISessionProvider";
 import { Result, ok, err } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
@@ -9,8 +9,31 @@ import { logger } from "@/lib/utils/logger";
 interface GitHubUserInfo {
   login: string;
   name: string | null;
-  email: string | null;
   id: number;
+}
+
+/**
+ * GraphQL query to fetch authenticated user information
+ */
+const VIEWER_QUERY = `
+  query {
+    viewer {
+      login
+      name
+      id
+    }
+  }
+`;
+
+/**
+ * GraphQL response type for VIEWER_QUERY
+ */
+interface ViewerResponse {
+  viewer: {
+    login: string;
+    name: string | null;
+    id: number;
+  };
 }
 
 /**
@@ -120,58 +143,53 @@ export class EnvTokenAdapter implements ISessionProvider {
    */
   private async fetchUserInfo(): Promise<Result<GitHubUserInfo>> {
     try {
-      const octokit = new Octokit({ auth: this.token });
-
       logger.debug("Fetching GitHub user info to validate token...");
 
-      const { data } = await octokit.rest.users.getAuthenticated();
+      const response = await graphql<ViewerResponse>(VIEWER_QUERY, {
+        headers: {
+          authorization: `token ${this.token}`,
+        },
+      });
 
       this.userInfoCache = {
-        login: data.login,
-        name: data.name,
-        email: data.email,
-        id: data.id,
+        login: response.viewer.login,
+        name: response.viewer.name,
+        id: response.viewer.id,
       };
 
       logger.info(
-        `GitHub user authenticated: ${data.login} (${data.name || "No name"})`,
+        `GitHub user authenticated: ${response.viewer.login} (${response.viewer.name || "No name"})`,
       );
 
       return ok(this.userInfoCache);
-    } catch (error) {
+    } catch (error: unknown) {
       const maskedToken = this.maskToken(this.token);
+      const errorMessage =
+        error instanceof GraphqlResponseError ? error.message : String(error);
+      const status =
+        error instanceof GraphqlResponseError ? error.headers.status : null;
 
-      if (error instanceof Error) {
-        // Check for common error types
-        if (
-          error.message.includes("401") ||
-          error.message.includes("Bad credentials")
-        ) {
-          const errorMessage =
-            `Invalid or expired GitHub token (${maskedToken}). ` +
-            `Please generate a new token at: https://github.com/settings/tokens`;
-          logger.error(errorMessage);
-          return err(new Error(errorMessage));
-        }
+      logger.error("Failed to fetch GitHub user info", { error: errorMessage });
 
-        if (error.message.includes("403")) {
-          const errorMessage =
-            `GitHub token (${maskedToken}) lacks required permissions. ` +
-            `Required scopes: read:user, user:email, repo`;
-          logger.error(errorMessage);
-          return err(new Error(errorMessage));
-        }
-
-        // Generic error
-        logger.error(`Failed to fetch GitHub user info: ${error.message}`);
+      if (status === "401") {
         return err(
-          new Error(`Failed to validate GitHub token: ${error.message}`),
+          new Error(
+            `Invalid or expired GitHub token (${maskedToken}). ` +
+              `Please generate a new token at: https://github.com/settings/tokens`,
+          ),
         );
       }
 
-      // Unknown error type
-      logger.error("Failed to fetch GitHub user info: Unknown error");
-      return err(new Error("Failed to validate GitHub token: Unknown error"));
+      if (status === "403") {
+        return err(
+          new Error(
+            `GitHub token (${maskedToken}) lacks required permissions. ` +
+              `Required scopes: read:user, user:email, repo`,
+          ),
+        );
+      }
+
+      return err(new Error(`Failed to validate GitHub token: ${errorMessage}`));
     }
   }
 

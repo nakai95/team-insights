@@ -28,10 +28,9 @@ import { Skeleton } from "@/components/ui/skeleton";
  * - Automatic redirect for authenticated users
  */
 export default function LandingPage() {
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
   const t = useTranslations("landing");
-  const tCommon = useTranslations("common");
 
   // Redirect authenticated users to dashboard
   useEffect(() => {
