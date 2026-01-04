@@ -1,4 +1,4 @@
-import { graphql as Graphql, GraphqlResponseError } from "@octokit/graphql";
+import { graphql, GraphqlResponseError } from "@octokit/graphql";
 import {
   IGitHubRepository,
   GitCommit,
@@ -57,7 +57,7 @@ import { handleGraphQLError, parseGitHubUrl } from "./utils/errorHandlers";
 export class OctokitAdapter implements IGitHubRepository {
   private rateLimiter = new RateLimiter();
   private readonly BATCH_SIZE = 15; // Number of PRs to fetch in parallel per batch
-  private authenticatedGraphql?: typeof Graphql; // Cached authenticated graphql instance
+  private graphqlWithAuth?: typeof graphql; // Cached authenticated graphql instance
 
   constructor(private sessionProvider: ISessionProvider) {}
 
@@ -76,16 +76,16 @@ export class OctokitAdapter implements IGitHubRepository {
   /**
    * Get authenticated graphql instance (cached per adapter instance)
    */
-  private async getGraphql(): Promise<typeof Graphql> {
-    if (!this.authenticatedGraphql) {
+  private async getGraphqlWithAuth(): Promise<typeof graphql> {
+    if (!this.graphqlWithAuth) {
       const token = await this.getToken();
-      this.authenticatedGraphql = Graphql.defaults({
+      this.graphqlWithAuth = graphql.defaults({
         headers: {
           authorization: `token ${token}`,
         },
       });
     }
-    return this.authenticatedGraphql;
+    return this.graphqlWithAuth;
   }
 
   /**
@@ -93,9 +93,9 @@ export class OctokitAdapter implements IGitHubRepository {
    */
   async validateAccess(owner: string, repo: string): Promise<Result<boolean>> {
     try {
-      const graphql = await this.getGraphql();
+      const graphqlWithAuth = await this.getGraphqlWithAuth();
 
-      await graphql<RepositoryAccessResponse>(REPOSITORY_ACCESS_QUERY, {
+      await graphqlWithAuth<RepositoryAccessResponse>(REPOSITORY_ACCESS_QUERY, {
         owner,
         repo,
       });
@@ -128,12 +128,12 @@ export class OctokitAdapter implements IGitHubRepository {
    * Fetch a single page of pull requests from GitHub GraphQL API
    */
   private async fetchPullRequestsPage(
-    graphql: typeof Graphql,
+    graphqlWithAuth: typeof graphql,
     owner: string,
     repo: string,
     cursor: string | null,
   ): Promise<GitHubGraphQLPullRequestsResponse> {
-    return await graphql<GitHubGraphQLPullRequestsResponse>(
+    return await graphqlWithAuth<GitHubGraphQLPullRequestsResponse>(
       PULL_REQUESTS_QUERY,
       {
         owner,
@@ -153,7 +153,7 @@ export class OctokitAdapter implements IGitHubRepository {
     sinceDate?: Date,
   ): Promise<Result<PullRequest[]>> {
     try {
-      const graphql = await this.getGraphql();
+      const graphqlWithAuth = await this.getGraphqlWithAuth();
       logger.debug("Fetching pull requests via GraphQL", {
         owner,
         repo,
@@ -170,7 +170,7 @@ export class OctokitAdapter implements IGitHubRepository {
 
         // Execute GraphQL query
         const response = await this.fetchPullRequestsPage(
-          graphql,
+          graphqlWithAuth,
           owner,
           repo,
           cursor,
@@ -298,13 +298,13 @@ export class OctokitAdapter implements IGitHubRepository {
    * Fetch a single page of review comments from GitHub GraphQL API
    */
   private async fetchReviewCommentsPage(
-    graphql: typeof Graphql,
+    graphqlWithAuth: typeof graphql,
     owner: string,
     repo: string,
     prNumber: number,
     cursor: string | null,
   ): Promise<GitHubGraphQLReviewCommentsResponse> {
-    return await graphql<GitHubGraphQLReviewCommentsResponse>(
+    return await graphqlWithAuth<GitHubGraphQLReviewCommentsResponse>(
       REVIEW_COMMENTS_QUERY,
       {
         owner,
@@ -330,13 +330,13 @@ export class OctokitAdapter implements IGitHubRepository {
     let cursor: string | null = null;
 
     try {
-      const graphql = await this.getGraphql();
+      const graphqlWithAuth = await this.getGraphqlWithAuth();
 
       while (hasNextPage) {
         await this.rateLimiter.waitIfNeeded();
 
         const response = await this.fetchReviewCommentsPage(
-          graphql,
+          graphqlWithAuth,
           owner,
           repo,
           prNumber,
@@ -405,8 +405,9 @@ export class OctokitAdapter implements IGitHubRepository {
    */
   async getRateLimitStatus(): Promise<Result<RateLimitInfo>> {
     try {
-      const graphql = await this.getGraphql();
-      const response = await graphql<RateLimitResponse>(RATE_LIMIT_QUERY);
+      const graphqlWithAuth = await this.getGraphqlWithAuth();
+      const response =
+        await graphqlWithAuth<RateLimitResponse>(RATE_LIMIT_QUERY);
 
       const rateLimitInfo = mapRateLimit(response.rateLimit);
 
@@ -436,14 +437,14 @@ export class OctokitAdapter implements IGitHubRepository {
    * Fetch a single page of commits from GitHub GraphQL API
    */
   private async fetchCommitsPage(
-    graphql: typeof Graphql,
+    graphqlWithAuth: typeof graphql,
     owner: string,
     repo: string,
     cursor: string | null,
     sinceDate?: Date,
     untilDate?: Date,
   ): Promise<GitHubGraphQLCommitsResponse> {
-    return await graphql<GitHubGraphQLCommitsResponse>(COMMITS_QUERY, {
+    return await graphqlWithAuth<GitHubGraphQLCommitsResponse>(COMMITS_QUERY, {
       owner,
       repo,
       first: 100,
@@ -465,7 +466,7 @@ export class OctokitAdapter implements IGitHubRepository {
     untilDate?: Date,
   ): Promise<Result<GitCommit[]>> {
     try {
-      const graphql = await this.getGraphql();
+      const graphqlWithAuth = await this.getGraphqlWithAuth();
       const parsed = parseGitHubUrl(repoPath);
 
       if (!parsed) {
@@ -485,7 +486,7 @@ export class OctokitAdapter implements IGitHubRepository {
 
         // Execute GraphQL query with all commit details in one request
         const response = await this.fetchCommitsPage(
-          graphql,
+          graphqlWithAuth,
           owner,
           repo,
           cursor,
