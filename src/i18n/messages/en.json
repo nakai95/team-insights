@@ -99,15 +99,29 @@
     "analyzeAnother": "Analyze Another Repository",
     "tryAgain": "Try Again",
     "analysisTime": "Analysis time: {seconds}s",
+    "tabs": {
+      "overview": "Overview",
+      "throughput": "PR Throughput",
+      "changes": "PR Changes Timeseries",
+      "changesComingSoon": "PR Changes Timeseries tab coming soon..."
+    },
     "summary": {
       "totalContributors": "Total Contributors",
       "totalCommits": "Total Commits",
       "pullRequests": "Pull Requests",
       "reviewComments": "Review Comments"
     },
+    "overview": {
+      "analyzed": "Analyzed",
+      "period": "Period",
+      "prsReviewed": "PRs reviewed",
+      "comments": "comments",
+      "score": "score"
+    },
     "charts": {
       "implementationActivity": "Implementation Activity",
-      "reviewActivity": "Review Activity"
+      "reviewActivity": "Review Activity",
+      "reviewActivityDescription": "Top 10 contributors by review score"
     },
     "error": {
       "title": "Analysis Failed",

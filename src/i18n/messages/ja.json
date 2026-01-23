@@ -99,15 +99,29 @@
     "analyzeAnother": "別のリポジトリを分析",
     "tryAgain": "再試行",
     "analysisTime": "分析時間: {seconds}秒",
+    "tabs": {
+      "overview": "概要",
+      "throughput": "PRスループット",
+      "changes": "PR変更タイムライン",
+      "changesComingSoon": "PR変更タイムラインタブは近日公開..."
+    },
     "summary": {
       "totalContributors": "総Contributor数",
       "totalCommits": "総コミット数",
       "pullRequests": "プルリクエスト",
       "reviewComments": "レビューコメント"
     },
+    "overview": {
+      "analyzed": "分析日時",
+      "period": "期間",
+      "prsReviewed": "件のPRをレビュー",
+      "comments": "件のコメント",
+      "score": "スコア"
+    },
     "charts": {
       "implementationActivity": "実装活動",
-      "reviewActivity": "レビュー活動"
+      "reviewActivity": "レビュー活動",
+      "reviewActivityDescription": "レビュースコア上位10人のContributor"
     },
     "error": {
       "title": "分析に失敗しました",

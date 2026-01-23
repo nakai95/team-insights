@@ -58,9 +58,9 @@
 
 ### Tab Architecture - Create Shared Components
 
-- [ ] T013 [P] [US1] Create AnalysisTabs component with URL synchronization in src/presentation/components/AnalysisTabs.tsx
-- [ ] T014 [P] [US1] Create OverviewTab component by extracting content from existing Dashboard in src/presentation/components/OverviewTab.tsx
-- [ ] T015 [P] [US1] Create ThroughputTab component wrapping PRThroughputSection in src/presentation/components/ThroughputTab.tsx
+- [x] T013 [P] [US1] Create AnalysisTabs component with URL synchronization in src/presentation/components/AnalysisTabs.tsx
+- [x] T014 [P] [US1] Create OverviewTab component by extracting content from existing Dashboard in src/presentation/components/OverviewTab.tsx
+- [x] T015 [P] [US1] Create ThroughputTab component wrapping PRThroughputSection in src/presentation/components/ThroughputTab.tsx
 
 ### Timeseries Tab - Core Visualization
 
