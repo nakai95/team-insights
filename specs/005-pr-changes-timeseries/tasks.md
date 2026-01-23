@@ -19,8 +19,8 @@
 
 **Purpose**: Project initialization and basic structure (no new setup needed - reusing existing infrastructure)
 
-- [ ] T001 Review existing project structure and verify no changes needed to infrastructure layer
-- [ ] T002 Verify Recharts 3.5.0 dependency is available in package.json
+- [x] T001 Review existing project structure and verify no changes needed to infrastructure layer
+- [x] T002 Verify Recharts 3.5.0 dependency is available in package.json
 
 ---
 
@@ -32,19 +32,19 @@
 
 ### Domain Layer - Value Objects (MANDATORY TESTS)
 
-- [ ] T003 [P] Create WeeklyAggregate value object in src/domain/value-objects/WeeklyAggregate.ts
-- [ ] T004 [P] Create ChangeTrend value object in src/domain/value-objects/ChangeTrend.ts
-- [ ] T005 [P] Create OutlierWeek value object in src/domain/value-objects/OutlierWeek.ts
-- [ ] T006 [P] Write unit tests for WeeklyAggregate in src/domain/value-objects/**tests**/WeeklyAggregate.test.ts
-- [ ] T007 [P] Write unit tests for ChangeTrend in src/domain/value-objects/**tests**/ChangeTrend.test.ts
-- [ ] T008 [P] Write unit tests for OutlierWeek in src/domain/value-objects/**tests**/OutlierWeek.test.ts
+- [x] T003 [P] Create WeeklyAggregate value object in src/domain/value-objects/WeeklyAggregate.ts
+- [x] T004 [P] Create ChangeTrend value object in src/domain/value-objects/ChangeTrend.ts
+- [x] T005 [P] Create OutlierWeek value object in src/domain/value-objects/OutlierWeek.ts
+- [x] T006 [P] Write unit tests for WeeklyAggregate in src/domain/value-objects/**tests**/WeeklyAggregate.test.ts
+- [x] T007 [P] Write unit tests for ChangeTrend in src/domain/value-objects/**tests**/ChangeTrend.test.ts
+- [x] T008 [P] Write unit tests for OutlierWeek in src/domain/value-objects/**tests**/OutlierWeek.test.ts
 
 ### Application Layer - Use Case (RECOMMENDED TESTS)
 
-- [ ] T009 Create TimeseriesResult DTO in src/application/dto/TimeseriesResult.ts
-- [ ] T010 Extend AnalysisResult DTO to include timeseries field in src/application/dto/AnalysisResult.ts
-- [ ] T011 Create CalculateChangesTimeseries use case in src/application/use-cases/CalculateChangesTimeseries.ts
-- [ ] T012 Write unit tests for CalculateChangesTimeseries in src/application/use-cases/**tests**/CalculateChangesTimeseries.test.ts
+- [x] T009 Create TimeseriesResult DTO in src/application/dto/TimeseriesResult.ts
+- [x] T010 Extend AnalysisResult DTO to include timeseries field in src/application/dto/AnalysisResult.ts
+- [x] T011 Create CalculateChangesTimeseries use case in src/application/use-cases/CalculateChangesTimeseries.ts
+- [x] T012 Write unit tests for CalculateChangesTimeseries in src/application/use-cases/**tests**/CalculateChangesTimeseries.test.ts
 
 **Checkpoint**: Foundation ready - domain logic complete and tested, user story implementation can now begin in parallel
 
