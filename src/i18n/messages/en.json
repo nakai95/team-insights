@@ -298,6 +298,27 @@
       }
     }
   },
+  "prTimeseries": {
+    "title": "PR Changes Timeseries",
+    "description": "Weekly code change trends and patterns",
+    "emptyState": "No merged PRs available for timeseries analysis",
+    "chart": {
+      "additions": "Additions",
+      "deletions": "Deletions",
+      "prCount": "PRs Merged",
+      "xAxisLabel": "Week",
+      "yAxisLabelLeft": "Lines Changed",
+      "yAxisLabelRight": "PR Count"
+    },
+    "tooltip": {
+      "week": "Week of {date}",
+      "additions": "Additions: {count} lines",
+      "deletions": "Deletions: {count} lines",
+      "totalChanges": "Total Changes: {count} lines",
+      "prCount": "PRs Merged: {count}",
+      "averagePRSize": "Avg PR Size: {size} lines"
+    }
+  },
   "errors": {
     "AUTHENTICATION_REQUIRED": "Authentication required. Please sign in.",
     "TOKEN_EXPIRED": "Your session has expired. Please sign in again.",

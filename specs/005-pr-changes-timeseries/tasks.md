@@ -64,10 +64,10 @@
 
 ### Timeseries Tab - Core Visualization
 
-- [ ] T016 [US1] Create ChangesTimeseriesTab component with conditional rendering in src/presentation/components/ChangesTimeseriesTab.tsx
-- [ ] T017 [US1] Create EmptyState component for no data scenario in src/presentation/components/ChangesTimeseriesTab/EmptyState.tsx
-- [ ] T018 [US1] Create TimeseriesChart component with Recharts ComposedChart in src/presentation/components/ChangesTimeseriesTab/TimeseriesChart.tsx
-- [ ] T019 [US1] Add custom tooltip component for TimeseriesChart hover interactions in src/presentation/components/ChangesTimeseriesTab/CustomTooltip.tsx
+- [x] T016 [US1] Create ChangesTimeseriesTab component with conditional rendering in src/presentation/components/ChangesTimeseriesTab.tsx
+- [x] T017 [US1] Create EmptyState component for no data scenario in src/presentation/components/ChangesTimeseriesTab/EmptyState.tsx
+- [x] T018 [US1] Create TimeseriesChart component with Recharts ComposedChart in src/presentation/components/ChangesTimeseriesTab/TimeseriesChart.tsx
+- [x] T019 [US1] Add custom tooltip component for TimeseriesChart hover interactions (implemented inline in TimeseriesChart.tsx following existing patterns)
 
 ### Integration for User Story 1
 

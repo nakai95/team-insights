@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { AnalysisResult } from "@/application/dto/AnalysisResult";
 import { OverviewTab } from "./OverviewTab";
 import { ThroughputTab } from "./ThroughputTab";
+import { ChangesTimeseriesTab } from "./ChangesTimeseriesTab";
 
 export type TabSelection = "overview" | "throughput" | "changes";
 
@@ -108,10 +109,11 @@ export function AnalysisTabs({
         )}
 
         {activeTab === "changes" && (
-          /* Placeholder for ChangesTimeseriesTab - to be implemented in T016 */
-          <div className="text-center py-12 text-muted-foreground">
-            {t("changesComingSoon")}
-          </div>
+          <ChangesTimeseriesTab
+            timeseriesData={analysisResult.timeseries}
+            repositoryUrl={analysisResult.analysis.repositoryUrl}
+            dateRange={analysisResult.analysis.dateRange}
+          />
         )}
       </div>
     </div>

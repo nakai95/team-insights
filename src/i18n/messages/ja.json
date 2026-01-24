@@ -298,6 +298,27 @@
       }
     }
   },
+  "prTimeseries": {
+    "title": "PRコード変更の時系列",
+    "description": "週次コード変更のトレンドとパターン",
+    "emptyState": "時系列分析に利用可能なマージ済みPRがありません",
+    "chart": {
+      "additions": "追加",
+      "deletions": "削除",
+      "prCount": "マージ済みPR",
+      "xAxisLabel": "週",
+      "yAxisLabelLeft": "変更行数",
+      "yAxisLabelRight": "PR数"
+    },
+    "tooltip": {
+      "week": "{date}の週",
+      "additions": "追加: {count}行",
+      "deletions": "削除: {count}行",
+      "totalChanges": "合計変更: {count}行",
+      "prCount": "マージ済みPR: {count}",
+      "averagePRSize": "平均PRサイズ: {size}行"
+    }
+  },
   "errors": {
     "AUTHENTICATION_REQUIRED": "認証が必要です。サインインしてください。",
     "TOKEN_EXPIRED": "セッションが期限切れになりました。再度サインインしてください。",
