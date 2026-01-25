@@ -142,15 +142,15 @@
 
 ### Styling and Responsiveness
 
-- [ ] T035 [P] Ensure light/dark mode compatibility for all new components using next-themes
-- [ ] T036 [P] Add responsive layout for mobile viewing in ChangesTimeseriesTab
-- [ ] T037 [P] Polish chart colors and styling to match existing dashboard theme
+- [x] T035 [P] Ensure light/dark mode compatibility for all new components using next-themes
+- [x] T036 [P] Add responsive layout for mobile viewing in ChangesTimeseriesTab
+- [x] T037 [P] Polish chart colors and styling to match existing dashboard theme
 
 ### Testing and Validation
 
-- [ ] T038 [P] Run pnpm test to verify all domain and application tests pass
-- [ ] T039 [P] Run pnpm type-check to verify no TypeScript errors
-- [ ] T040 [P] Run pnpm lint to verify no ESLint errors
+- [x] T038 [P] Run pnpm test to verify all domain and application tests pass
+- [x] T039 [P] Run pnpm type-check to verify no TypeScript errors
+- [x] T040 [P] Run pnpm lint to verify no ESLint errors
 - [ ] T041 Manual testing: Verify tab navigation with browser back/forward buttons
 - [ ] T042 Manual testing: Verify tab selection persists on page refresh
 - [ ] T043 Manual testing: Verify direct links to /dashboard?tab=changes work correctly
@@ -159,10 +159,10 @@
 
 ### Documentation and Cleanup
 
-- [ ] T046 [P] Update CLAUDE.md with feature implementation details and recent changes
-- [ ] T047 [P] Remove any console.log statements and ensure no `any` types used
-- [ ] T048 Verify constitutional compliance checklist from plan.md is satisfied
-- [ ] T049 Run quickstart.md validation steps to ensure Definition of Done criteria met
+- [x] T046 [P] Update CLAUDE.md with feature implementation details and recent changes
+- [x] T047 [P] Remove any console.log statements and ensure no `any` types used
+- [x] T048 Verify constitutional compliance checklist from plan.md is satisfied
+- [x] T049 Run quickstart.md validation steps to ensure Definition of Done criteria met
 
 ---
 

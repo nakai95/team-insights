@@ -67,27 +67,27 @@ export function AnalysisTabs({
 
   return (
     <div className="w-full">
-      {/* Tab Navigation */}
-      <div className="border-b border-border">
-        <div className="flex space-x-1">
+      {/* Tab Navigation - Responsive for mobile */}
+      <div className="border-b border-border overflow-x-auto">
+        <div className="flex space-x-1 min-w-max">
           <Button
             variant={activeTab === "overview" ? "default" : "ghost"}
             onClick={() => handleTabChange("overview")}
-            className="rounded-b-none"
+            className="rounded-b-none text-xs sm:text-sm"
           >
             {t("overview")}
           </Button>
           <Button
             variant={activeTab === "throughput" ? "default" : "ghost"}
             onClick={() => handleTabChange("throughput")}
-            className="rounded-b-none"
+            className="rounded-b-none text-xs sm:text-sm"
           >
             {t("throughput")}
           </Button>
           <Button
             variant={activeTab === "changes" ? "default" : "ghost"}
             onClick={() => handleTabChange("changes")}
-            className="rounded-b-none"
+            className="rounded-b-none text-xs sm:text-sm"
           >
             {t("changes")}
           </Button>
@@ -95,7 +95,7 @@ export function AnalysisTabs({
       </div>
 
       {/* Tab Content */}
-      <div className="mt-6">
+      <div className="mt-4 sm:mt-6">
         {activeTab === "overview" && (
           <OverviewTab
             analysis={analysisResult.analysis}

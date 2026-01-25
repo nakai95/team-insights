@@ -58,18 +58,22 @@ export function ChangesTimeseriesTab({
         <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="px-2 sm:px-6">
         {showEmptyState ? (
           <EmptyState repositoryUrl={repositoryUrl} dateRange={dateRange} />
         ) : (
-          <div className="space-y-6">
-            {/* Weekly code changes chart */}
-            <TimeseriesChart
-              weeklyData={timeseriesData.weeklyData}
-              outlierWeeks={timeseriesData.outlierWeeks}
-              height={400}
-              showMovingAverage={timeseriesData.trend !== null}
-            />
+          <div className="space-y-4 sm:space-y-6">
+            {/* Weekly code changes chart - responsive height */}
+            <div className="w-full overflow-x-auto -mx-2 sm:mx-0">
+              <div className="min-w-[600px]">
+                <TimeseriesChart
+                  weeklyData={timeseriesData.weeklyData}
+                  outlierWeeks={timeseriesData.outlierWeeks}
+                  height={300}
+                  showMovingAverage={timeseriesData.trend !== null}
+                />
+              </div>
+            </div>
 
             {/* Insights panel: outlier weeks, trend analysis, summary statistics */}
             <TimeseriesInsights
