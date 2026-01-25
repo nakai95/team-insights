@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { AnalysisResult } from "@/application/dto/AnalysisResult";
+import { ContributorDto } from "@/application/dto/ContributorDto";
 import { OverviewTab } from "./OverviewTab";
 import { ThroughputTab } from "./ThroughputTab";
 import { ChangesTimeseriesTab } from "./ChangesTimeseriesTab";
@@ -14,6 +15,8 @@ export type TabSelection = "overview" | "throughput" | "changes";
 export interface AnalysisTabsProps {
   /** Complete analysis result including all tab data */
   analysisResult: AnalysisResult;
+  /** Contributors list (managed by parent for identity merging) */
+  contributors: ContributorDto[];
   /** Initial tab selection (defaults to 'overview' if not specified) */
   initialTab?: TabSelection;
 }
@@ -27,9 +30,13 @@ export interface AnalysisTabsProps {
  * - Browser back/forward button support
  * - Page refresh preserves tab selection
  * - Direct links to specific tabs work
+ *
+ * Note: Header and summary cards are managed by parent (DashboardContent)
+ * to avoid re-renders during tab switches
  */
 export function AnalysisTabs({
   analysisResult,
+  contributors,
   initialTab = "overview",
 }: AnalysisTabsProps) {
   const t = useTranslations("dashboard.tabs");
@@ -66,7 +73,7 @@ export function AnalysisTabs({
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-6">
       {/* Tab Navigation - Responsive for mobile */}
       <div className="border-b border-border overflow-x-auto">
         <div className="flex space-x-1 min-w-max">
@@ -97,11 +104,7 @@ export function AnalysisTabs({
       {/* Tab Content */}
       <div className="mt-4 sm:mt-6">
         {activeTab === "overview" && (
-          <OverviewTab
-            analysis={analysisResult.analysis}
-            contributors={analysisResult.contributors}
-            summary={analysisResult.summary}
-          />
+          <OverviewTab contributors={contributors} />
         )}
 
         {activeTab === "throughput" && (

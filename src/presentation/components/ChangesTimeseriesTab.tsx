@@ -69,7 +69,7 @@ export function ChangesTimeseriesTab({
                 <TimeseriesChart
                   weeklyData={timeseriesData.weeklyData}
                   outlierWeeks={timeseriesData.outlierWeeks}
-                  height={300}
+                  height={400}
                   showMovingAverage={timeseriesData.trend !== null}
                 />
               </div>
