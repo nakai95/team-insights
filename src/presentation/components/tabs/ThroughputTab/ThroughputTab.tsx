@@ -1,7 +1,7 @@
 "use client";
 
 import { ThroughputResult } from "@/application/dto/ThroughputResult";
-import { PRThroughputSection } from "./PRThroughputSection";
+import { PRThroughputSection } from "./components";
 
 export interface ThroughputTabProps {
   /** PR throughput analysis data (optional, null if not available) */

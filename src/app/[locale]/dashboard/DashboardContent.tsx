@@ -5,9 +5,11 @@ import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { useAnalysis } from "../hooks/useAnalysis";
 import { AnalysisForm } from "../components/AnalysisForm";
-import { AnalysisTabs } from "@/presentation/components/AnalysisTabs";
-import { AnalysisHeader } from "@/presentation/components/AnalysisHeader";
-import { AnalysisSummaryCards } from "@/presentation/components/AnalysisSummaryCards";
+import {
+  AnalysisTabs,
+  AnalysisSummaryCards,
+  AnalysisHeader,
+} from "@/presentation/components/analysis";
 import { ProgressIndicator } from "../components/ProgressIndicator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";

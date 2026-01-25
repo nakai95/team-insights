@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { ContributorDto } from "@/application/dto/ContributorDto";
-import { IdentityMerger } from "./IdentityMerger";
+import { IdentityMerger } from "../IdentityMerger";
 
 export interface AnalysisHeaderProps {
   /** Repository URL */

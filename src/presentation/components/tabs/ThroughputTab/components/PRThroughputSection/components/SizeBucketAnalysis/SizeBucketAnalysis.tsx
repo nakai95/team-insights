@@ -3,8 +3,7 @@
 import { useTranslations } from "next-intl";
 import { SizeBucketData } from "@/application/dto/ThroughputResult";
 import { SizeBucketType } from "@/domain/value-objects/SizeBucket";
-import { SizeBucketTable } from "./SizeBucketTable";
-import { SizeBucketBarChart } from "./SizeBucketBarChart";
+import { SizeBucketBarChart, SizeBucketTable } from "./components";
 
 export interface SizeBucketAnalysisProps {
   /**

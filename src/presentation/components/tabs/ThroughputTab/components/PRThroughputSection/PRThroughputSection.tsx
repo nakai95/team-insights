@@ -9,11 +9,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ThroughputResult } from "@/application/dto/ThroughputResult";
-import { SummaryStats } from "./SummaryStats";
-import { EmptyState } from "./EmptyState";
-import { PRSizeVsLeadTimeChart } from "./PRSizeVsLeadTimeChart";
-import { SizeBucketAnalysis } from "./SizeBucketAnalysis";
-import { InsightMessage } from "./InsightMessage";
+import {
+  SizeBucketAnalysis,
+  SummaryStats,
+  EmptyState,
+  InsightMessage,
+  PRSizeVsLeadTimeChart,
+} from "./components";
 
 export interface PRThroughputSectionProps {
   /**

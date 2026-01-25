@@ -6,9 +6,9 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { AnalysisResult } from "@/application/dto/AnalysisResult";
 import { ContributorDto } from "@/application/dto/ContributorDto";
-import { OverviewTab } from "./OverviewTab";
-import { ThroughputTab } from "./ThroughputTab";
-import { ChangesTimeseriesTab } from "./ChangesTimeseriesTab";
+import { OverviewTab } from "../../tabs/OverviewTab";
+import { ThroughputTab } from "../../tabs/ThroughputTab";
+import { ChangesTimeseriesTab } from "../../tabs/ChangesTimeseriesTab";
 
 export type TabSelection = "overview" | "throughput" | "changes";
 

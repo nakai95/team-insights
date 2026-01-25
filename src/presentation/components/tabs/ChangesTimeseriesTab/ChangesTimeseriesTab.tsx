@@ -10,10 +10,7 @@ import {
 } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 
-// Child components
-import { EmptyState } from "./ChangesTimeseriesTab/EmptyState";
-import { TimeseriesChart } from "./ChangesTimeseriesTab/TimeseriesChart";
-import { TimeseriesInsights } from "./ChangesTimeseriesTab/TimeseriesInsights";
+import { EmptyState, TimeseriesChart, TimeseriesInsights } from "./components";
 
 export interface ChangesTimeseriesTabProps {
   /** Timeseries analysis data (optional, null if not available) */
