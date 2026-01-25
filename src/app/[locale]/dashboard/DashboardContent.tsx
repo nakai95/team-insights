@@ -132,12 +132,6 @@ export default function DashboardContent() {
         {/* Success State: Show Dashboard with Tabs */}
         {state.status === "success" && (
           <div className="space-y-6">
-            <div className="flex justify-end">
-              <Button variant="outline" onClick={reset}>
-                {t("analyzeAnother")}
-              </Button>
-            </div>
-
             {/* Header - Shared across all tabs */}
             <AnalysisHeader
               repositoryUrl={state.data.analysis.repositoryUrl}
@@ -145,6 +139,7 @@ export default function DashboardContent() {
               dateRange={state.data.analysis.dateRange}
               contributors={contributors}
               onMergeComplete={handleMergeComplete}
+              onReset={reset}
             />
 
             {/* Summary Cards - Shared across all tabs */}

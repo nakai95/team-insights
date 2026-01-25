@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
 import { ContributorDto } from "@/application/dto/ContributorDto";
 import { IdentityMerger } from "./IdentityMerger";
 
@@ -18,10 +19,12 @@ export interface AnalysisHeaderProps {
   contributors: ContributorDto[];
   /** Callback when identity merge completes */
   onMergeComplete: (mergedContributor: ContributorDto) => void;
+  /** Optional callback when reset/analyze another is clicked */
+  onReset?: () => void;
 }
 
 /**
- * Analysis header component with repository info and identity merger
+ * Analysis header component with repository info, identity merger, and optional reset button
  * Shared across all tabs, rendered above tab navigation
  */
 export function AnalysisHeader({
@@ -30,6 +33,7 @@ export function AnalysisHeader({
   dateRange,
   contributors,
   onMergeComplete,
+  onReset,
 }: AnalysisHeaderProps) {
   const t = useTranslations("dashboard");
 
@@ -45,11 +49,18 @@ export function AnalysisHeader({
           {new Date(dateRange.end).toLocaleDateString()}
         </p>
       </div>
-      <IdentityMerger
-        contributors={contributors}
-        repositoryUrl={repositoryUrl}
-        onMergeComplete={onMergeComplete}
-      />
+      <div className="flex items-center gap-2">
+        {onReset && (
+          <Button variant="outline" onClick={onReset}>
+            {t("analyzeAnother")}
+          </Button>
+        )}
+        <IdentityMerger
+          contributors={contributors}
+          repositoryUrl={repositoryUrl}
+          onMergeComplete={onMergeComplete}
+        />
+      </div>
     </div>
   );
 }
