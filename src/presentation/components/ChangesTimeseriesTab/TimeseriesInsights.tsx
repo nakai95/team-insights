@@ -10,7 +10,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import {
+  AlertTriangle,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  GitPullRequest,
+  Activity,
+  FileCode,
+} from "lucide-react";
 import {
   OutlierWeekDto,
   ChangeTrendDto,
@@ -224,19 +232,96 @@ export function TimeseriesInsights({
         </CardContent>
       </Card>
 
-      {/* Summary Statistics Section (US4) - Coming in future tasks */}
+      {/* Summary Statistics Section (US4) */}
       <Card>
         <CardHeader>
           <CardTitle>{t("summary.title")}</CardTitle>
           <CardDescription>{t("summary.description")}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-4">
-            <p className="text-sm text-muted-foreground">
-              Summary statistics coming soon (T032-T034)
-            </p>
-            <div className="mt-2 text-xs text-muted-foreground">
-              Total PRs: {summary.totalPRs}, Weeks: {summary.weeksAnalyzed}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Total PRs Card */}
+            <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-md">
+                  <GitPullRequest className="h-5 w-5 text-blue-700 dark:text-blue-300" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-muted-foreground">
+                    {t("summary.totalPRs")}
+                  </p>
+                  <p className="text-2xl font-bold text-blue-900 dark:text-blue-100">
+                    {summary.totalPRs.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("summary.weeksAnalyzed", {
+                      weeks: summary.weeksAnalyzed,
+                    })}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Average Weekly Changes Card */}
+            <div className="p-4 bg-purple-50 dark:bg-purple-950 rounded-lg border border-purple-200 dark:border-purple-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 dark:bg-purple-900 rounded-md">
+                  <Activity className="h-5 w-5 text-purple-700 dark:text-purple-300" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-muted-foreground">
+                    {t("summary.avgWeeklyChanges")}
+                  </p>
+                  <p className="text-2xl font-bold text-purple-900 dark:text-purple-100">
+                    {Math.round(summary.averageWeeklyChanges).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("summary.linesPerWeek")}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Average PR Size Card */}
+            <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-100 dark:bg-green-900 rounded-md">
+                  <FileCode className="h-5 w-5 text-green-700 dark:text-green-300" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs text-muted-foreground">
+                    {t("summary.avgPRSize")}
+                  </p>
+                  <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                    {Math.round(summary.averagePRSize).toLocaleString()}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("summary.linesPerPR")}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Statistics Row */}
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-md">
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("summary.totalAdditions")}
+                </p>
+                <p className="text-lg font-semibold text-green-700 dark:text-green-400">
+                  +{summary.totalAdditions.toLocaleString()}
+                </p>
+              </div>
+              <div className="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-md">
+                <p className="text-xs text-muted-foreground mb-1">
+                  {t("summary.totalDeletions")}
+                </p>
+                <p className="text-lg font-semibold text-red-700 dark:text-red-400">
+                  -{summary.totalDeletions.toLocaleString()}
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>

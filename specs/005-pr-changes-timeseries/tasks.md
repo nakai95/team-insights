@@ -128,9 +128,9 @@
 
 ### Summary Statistics UI
 
-- [ ] T032 [P] [US4] Add statistical summary section to TimeseriesInsights component in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
-- [ ] T033 [P] [US4] Display total PRs, average weekly changes, and average PR size metrics in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
-- [ ] T034 [US4] Add summary cards with icons and formatting in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
+- [x] T032 [P] [US4] Add statistical summary section to TimeseriesInsights component in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
+- [x] T033 [P] [US4] Display total PRs, average weekly changes, and average PR size metrics in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
+- [x] T034 [US4] Add summary cards with icons and formatting in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
 
 **Checkpoint**: All user stories (US1-US4) complete - feature is fully functional
 

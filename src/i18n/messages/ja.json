@@ -345,7 +345,15 @@
       },
       "summary": {
         "title": "統計サマリー",
-        "description": "分析期間全体の集計メトリクス"
+        "description": "分析期間全体の集計メトリクス",
+        "totalPRs": "総マージPR数",
+        "weeksAnalyzed": "{weeks}週間",
+        "avgWeeklyChanges": "週平均変更行数",
+        "linesPerWeek": "行/週",
+        "avgPRSize": "平均PRサイズ",
+        "linesPerPR": "行/PR",
+        "totalAdditions": "総追加行数",
+        "totalDeletions": "総削除行数"
       }
     }
   },

@@ -345,7 +345,15 @@
       },
       "summary": {
         "title": "Summary Statistics",
-        "description": "Aggregate metrics across the analysis period"
+        "description": "Aggregate metrics across the analysis period",
+        "totalPRs": "Total PRs Merged",
+        "weeksAnalyzed": "over {weeks} weeks",
+        "avgWeeklyChanges": "Avg Weekly Changes",
+        "linesPerWeek": "lines/week",
+        "avgPRSize": "Avg PR Size",
+        "linesPerPR": "lines/PR",
+        "totalAdditions": "Total Additions",
+        "totalDeletions": "Total Deletions"
       }
     }
   },
