@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useAnalysis } from "../hooks/useAnalysis";
 import { AnalysisForm } from "../components/AnalysisForm";
-import { Dashboard } from "../components/Dashboard";
+import { AnalysisTabs } from "@/presentation/components/AnalysisTabs";
 import { ProgressIndicator } from "../components/ProgressIndicator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -97,7 +97,7 @@ export default function DashboardContent() {
           </div>
         )}
 
-        {/* Success State: Show Dashboard */}
+        {/* Success State: Show Dashboard with Tabs */}
         {state.status === "success" && (
           <div className="space-y-4">
             <div className="flex justify-end">
@@ -105,7 +105,7 @@ export default function DashboardContent() {
                 {t("analyzeAnother")}
               </Button>
             </div>
-            <Dashboard result={state.data} />
+            <AnalysisTabs analysisResult={state.data} />
           </div>
         )}
       </div>

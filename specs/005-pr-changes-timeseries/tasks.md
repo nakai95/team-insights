@@ -71,9 +71,9 @@
 
 ### Integration for User Story 1
 
-- [ ] T020 [US1] Modify analyzeRepository Server Action to call CalculateChangesTimeseries use case in src/app/actions/analyzeRepository.ts
-- [ ] T021 [US1] Update DashboardContent to integrate AnalysisTabs component in src/app/[locale]/dashboard/DashboardContent.tsx
-- [ ] T022 [US1] Update Dashboard.tsx by moving content to OverviewTab component in src/app/[locale]/components/Dashboard.tsx
+- [x] T020 [US1] Modify analyzeRepository Server Action to call CalculateChangesTimeseries use case in src/app/actions/analyzeRepository.ts
+- [x] T021 [US1] Update DashboardContent to integrate AnalysisTabs component in src/app/[locale]/dashboard/DashboardContent.tsx
+- [x] T022 [US1] Update Dashboard.tsx by moving content to OverviewTab component in src/app/[locale]/components/Dashboard.tsx
 
 **Checkpoint**: User Story 1 complete - users can view weekly code change trends chart with tab navigation
 

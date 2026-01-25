@@ -10,6 +10,7 @@ import { AnalyzeRepository } from "@/application/use-cases/AnalyzeRepository";
 import { FetchGitData } from "@/application/use-cases/FetchGitData";
 import { CalculateMetrics } from "@/application/use-cases/CalculateMetrics";
 import { CalculateThroughputMetrics } from "@/application/use-cases/CalculateThroughputMetrics";
+import { CalculateChangesTimeseries } from "@/application/use-cases/CalculateChangesTimeseries";
 import { OctokitAdapter } from "@/infrastructure/github/OctokitAdapter";
 import { ContributorMapper } from "@/application/mappers/ContributorMapper";
 import { getErrorMessage } from "@/lib/utils/errorUtils";
@@ -98,10 +99,12 @@ export async function analyzeRepository(
     const fetchGitData = new FetchGitData(githubAdapter);
     const calculateMetrics = new CalculateMetrics();
     const calculateThroughputMetrics = new CalculateThroughputMetrics();
+    const calculateChangesTimeseries = new CalculateChangesTimeseries();
     const analyzeRepo = new AnalyzeRepository(
       fetchGitData,
       calculateMetrics,
       calculateThroughputMetrics,
+      calculateChangesTimeseries,
     );
 
     // Execute analysis
@@ -126,7 +129,7 @@ export async function analyzeRepository(
       };
     }
 
-    const { analysis, analysisTimeMs, throughput } = result.value;
+    const { analysis, analysisTimeMs, throughput, timeseries } = result.value;
 
     // Map domain entities to DTOs
     const contributorDtos = analysis.contributors.map((c) =>
@@ -167,6 +170,7 @@ export async function analyzeRepository(
         analysisTimeMs: analysisTimeMs,
       },
       throughput,
+      timeseries,
     };
 
     const endTime = Date.now();
