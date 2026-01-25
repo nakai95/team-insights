@@ -176,7 +176,6 @@ export const TimeseriesChart = React.memo(function TimeseriesChart({
           label={{
             value: t("xAxisLabel"),
             position: "insideBottom",
-            offset: -10,
           }}
         />
 
@@ -237,7 +236,7 @@ export const TimeseriesChart = React.memo(function TimeseriesChart({
           dataKey="prCount"
           fill={PR_COUNT_COLOR}
           name={t("prCount")}
-          barSize={30}
+          barSize={20}
         />
       </ComposedChart>
     </ResponsiveContainer>
