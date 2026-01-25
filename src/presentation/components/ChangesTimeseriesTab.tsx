@@ -68,6 +68,7 @@ export function ChangesTimeseriesTab({
               weeklyData={timeseriesData.weeklyData}
               outlierWeeks={timeseriesData.outlierWeeks}
               height={400}
+              showMovingAverage={timeseriesData.trend !== null}
             />
 
             {/* Insights panel: outlier weeks, trend analysis, summary statistics */}

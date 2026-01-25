@@ -6,6 +6,7 @@ import {
   ComposedChart,
   Area,
   Bar,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -147,6 +148,32 @@ export const TimeseriesChart = React.memo(function TimeseriesChart({
     return outlierWeekStarts.has(weekStart);
   };
 
+  /**
+   * Calculate 4-week moving average for trend visualization
+   * Returns data with movingAverage field added to each week
+   */
+  const dataWithMovingAverage = React.useMemo(() => {
+    if (!showMovingAverage || weeklyData.length < 4) {
+      return weeklyData;
+    }
+
+    return weeklyData.map((week, index) => {
+      // Calculate moving average using current week and previous 3 weeks
+      if (index < 3) {
+        // Not enough data for 4-week average yet
+        return { ...week, movingAverage: null };
+      }
+
+      // Sum of total changes for last 4 weeks (including current)
+      const sum = weeklyData
+        .slice(index - 3, index + 1)
+        .reduce((acc, w) => acc + w.totalChanges, 0);
+      const movingAverage = sum / 4;
+
+      return { ...week, movingAverage };
+    });
+  }, [weeklyData, showMovingAverage]);
+
   // Color scheme following GitHub diff conventions
   const ADDITIONS_COLOR = "#22c55e"; // Green 500
   const ADDITIONS_STROKE = "#16a34a"; // Green 600
@@ -158,7 +185,7 @@ export const TimeseriesChart = React.memo(function TimeseriesChart({
   return (
     <ResponsiveContainer width="100%" height={height}>
       <ComposedChart
-        data={weeklyData}
+        data={dataWithMovingAverage}
         margin={{
           top: 20,
           right: 60,
@@ -169,7 +196,7 @@ export const TimeseriesChart = React.memo(function TimeseriesChart({
         <CartesianGrid strokeDasharray="3 3" />
 
         {/* Highlight outlier weeks with background shading */}
-        {weeklyData.map((week, index) => {
+        {dataWithMovingAverage.map((week, index) => {
           if (isOutlierWeek(week.weekStart)) {
             // Find the next week's start for the end of the reference area
             const nextWeek = weeklyData[index + 1];
@@ -265,6 +292,21 @@ export const TimeseriesChart = React.memo(function TimeseriesChart({
           name={t("prCount")}
           barSize={20}
         />
+
+        {/* 4-week moving average line (dashed purple) */}
+        {showMovingAverage && (
+          <Line
+            yAxisId="left"
+            type="monotone"
+            dataKey="movingAverage"
+            stroke="#9333ea"
+            strokeWidth={2}
+            strokeDasharray="5 5"
+            dot={false}
+            name="4-Week Average"
+            connectNulls={false}
+          />
+        )}
       </ComposedChart>
     </ResponsiveContainer>
   );

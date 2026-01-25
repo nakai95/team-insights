@@ -333,7 +333,15 @@
       },
       "trend": {
         "title": "4週間トレンド",
-        "description": "最近の開発速度のトレンド"
+        "description": "最近の開発速度のトレンド",
+        "direction": {
+          "increasing": "増加",
+          "decreasing": "減少",
+          "stable": "安定"
+        },
+        "percentChange": "{direction}トレンド: {percent}%",
+        "analyzedWeeks": "直近{weeks}週間を分析",
+        "insufficientData": "トレンド分析のデータが不足しています。少なくとも4週間のPR履歴が必要です。"
       },
       "summary": {
         "title": "統計サマリー",

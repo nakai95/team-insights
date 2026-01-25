@@ -108,13 +108,13 @@
 
 ### Trend Analysis UI
 
-- [ ] T028 [P] [US3] Add trend direction display to TimeseriesInsights component in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
-- [ ] T029 [P] [US3] Add trend icon and percentage indicator with color coding in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
-- [ ] T030 [US3] Add 4-week moving average line to TimeseriesChart in src/presentation/components/ChangesTimeseriesTab/TimeseriesChart.tsx
+- [x] T028 [P] [US3] Add trend direction display to TimeseriesInsights component in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
+- [x] T029 [P] [US3] Add trend icon and percentage indicator with color coding in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
+- [x] T030 [US3] Add 4-week moving average line to TimeseriesChart in src/presentation/components/ChangesTimeseriesTab/TimeseriesChart.tsx
 
 ### Edge Case Handling for User Story 3
 
-- [ ] T031 [US3] Add insufficient data message when fewer than 4 weeks of history in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
+- [x] T031 [US3] Add insufficient data message when fewer than 4 weeks of history in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
 
 **Checkpoint**: User Story 3 complete - users can track development velocity trends over time
 

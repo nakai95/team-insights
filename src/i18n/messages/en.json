@@ -333,7 +333,15 @@
       },
       "trend": {
         "title": "4-Week Trend",
-        "description": "Recent development velocity trend"
+        "description": "Recent development velocity trend",
+        "direction": {
+          "increasing": "Increasing",
+          "decreasing": "Decreasing",
+          "stable": "Stable"
+        },
+        "percentChange": "{direction} trend: {percent}%",
+        "analyzedWeeks": "Analyzed last {weeks} weeks",
+        "insufficientData": "Insufficient data for trend analysis. At least 4 weeks of PR history required."
       },
       "summary": {
         "title": "Summary Statistics",
