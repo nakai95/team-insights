@@ -99,15 +99,29 @@
     "analyzeAnother": "Analyze Another Repository",
     "tryAgain": "Try Again",
     "analysisTime": "Analysis time: {seconds}s",
+    "tabs": {
+      "overview": "Overview",
+      "throughput": "PR Throughput",
+      "changes": "PR Changes Timeseries",
+      "changesComingSoon": "PR Changes Timeseries tab coming soon..."
+    },
     "summary": {
       "totalContributors": "Total Contributors",
       "totalCommits": "Total Commits",
       "pullRequests": "Pull Requests",
       "reviewComments": "Review Comments"
     },
+    "overview": {
+      "analyzed": "Analyzed",
+      "period": "Period",
+      "prsReviewed": "PRs reviewed",
+      "comments": "comments",
+      "score": "score"
+    },
     "charts": {
       "implementationActivity": "Implementation Activity",
-      "reviewActivity": "Review Activity"
+      "reviewActivity": "Review Activity",
+      "reviewActivityDescription": "Top 10 contributors by review score"
     },
     "error": {
       "title": "Analysis Failed",
@@ -281,6 +295,65 @@
         "optimal": "{bucketName} PRs merge fastest on average. Consider breaking larger changes into smaller pull requests.",
         "noDifference": "PR size has minimal impact on lead time. All size categories show similar merge speeds.",
         "insufficientData": "Not enough data to determine optimal PR size. Analyze at least 10 merged PRs for meaningful insights."
+      }
+    }
+  },
+  "prTimeseries": {
+    "title": "PR Changes Timeseries",
+    "description": "Weekly code change trends and patterns",
+    "emptyState": "No merged PRs available for timeseries analysis",
+    "chart": {
+      "additions": "Additions",
+      "deletions": "Deletions",
+      "prCount": "PRs Merged",
+      "xAxisLabel": "Week",
+      "yAxisLabelLeft": "Lines Changed",
+      "yAxisLabelRight": "PR Count"
+    },
+    "tooltip": {
+      "week": "Week of {date}",
+      "additions": "Additions: {count} lines",
+      "deletions": "Deletions: {count} lines",
+      "totalChanges": "Total Changes: {count} lines",
+      "prCount": "PRs Merged: {count}",
+      "averagePRSize": "Avg PR Size: {size} lines"
+    },
+    "insights": {
+      "outliers": {
+        "title": "Outlier Weeks Detected",
+        "description": "Weeks with abnormally high code changes (2+ standard deviations above mean)",
+        "weekOf": "Week of {date}",
+        "totalChanges": "Total Changes",
+        "lines": "lines",
+        "prCount": "PRs Merged",
+        "prs": "PRs",
+        "zScore": "Z-Score: {zScore}",
+        "mean": "mean: {mean}",
+        "noOutliers": "No outlier weeks detected. All weeks show typical activity levels."
+      },
+      "trend": {
+        "title": "4-Week Trend",
+        "description": "Recent development velocity trend",
+        "direction": {
+          "increasing": "Increasing",
+          "decreasing": "Decreasing",
+          "stable": "Stable"
+        },
+        "percentChange": "{direction} trend: {percent}%",
+        "analyzedWeeks": "Analyzed last {weeks} weeks",
+        "insufficientData": "Insufficient data for trend analysis. At least 4 weeks of PR history required."
+      },
+      "summary": {
+        "title": "Summary Statistics",
+        "description": "Aggregate metrics across the analysis period",
+        "totalPRs": "Total PRs Merged",
+        "weeksAnalyzed": "over {weeks} weeks",
+        "avgWeeklyChanges": "Avg Weekly Changes",
+        "linesPerWeek": "lines/week",
+        "avgPRSize": "Avg PR Size",
+        "linesPerPR": "lines/PR",
+        "totalAdditions": "Total Additions",
+        "totalDeletions": "Total Deletions"
       }
     }
   },

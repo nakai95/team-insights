@@ -2,9 +2,9 @@
 
 import { useTranslations } from "next-intl";
 import Link from "next/link";
-import { UserProfile } from "./auth/UserProfile";
-import { LocaleSwitcher } from "./LocaleSwitcher";
-import { ThemeToggle } from "./ThemeToggle";
+import { UserProfile } from "../auth/UserProfile";
+import { LocaleSwitcher } from "../shared/LocaleSwitcher";
+import { ThemeToggle } from "../shared/ThemeToggle";
 
 /**
  * Header Component

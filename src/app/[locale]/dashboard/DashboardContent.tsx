@@ -2,14 +2,19 @@
 
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useState, useEffect } from "react";
 import { useAnalysis } from "../hooks/useAnalysis";
 import { AnalysisForm } from "../components/AnalysisForm";
-import { Dashboard } from "../components/Dashboard";
+import {
+  AnalysisTabs,
+  AnalysisSummaryCards,
+  AnalysisHeader,
+} from "@/presentation/components/analysis";
 import { ProgressIndicator } from "../components/ProgressIndicator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import { ContributorDto } from "@/application/dto/ContributorDto";
 
 /**
  * Dashboard content component that uses search params
@@ -20,6 +25,16 @@ export default function DashboardContent() {
   const searchParams = useSearchParams();
   const { state, analyze, reset } = useAnalysis();
   const t = useTranslations("dashboard");
+
+  // Manage contributors state (for identity merging across all tabs)
+  const [contributors, setContributors] = useState<ContributorDto[]>([]);
+
+  // Update contributors when analysis result changes
+  useEffect(() => {
+    if (state.status === "success") {
+      setContributors(state.data.contributors);
+    }
+  }, [state.status, state]);
 
   // Auto-trigger analysis from URL parameters if provided
   useEffect(() => {
@@ -35,6 +50,25 @@ export default function DashboardContent() {
       });
     }
   }, [searchParams, state.status, analyze]);
+
+  /**
+   * Handle merge completion by updating the contributors list
+   */
+  const handleMergeComplete = (mergedContributor: ContributorDto) => {
+    setContributors((prev) => {
+      // Get all emails from the merged contributor
+      const mergedEmails = new Set([
+        mergedContributor.primaryEmail,
+        ...mergedContributor.mergedEmails,
+      ]);
+
+      // Remove all contributors whose primary email is in the merged set
+      const remaining = prev.filter((c) => !mergedEmails.has(c.primaryEmail));
+
+      // Add the merged contributor at the beginning
+      return [mergedContributor, ...remaining];
+    });
+  };
 
   return (
     <main className="p-8">
@@ -97,15 +131,27 @@ export default function DashboardContent() {
           </div>
         )}
 
-        {/* Success State: Show Dashboard */}
+        {/* Success State: Show Dashboard with Tabs */}
         {state.status === "success" && (
-          <div className="space-y-4">
-            <div className="flex justify-end">
-              <Button variant="outline" onClick={reset}>
-                {t("analyzeAnother")}
-              </Button>
-            </div>
-            <Dashboard result={state.data} />
+          <div className="space-y-6">
+            {/* Header - Shared across all tabs */}
+            <AnalysisHeader
+              repositoryUrl={state.data.analysis.repositoryUrl}
+              analyzedAt={state.data.analysis.analyzedAt}
+              dateRange={state.data.analysis.dateRange}
+              contributors={contributors}
+              onMergeComplete={handleMergeComplete}
+              onReset={reset}
+            />
+
+            {/* Summary Cards - Shared across all tabs */}
+            <AnalysisSummaryCards summary={state.data.summary} />
+
+            {/* Tab Navigation and Content */}
+            <AnalysisTabs
+              analysisResult={state.data}
+              contributors={contributors}
+            />
           </div>
         )}
       </div>

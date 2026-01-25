@@ -1,6 +1,6 @@
 # team-insights Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2025-12-25
+Auto-generated from all feature plans. Last updated: 2026-01-23
 
 ## Active Technologies
 
@@ -126,6 +126,14 @@ if (insight.type === "optimal") { ... } // Don't do this
 
 ## Recent Changes
 
+- 2026-01-23: Added PR Changes Timeseries Analysis feature (005-pr-changes-timeseries)
+  - Weekly visualization of PR code changes (additions/deletions/changedFiles) with Recharts
+  - Statistical outlier detection (2 standard deviations threshold) for identifying large refactoring weeks
+  - 4-week trend analysis (increasing/decreasing/stable) for development velocity tracking
+  - Tab-based UI architecture: AnalysisTabs component with URL synchronization
+  - New domain value objects: WeeklyAggregate, ChangeTrend, OutlierWeek
+  - Reuses existing GraphQL PR data (no additional API calls)
+  - Performance: Tab switching <100ms, supports up to 52 weeks of data
 - 2026-01-04: Completed migration from @octokit/rest to @octokit/graphql
   - Replaced all REST API calls with GraphQL queries (validateAccess, getRateLimitStatus, user authentication)
   - Simplified authentication with direct `graphql()` function usage (no Octokit class instantiation)

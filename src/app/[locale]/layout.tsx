@@ -2,8 +2,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { locales } from "@/i18n/config";
-import { Header } from "@/presentation/components/Header";
-import { Footer } from "@/presentation/components/Footer";
+import { Header, Footer } from "@/presentation/components/layout";
 import { routing } from "@/i18n/routing";
 
 export function generateStaticParams() {

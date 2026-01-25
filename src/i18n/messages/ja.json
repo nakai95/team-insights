@@ -99,15 +99,29 @@
     "analyzeAnother": "別のリポジトリを分析",
     "tryAgain": "再試行",
     "analysisTime": "分析時間: {seconds}秒",
+    "tabs": {
+      "overview": "概要",
+      "throughput": "PRスループット",
+      "changes": "PR変更タイムライン",
+      "changesComingSoon": "PR変更タイムラインタブは近日公開..."
+    },
     "summary": {
       "totalContributors": "総Contributor数",
       "totalCommits": "総コミット数",
       "pullRequests": "プルリクエスト",
       "reviewComments": "レビューコメント"
     },
+    "overview": {
+      "analyzed": "分析日時",
+      "period": "期間",
+      "prsReviewed": "件のPRをレビュー",
+      "comments": "件のコメント",
+      "score": "スコア"
+    },
     "charts": {
       "implementationActivity": "実装活動",
-      "reviewActivity": "レビュー活動"
+      "reviewActivity": "レビュー活動",
+      "reviewActivityDescription": "レビュースコア上位10人のContributor"
     },
     "error": {
       "title": "分析に失敗しました",
@@ -281,6 +295,65 @@
         "optimal": "{bucketName}のPRが平均して最速でマージされます。より大きな変更は小さなプルリクエストに分割することを検討してください。",
         "noDifference": "PRサイズはリードタイムにほとんど影響しません。すべてのサイズカテゴリで同様のマージ速度を示しています。",
         "insufficientData": "最適なPRサイズを判断するのに十分なデータがありません。意味のある洞察を得るには、少なくとも10件のマージ済みPRを分析してください。"
+      }
+    }
+  },
+  "prTimeseries": {
+    "title": "PRコード変更の時系列",
+    "description": "週次コード変更のトレンドとパターン",
+    "emptyState": "時系列分析に利用可能なマージ済みPRがありません",
+    "chart": {
+      "additions": "追加",
+      "deletions": "削除",
+      "prCount": "マージ済みPR",
+      "xAxisLabel": "週",
+      "yAxisLabelLeft": "変更行数",
+      "yAxisLabelRight": "PR数"
+    },
+    "tooltip": {
+      "week": "{date}の週",
+      "additions": "追加: {count}行",
+      "deletions": "削除: {count}行",
+      "totalChanges": "合計変更: {count}行",
+      "prCount": "マージ済みPR: {count}",
+      "averagePRSize": "平均PRサイズ: {size}行"
+    },
+    "insights": {
+      "outliers": {
+        "title": "外れ値週の検出",
+        "description": "異常に高いコード変更がある週（平均から2標準偏差以上）",
+        "weekOf": "{date}の週",
+        "totalChanges": "合計変更",
+        "lines": "行",
+        "prCount": "マージ済みPR",
+        "prs": "件",
+        "zScore": "Zスコア: {zScore}",
+        "mean": "平均: {mean}",
+        "noOutliers": "外れ値週は検出されませんでした。すべての週で通常の活動レベルを示しています。"
+      },
+      "trend": {
+        "title": "4週間トレンド",
+        "description": "最近の開発速度のトレンド",
+        "direction": {
+          "increasing": "増加",
+          "decreasing": "減少",
+          "stable": "安定"
+        },
+        "percentChange": "{direction}トレンド: {percent}%",
+        "analyzedWeeks": "直近{weeks}週間を分析",
+        "insufficientData": "トレンド分析のデータが不足しています。少なくとも4週間のPR履歴が必要です。"
+      },
+      "summary": {
+        "title": "統計サマリー",
+        "description": "分析期間全体の集計メトリクス",
+        "totalPRs": "総マージPR数",
+        "weeksAnalyzed": "{weeks}週間",
+        "avgWeeklyChanges": "週平均変更行数",
+        "linesPerWeek": "行/週",
+        "avgPRSize": "平均PRサイズ",
+        "linesPerPR": "行/PR",
+        "totalAdditions": "総追加行数",
+        "totalDeletions": "総削除行数"
       }
     }
   },

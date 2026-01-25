@@ -5,7 +5,9 @@ import { DateRange } from "@/domain/value-objects/DateRange";
 import { FetchGitData, FetchGitDataInput } from "./FetchGitData";
 import { CalculateMetrics, CalculateMetricsInput } from "./CalculateMetrics";
 import { CalculateThroughputMetrics } from "./CalculateThroughputMetrics";
+import { CalculateChangesTimeseries } from "./CalculateChangesTimeseries";
 import { ThroughputResult } from "@/application/dto/ThroughputResult";
+import { TimeseriesResult } from "@/application/dto/TimeseriesResult";
 import { logger } from "@/lib/utils/logger";
 import { getErrorMessage } from "@/lib/utils/errorUtils";
 import { v4 as uuidv4 } from "uuid";
@@ -27,6 +29,7 @@ export interface AnalyzeRepositoryOutput {
   analysis: RepositoryAnalysis;
   analysisTimeMs: number;
   throughput?: ThroughputResult; // Optional PR throughput analysis
+  timeseries?: TimeseriesResult; // Optional PR changes timeseries analysis
 }
 
 /**
@@ -38,6 +41,7 @@ export class AnalyzeRepository {
     private readonly fetchGitData: FetchGitData,
     private readonly calculateMetrics: CalculateMetrics,
     private readonly calculateThroughputMetrics: CalculateThroughputMetrics,
+    private readonly calculateChangesTimeseries: CalculateChangesTimeseries,
   ) {}
 
   async execute(
@@ -140,6 +144,21 @@ export class AnalyzeRepository {
         });
       }
 
+      // Step 7.5: Calculate PR changes timeseries
+      let timeseries: TimeseriesResult | undefined;
+      try {
+        timeseries = this.calculateChangesTimeseries.execute(pullRequests);
+        logger.info("PR changes timeseries calculated successfully", {
+          weeklyDataPoints: timeseries.weeklyData.length,
+          outlierWeeks: timeseries.outlierWeeks.length,
+        });
+      } catch (error) {
+        // Log the error but don't fail the entire analysis
+        logger.warn("Failed to calculate PR changes timeseries", {
+          error: getErrorMessage(error),
+        });
+      }
+
       // Step 8: Complete analysis
       const completeResult = analysis.complete(contributors);
       if (!completeResult.ok) {
@@ -161,6 +180,7 @@ export class AnalyzeRepository {
         analysis,
         analysisTimeMs,
         throughput,
+        timeseries,
       });
     } catch (error) {
       logger.error("AnalyzeRepository use case failed", {
