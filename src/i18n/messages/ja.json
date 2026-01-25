@@ -317,6 +317,28 @@
       "totalChanges": "合計変更: {count}行",
       "prCount": "マージ済みPR: {count}",
       "averagePRSize": "平均PRサイズ: {size}行"
+    },
+    "insights": {
+      "outliers": {
+        "title": "外れ値週の検出",
+        "description": "異常に高いコード変更がある週（平均から2標準偏差以上）",
+        "weekOf": "{date}の週",
+        "totalChanges": "合計変更",
+        "lines": "行",
+        "prCount": "マージ済みPR",
+        "prs": "件",
+        "zScore": "Zスコア: {zScore}",
+        "mean": "平均: {mean}",
+        "noOutliers": "外れ値週は検出されませんでした。すべての週で通常の活動レベルを示しています。"
+      },
+      "trend": {
+        "title": "4週間トレンド",
+        "description": "最近の開発速度のトレンド"
+      },
+      "summary": {
+        "title": "統計サマリー",
+        "description": "分析期間全体の集計メトリクス"
+      }
     }
   },
   "errors": {

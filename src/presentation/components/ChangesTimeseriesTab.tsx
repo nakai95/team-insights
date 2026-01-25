@@ -13,7 +13,7 @@ import { useTranslations } from "next-intl";
 // Child components
 import { EmptyState } from "./ChangesTimeseriesTab/EmptyState";
 import { TimeseriesChart } from "./ChangesTimeseriesTab/TimeseriesChart";
-// import { TimeseriesInsights } from "./ChangesTimeseriesTab/TimeseriesInsights";
+import { TimeseriesInsights } from "./ChangesTimeseriesTab/TimeseriesInsights";
 
 export interface ChangesTimeseriesTabProps {
   /** Timeseries analysis data (optional, null if not available) */
@@ -70,12 +70,12 @@ export function ChangesTimeseriesTab({
               height={400}
             />
 
-            {/* Placeholder for TimeseriesInsights component (future tasks T023-T034) */}
-            <div className="text-center py-8 border border-dashed rounded-lg">
-              <p className="text-muted-foreground">
-                Insights panel coming soon (T023-T034)
-              </p>
-            </div>
+            {/* Insights panel: outlier weeks, trend analysis, summary statistics */}
+            <TimeseriesInsights
+              outlierWeeks={timeseriesData.outlierWeeks}
+              trend={timeseriesData.trend}
+              summary={timeseriesData.summary}
+            />
           </div>
         )}
       </CardContent>

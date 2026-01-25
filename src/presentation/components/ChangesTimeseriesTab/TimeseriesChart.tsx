@@ -12,6 +12,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  ReferenceArea,
 } from "recharts";
 import type { Payload } from "recharts/types/component/DefaultTooltipContent";
 import {
@@ -152,6 +153,7 @@ export const TimeseriesChart = React.memo(function TimeseriesChart({
   const DELETIONS_COLOR = "#ef4444"; // Red 500
   const DELETIONS_STROKE = "#dc2626"; // Red 600
   const PR_COUNT_COLOR = "#3b82f6"; // Blue 500
+  const OUTLIER_HIGHLIGHT_COLOR = "#fef3c7"; // Amber 100 (light mode)
 
   return (
     <ResponsiveContainer width="100%" height={height}>
@@ -165,6 +167,31 @@ export const TimeseriesChart = React.memo(function TimeseriesChart({
         }}
       >
         <CartesianGrid strokeDasharray="3 3" />
+
+        {/* Highlight outlier weeks with background shading */}
+        {weeklyData.map((week, index) => {
+          if (isOutlierWeek(week.weekStart)) {
+            // Find the next week's start for the end of the reference area
+            const nextWeek = weeklyData[index + 1];
+            const x2 = nextWeek ? nextWeek.weekStart : week.weekEnd;
+            return (
+              <ReferenceArea
+                key={`outlier-${week.weekStart}`}
+                x1={week.weekStart}
+                x2={x2}
+                yAxisId="left"
+                fill={OUTLIER_HIGHLIGHT_COLOR}
+                fillOpacity={0.3}
+                label={{
+                  value: "⚠",
+                  position: "top",
+                  fontSize: 16,
+                }}
+              />
+            );
+          }
+          return null;
+        })}
 
         {/* X-Axis: Week dates */}
         <XAxis

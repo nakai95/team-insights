@@ -87,14 +87,14 @@
 
 ### Outlier Detection UI
 
-- [ ] T023 [P] [US2] Add outlier week highlighting to TimeseriesChart component in src/presentation/components/ChangesTimeseriesTab/TimeseriesChart.tsx
-- [ ] T024 [P] [US2] Create TimeseriesInsights component displaying outlier weeks list in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
-- [ ] T025 [US2] Add outlier week cards with date and metrics to TimeseriesInsights in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
+- [x] T023 [P] [US2] Add outlier week highlighting to TimeseriesChart component in src/presentation/components/ChangesTimeseriesTab/TimeseriesChart.tsx
+- [x] T024 [P] [US2] Create TimeseriesInsights component displaying outlier weeks list in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
+- [x] T025 [US2] Add outlier week cards with date and metrics to TimeseriesInsights in src/presentation/components/ChangesTimeseriesTab/TimeseriesInsights.tsx
 
 ### Integration for User Story 2
 
-- [ ] T026 [US2] Integrate TimeseriesInsights component into ChangesTimeseriesTab in src/presentation/components/ChangesTimeseriesTab.tsx
-- [ ] T027 [US2] Add visual markers for outlier weeks on chart with distinct styling in src/presentation/components/ChangesTimeseriesTab/TimeseriesChart.tsx
+- [x] T026 [US2] Integrate TimeseriesInsights component into ChangesTimeseriesTab in src/presentation/components/ChangesTimeseriesTab.tsx
+- [x] T027 [US2] Add visual markers for outlier weeks on chart with distinct styling in src/presentation/components/ChangesTimeseriesTab/TimeseriesChart.tsx
 
 **Checkpoint**: User Story 2 complete - users can identify outlier weeks through visual highlighting and insights panel
 

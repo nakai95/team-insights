@@ -317,6 +317,28 @@
       "totalChanges": "Total Changes: {count} lines",
       "prCount": "PRs Merged: {count}",
       "averagePRSize": "Avg PR Size: {size} lines"
+    },
+    "insights": {
+      "outliers": {
+        "title": "Outlier Weeks Detected",
+        "description": "Weeks with abnormally high code changes (2+ standard deviations above mean)",
+        "weekOf": "Week of {date}",
+        "totalChanges": "Total Changes",
+        "lines": "lines",
+        "prCount": "PRs Merged",
+        "prs": "PRs",
+        "zScore": "Z-Score: {zScore}",
+        "mean": "mean: {mean}",
+        "noOutliers": "No outlier weeks detected. All weeks show typical activity levels."
+      },
+      "trend": {
+        "title": "4-Week Trend",
+        "description": "Recent development velocity trend"
+      },
+      "summary": {
+        "title": "Summary Statistics",
+        "description": "Aggregate metrics across the analysis period"
+      }
     }
   },
   "errors": {
