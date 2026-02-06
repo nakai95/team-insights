@@ -98,8 +98,8 @@
 
 ### Application Layer - Server Integration
 
-- [ ] T028 [US1] Modify dashboard page.tsx to become Server Component that fetches 30-day data in app/[locale]/dashboard/page.tsx
-- [ ] T029 [US1] Add URL query param parsing for date range in app/[locale]/dashboard/page.tsx
+- [x] T028 [US1] Modify dashboard page.tsx to become Server Component that fetches 30-day data in app/[locale]/dashboard/page.tsx
+- [x] T029 [US1] Add URL query param parsing for date range in app/[locale]/dashboard/page.tsx
 
 ### Presentation Layer - Skeleton UI
 
@@ -109,8 +109,8 @@
 
 ### Presentation Layer - Client Components
 
-- [ ] T033 [US1] Refactor PRAnalysisClient to accept initialData prop from Server Component in src/presentation/components/analysis/PRAnalysisClient.tsx
-- [ ] T034 [P] [US1] Refactor DeploymentFrequencyClient to accept initialData prop in src/presentation/components/analysis/DeploymentFrequencyClient.tsx
+- [x] T033 [US1] Refactor PRAnalysisClient to accept initialData prop from Server Component in src/presentation/components/analysis/PRAnalysisClient.tsx
+- [x] T034 [P] [US1] Refactor DeploymentFrequencyClient to accept initialData prop in src/presentation/components/analysis/DeploymentFrequencyClient.tsx
 
 **Checkpoint**: At this point, User Story 1 should display 30-day data within 5 seconds with skeleton UI
 
