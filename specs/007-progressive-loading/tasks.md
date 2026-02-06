@@ -20,10 +20,10 @@
 
 **Purpose**: Project initialization and dependency installation
 
-- [ ] T001 Install idb dependency for IndexedDB wrapper: `pnpm add idb`
-- [ ] T002 [P] Install fake-indexeddb for testing: `pnpm add -D @types/fake-indexeddb fake-indexeddb`
-- [ ] T003 [P] Verify specs/007-progressive-loading/contracts/\*\* exclusion in tsconfig.json
-- [ ] T004 [P] Verify specs/007-progressive-loading/contracts/\*\* exclusion in eslint.config.mjs
+- [x] T001 Install idb dependency for IndexedDB wrapper: `pnpm add idb`
+- [x] T002 [P] Install fake-indexeddb for testing: `pnpm add -D fake-indexeddb`
+- [x] T003 [P] Verify specs/007-progressive-loading/contracts/\*\* exclusion in tsconfig.json
+- [x] T004 [P] Verify specs/007-progressive-loading/contracts/\*\* exclusion in eslint.config.mjs
 
 ---
 
