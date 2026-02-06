@@ -124,22 +124,22 @@
 
 ### Application Layer - Use Cases
 
-- [ ] T035 [US2] Create LoadHistoricalData use case with chunked batching (90-day chunks) in src/application/use-cases/LoadHistoricalData.ts
-- [ ] T036 [US2] Add rate limit awareness checks in LoadHistoricalData to pause when budget low in src/application/use-cases/LoadHistoricalData.ts
+- [x] T035 [US2] Create LoadHistoricalData use case with chunked batching (90-day chunks) in src/application/use-cases/LoadHistoricalData.ts
+- [x] T036 [US2] Add rate limit awareness checks in LoadHistoricalData to pause when budget low in src/application/use-cases/LoadHistoricalData.ts
 
 ### Presentation Layer - Hooks
 
-- [ ] T037 [US2] Create useBackgroundLoader hook with useTransition for non-blocking state updates in src/presentation/hooks/useBackgroundLoader.ts
-- [ ] T038 [US2] Add AbortController cleanup on unmount in useBackgroundLoader hook in src/presentation/hooks/useBackgroundLoader.ts
+- [x] T037 [US2] Create useBackgroundLoader hook with useTransition for non-blocking state updates in src/presentation/hooks/useBackgroundLoader.ts
+- [x] T038 [US2] Add AbortController cleanup on unmount in useBackgroundLoader hook in src/presentation/hooks/useBackgroundLoader.ts
 
 ### Presentation Layer - Loading Indicators
 
-- [ ] T039 [P] [US2] Create LoadingIndicator component for "Loading more data..." text during background load in src/presentation/components/shared/LoadingIndicator.tsx
+- [x] T039 [P] [US2] Create LoadingIndicator component for "Loading more data..." text during background load in src/presentation/components/shared/LoadingIndicator.tsx
 
 ### Presentation Layer - Client Component Integration
 
-- [ ] T040 [US2] Integrate useBackgroundLoader into PRAnalysisClient component in src/presentation/components/analysis/PRAnalysisClient.tsx
-- [ ] T041 [P] [US2] Integrate useBackgroundLoader into DeploymentFrequencyClient component in src/presentation/components/analysis/DeploymentFrequencyClient.tsx
+- [x] T040 [US2] Integrate useBackgroundLoader into PRAnalysisClient component in src/presentation/components/analysis/PRAnalysisClient.tsx
+- [x] T041 [P] [US2] Integrate useBackgroundLoader into DeploymentFrequencyClient component in src/presentation/components/analysis/DeploymentFrequencyClient.tsx
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work - initial load is fast, background loading happens without blocking
 

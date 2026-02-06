@@ -405,6 +405,54 @@
       "title": "最近のデプロイ"
     }
   },
+  "progressiveLoading": {
+    "title": "プログレッシブローディングダッシュボード",
+    "phase3": {
+      "complete": "Phase 3 完了: Server Component → Client Component データフロー有効"
+    },
+    "phase4": {
+      "active": "Phase 4 有効: useTransitionによるバックグラウンド履歴データロード",
+      "features": {
+        "backgroundLoading": "useTransitionによるバックグラウンド履歴データロード",
+        "caching": "クライアントサイドのIndexedDBキャッシング",
+        "staleWhileRevalidate": "Stale-while-revalidateパターン",
+        "nonBlockingUpdates": "ノンブロッキングUIアップデート"
+      },
+      "loadingIndicator": {
+        "loading": "履歴データを読み込んでいます...",
+        "progress": "{percent}% 完了"
+      },
+      "successIndicator": {
+        "loaded": "履歴データ読み込み完了: {total}件の{dataType}を表示中 (初期: {initial}件)",
+        "dataType": {
+          "prs": "PR",
+          "deployments": "デプロイ"
+        },
+        "additional": "+{count}件の履歴"
+      }
+    },
+    "stats": {
+      "totalPRs": "PRの合計",
+      "mergedPRs": "マージされたPR",
+      "openPRs": "オープンなPR",
+      "totalDeployments": "デプロイの合計",
+      "environments": "環境"
+    },
+    "repository": "リポジトリ",
+    "recentPRs": "最近のPR（最初の5件）",
+    "recentDeployments": "最近のデプロイ（最初の5件）",
+    "period": "{start} - {end} ({days}日間)",
+    "error": "エラー",
+    "commits": {
+      "title": "コミット ({count}件)",
+      "notYetDisplayed": "コミットデータは読み込まれましたが、まだ表示されていません"
+    },
+    "errors": {
+      "failedToLoadPRs": "プルリクエストの読み込みに失敗しました",
+      "unexpectedError": "予期しないエラー",
+      "unknownError": "不明なエラー"
+    }
+  },
   "errors": {
     "AUTHENTICATION_REQUIRED": "認証が必要です。サインインしてください。",
     "TOKEN_EXPIRED": "セッションが期限切れになりました。再度サインインしてください。",

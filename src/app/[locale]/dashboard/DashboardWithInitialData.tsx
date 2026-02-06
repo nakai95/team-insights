@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { DateRange } from "@/domain/value-objects/DateRange";
 import { GitHubGraphQLAdapter } from "@/infrastructure/github/GitHubGraphQLAdapter";
 import { createSessionProvider } from "@/infrastructure/auth/SessionProviderFactory";
@@ -73,6 +74,8 @@ export async function DashboardWithInitialData({
   repositoryUrl,
   dateRange,
 }: DashboardWithInitialDataProps) {
+  const t = await getTranslations("progressiveLoading");
+
   try {
     logger.info("DashboardWithInitialData", "Loading initial data", {
       repositoryUrl,
@@ -105,7 +108,7 @@ export async function DashboardWithInitialData({
         <div className="min-h-screen p-8">
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Failed to load pull requests</AlertTitle>
+            <AlertTitle>{t("errors.failedToLoadPRs")}</AlertTitle>
             <AlertDescription>{prsResult.error.message}</AlertDescription>
           </Alert>
         </div>
@@ -128,26 +131,33 @@ export async function DashboardWithInitialData({
     const serializedPRs = pullRequests.map(serializePullRequest);
     const serializedDeployments = deployments.map(serializeDeployment);
 
+    // Serialize date range for Client Component
+    const serializableDateRange = {
+      start: dateRange.start.toISOString(),
+      end: dateRange.end.toISOString(),
+    };
+
     // Render Client Components with initial data from Server Component
     return (
       <div className="min-h-screen p-8">
         <div className="max-w-7xl mx-auto space-y-6">
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold">
-              Progressive Loading Dashboard
-            </h1>
-            <p className="text-muted-foreground">Repository: {repositoryId}</p>
+            <h1 className="text-3xl font-bold">{t("title")}</h1>
+            <p className="text-muted-foreground">
+              {t("repository")}: {repositoryId}
+            </p>
             <p className="text-sm text-muted-foreground">
-              {dateRange.start.toLocaleDateString()} -{" "}
-              {dateRange.end.toLocaleDateString()} ({dateRange.durationInDays}{" "}
-              days)
+              {t("period", {
+                start: dateRange.start.toLocaleDateString(),
+                end: dateRange.end.toLocaleDateString(),
+                days: dateRange.durationInDays,
+              })}
             </p>
           </div>
 
           <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
             <p className="text-sm text-green-900 dark:text-green-100">
-              <strong>✓ Phase 3 Complete:</strong> Server Component → Client
-              Component data flow active
+              <strong>✓ {t("phase3.complete")}</strong>
             </p>
           </div>
 
@@ -155,33 +165,23 @@ export async function DashboardWithInitialData({
           <PRAnalysisClient
             initialData={serializedPRs}
             repositoryId={repositoryId}
+            dateRange={serializableDateRange}
           />
 
           {/* Deployment Frequency Client Component */}
           <DeploymentFrequencyClient
             initialData={serializedDeployments}
             repositoryId={repositoryId}
+            dateRange={serializableDateRange}
           />
-
-          <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
-            <p className="text-sm text-blue-900 dark:text-blue-100 font-semibold mb-2">
-              What&apos;s Next (Phase 4):
-            </p>
-            <ul className="text-sm text-blue-900 dark:text-blue-100 space-y-1 list-disc list-inside">
-              <li>Background historical data loading with useTransition</li>
-              <li>IndexedDB caching on client side</li>
-              <li>Stale-while-revalidate pattern</li>
-              <li>Non-blocking UI updates during background loading</li>
-            </ul>
-          </div>
 
           {commits.length > 0 && (
             <div className="p-4 bg-muted rounded-lg">
               <h3 className="text-sm font-medium mb-2">
-                Commits ({commits.length})
+                {t("commits.title", { count: commits.length })}
               </h3>
               <p className="text-xs text-muted-foreground">
-                Commit data loaded but not yet displayed in Phase 3
+                {t("commits.notYetDisplayed")}
               </p>
             </div>
           )}
@@ -194,9 +194,9 @@ export async function DashboardWithInitialData({
       <div className="min-h-screen p-8">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Unexpected Error</AlertTitle>
+          <AlertTitle>{t("errors.unexpectedError")}</AlertTitle>
           <AlertDescription>
-            {error instanceof Error ? error.message : "Unknown error"}
+            {error instanceof Error ? error.message : t("errors.unknownError")}
           </AlertDescription>
         </Alert>
       </div>
