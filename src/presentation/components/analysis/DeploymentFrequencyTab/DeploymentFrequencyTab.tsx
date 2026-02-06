@@ -1,6 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { DeploymentSummaryCards } from "../DeploymentSummaryCards";
 import { DeploymentFrequencyChart } from "../DeploymentFrequencyChart";
 import { DeploymentBarChart } from "../DeploymentBarChart";
@@ -20,20 +22,32 @@ export interface DeploymentFrequencyTabProps {
  * - Monthly deployment bar chart
  */
 export function DeploymentFrequencyTab({ data }: DeploymentFrequencyTabProps) {
+  return (
+    <ErrorBoundary>
+      <DeploymentFrequencyTabContent data={data} />
+    </ErrorBoundary>
+  );
+}
+
+/**
+ * Internal component with the actual tab content
+ * Wrapped by ErrorBoundary for error handling
+ */
+function DeploymentFrequencyTabContent({ data }: DeploymentFrequencyTabProps) {
+  const t = useTranslations("deployment");
+
   // Handle no data case
   if (data.totalDeployments === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <h3 className="text-lg font-semibold mb-2">No Deployment Data</h3>
-        <p className="text-muted-foreground mb-4">
-          No deployment events found for this repository.
-        </p>
+        <h3 className="text-lg font-semibold mb-2">{t("emptyState.title")}</h3>
+        <p className="text-muted-foreground mb-4">{t("emptyState.message")}</p>
         <div className="text-sm text-muted-foreground space-y-2">
-          <p>To track deployments, you can:</p>
+          <p>{t("emptyState.guide.title")}</p>
           <ul className="list-disc list-inside space-y-1">
-            <li>Create GitHub Releases for your versions</li>
-            <li>Tag your commits with semantic versioning (v1.0.0)</li>
-            <li>Set up GitHub Actions to create Deployment events</li>
+            <li>{t("emptyState.guide.releases")}</li>
+            <li>{t("emptyState.guide.tags")}</li>
+            <li>{t("emptyState.guide.actions")}</li>
           </ul>
         </div>
       </div>
@@ -53,7 +67,7 @@ export function DeploymentFrequencyTab({ data }: DeploymentFrequencyTabProps) {
       {/* DORA Performance Level */}
       <Card>
         <CardHeader>
-          <CardTitle>DORA Performance Level</CardTitle>
+          <CardTitle>{t("doraLevel.title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
@@ -79,7 +93,7 @@ export function DeploymentFrequencyTab({ data }: DeploymentFrequencyTabProps) {
           {data.doraLevel.improvementSuggestions.length > 0 && (
             <div className="mt-4 p-4 bg-muted rounded-lg">
               <p className="text-sm font-medium mb-2">
-                Suggestions for Improvement:
+                {t("doraLevel.improvementTitle")}
               </p>
               <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
                 {data.doraLevel.improvementSuggestions.map((suggestion, i) => (
@@ -94,7 +108,7 @@ export function DeploymentFrequencyTab({ data }: DeploymentFrequencyTabProps) {
       {/* Weekly trend chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Weekly Deployment Frequency</CardTitle>
+          <CardTitle>{t("charts.weeklyTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <DeploymentFrequencyChart
@@ -108,7 +122,7 @@ export function DeploymentFrequencyTab({ data }: DeploymentFrequencyTabProps) {
       {/* Monthly bar chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Monthly Deployment Frequency</CardTitle>
+          <CardTitle>{t("charts.monthlyTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <DeploymentBarChart monthlyData={data.monthlyData} />
@@ -119,7 +133,7 @@ export function DeploymentFrequencyTab({ data }: DeploymentFrequencyTabProps) {
       {data.recentDeployments.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Recent Deployments</CardTitle>
+            <CardTitle>{t("recent.title")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">

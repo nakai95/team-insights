@@ -164,21 +164,21 @@
 
 ### Error Handling & Edge Cases
 
-- [ ] T043 [P] Add "No deployment data" empty state to `DeploymentFrequencyTab` component with helpful guidance
-- [ ] T044 [P] Add loading states to all charts in `DeploymentFrequencyChart` and `DeploymentBarChart`
-- [ ] T045 [P] Add error boundaries to `DeploymentFrequencyTab` component for graceful error handling
+- [x] T043 [P] Add "No deployment data" empty state to `DeploymentFrequencyTab` component with helpful guidance
+- [x] T044 [P] Add loading states to all charts in `DeploymentFrequencyChart` and `DeploymentBarChart`
+- [x] T045 [P] Add error boundaries to `DeploymentFrequencyTab` component for graceful error handling
 
 ### Performance Optimization
 
-- [ ] T046 [P] Add memoization to chart components using `React.memo` in `DeploymentFrequencyChart` and `DeploymentBarChart`
+- [x] T046 [P] Add memoization to chart components using `React.memo` in `DeploymentFrequencyChart` and `DeploymentBarChart`
 - [ ] T047 [P] Verify performance with 500 deployment events (test with large repository like kubernetes/kubernetes)
 
 ### Documentation & Code Quality
 
-- [ ] T048 [P] Update `CLAUDE.md` with Deployment Frequency feature documentation and DORA metrics integration
-- [ ] T049 [P] Run linter and fix any issues (`pnpm lint:fix`)
-- [ ] T050 [P] Run type checker and fix any issues (`pnpm type-check`)
-- [ ] T051 Run all tests and ensure passing (`pnpm test && pnpm test:e2e`)
+- [x] T048 [P] Update `CLAUDE.md` with Deployment Frequency feature documentation and DORA metrics integration
+- [x] T049 [P] Run linter and fix any issues (`pnpm lint:fix`)
+- [x] T050 [P] Run type checker and fix any issues (`pnpm type-check`)
+- [x] T051 Run all tests and ensure passing (`pnpm test && pnpm test:e2e`)
 
 ### Infrastructure Tests (RECOMMENDED)
 
