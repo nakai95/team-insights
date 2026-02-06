@@ -153,23 +153,23 @@
 
 ### Infrastructure Layer - shadcn/ui Components
 
-- [ ] T042 [US3] Install shadcn/ui calendar component: `npx shadcn-ui@latest add calendar`
+- [x] T042 [US3] Install shadcn/ui calendar component: `npx shadcn-ui@latest add calendar`
 
 ### Presentation Layer - Date Range UI
 
-- [ ] T043 [US3] Create DateRangeSelector component with presets (Last 7/30/90 days, 6 months, 1 year, custom) in src/presentation/components/shared/DateRangeSelector.tsx
-- [ ] T044 [US3] Integrate react-day-picker for custom date selection in DateRangeSelector component in src/presentation/components/shared/DateRangeSelector.tsx
-- [ ] T045 [US3] Add dark mode support with next-themes integration in DateRangeSelector component in src/presentation/components/shared/DateRangeSelector.tsx
+- [x] T043 [US3] Create DateRangeSelector component with presets (Last 7/30/90 days, 6 months, 1 year, custom) in src/presentation/components/shared/DateRangeSelector.tsx
+- [x] T044 [US3] Integrate react-day-picker for custom date selection in DateRangeSelector component in src/presentation/components/shared/DateRangeSelector.tsx
+- [x] T045 [US3] Add dark mode support with next-themes integration in DateRangeSelector component in src/presentation/components/shared/DateRangeSelector.tsx
 
 ### Presentation Layer - URL Integration
 
-- [ ] T046 [US3] Add handleDateChange function that updates URL params using Next.js router in PRAnalysisClient component in src/presentation/components/analysis/PRAnalysisClient.tsx
-- [ ] T047 [US3] Add DateRangeSelector to dashboard layout in app/[locale]/dashboard/page.tsx
+- [x] T046 [US3] Add handleDateChange function that updates URL params using Next.js router in PRAnalysisClient component in src/presentation/components/analysis/PRAnalysisClient.tsx
+- [x] T047 [US3] Add DateRangeSelector to dashboard layout in app/[locale]/dashboard/page.tsx
 
 ### Application Layer - Date Range Handling
 
-- [ ] T048 [US3] Create parseDateRange utility for URL param validation in Server Component in src/application/utils/parseDateRange.ts
-- [ ] T049 [US3] Modify LoadInitialData to support custom date ranges beyond 30 days in src/application/use-cases/LoadInitialData.ts
+- [x] T048 [US3] Create parseDateRange utility for URL param validation in Server Component in src/application/utils/parseDateRange.ts
+- [x] T049 [US3] Modify LoadInitialData to support custom date ranges beyond 30 days in src/application/use-cases/LoadInitialData.ts
 
 **Checkpoint**: All three user stories should now work independently - initial fast load, background loading, and custom date selection
 

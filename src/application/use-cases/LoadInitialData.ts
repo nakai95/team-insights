@@ -28,7 +28,8 @@ export interface InitialDataResult {
 /**
  * LoadInitialData Use Case
  *
- * Purpose: Fetch initial 30-day data with cache-aware loading for fast dashboard display
+ * Purpose: Fetch initial data with cache-aware loading for fast dashboard display
+ * Supports custom date ranges (7 days, 30 days, 90 days, 6 months, 1 year, or custom)
  *
  * Strategy:
  * 1. Check cache for each data type (PRs, deployments, commits)
@@ -40,13 +41,20 @@ export interface InitialDataResult {
  * Performance:
  * - Cache hit (fresh): <1s (instant display from IndexedDB)
  * - Cache hit (stale): <1s initial + background refresh
- * - Cache miss: <5s (parallel API fetches)
+ * - Cache miss: <5s for 30 days (parallel API fetches)
+ * - Large ranges: May take longer depending on data volume
  *
  * Usage:
  * ```typescript
  * // In Server Component (app/[locale]/dashboard/page.tsx)
  * const useCase = new LoadInitialData(dataLoader, cacheRepository);
- * const result = await useCase.execute('facebook/react', DateRange.last30Days());
+ *
+ * // Default 30-day range
+ * const result = await useCase.execute('facebook/react');
+ *
+ * // Custom date range
+ * const customRange = DateRange.last90Days();
+ * const result = await useCase.execute('facebook/react', customRange);
  *
  * if (result.ok) {
  *   return <DashboardClient initialData={result.value} />;

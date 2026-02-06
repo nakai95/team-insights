@@ -13,6 +13,7 @@ import {
   DeploymentFrequencyClient,
   type SerializableDeployment,
 } from "@/presentation/components/analysis/DeploymentFrequencyClient";
+import { DashboardControls } from "@/presentation/components/layout/DashboardControls";
 import type { PullRequest } from "@/domain/interfaces/IGitHubRepository";
 import type { DeploymentEvent } from "@/domain/value-objects/DeploymentEvent";
 
@@ -154,6 +155,15 @@ export async function DashboardWithInitialData({
               })}
             </p>
           </div>
+
+          {/* Date Range Selector */}
+          <DashboardControls
+            currentRange={{
+              start: dateRange.start.toISOString(),
+              end: dateRange.end.toISOString(),
+            }}
+            repositoryUrl={repositoryUrl}
+          />
 
           <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
             <p className="text-sm text-green-900 dark:text-green-100">

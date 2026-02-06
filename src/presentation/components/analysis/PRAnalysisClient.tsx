@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useBackgroundLoader } from "@/presentation/hooks/useBackgroundLoader";
@@ -37,6 +38,8 @@ export interface PRAnalysisClientProps {
   repositoryId: string;
   /** Date range of initial data (for calculating historical range) */
   dateRange?: { start: string; end: string };
+  /** Optional callback when date range changes (for custom integration) */
+  onDateRangeChange?: (range: DateRange) => void;
 }
 
 /**
@@ -76,11 +79,35 @@ export function PRAnalysisClient({
   initialData,
   repositoryId,
   dateRange,
+  onDateRangeChange,
 }: PRAnalysisClientProps) {
   const t = useTranslations("progressiveLoading");
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [cacheRepository, setCacheRepository] =
     useState<ICacheRepository | null>(null);
   const [cacheInitialized, setCacheInitialized] = useState(false);
+
+  /**
+   * Handle date range change by updating URL params
+   * This will trigger a Server Component re-render with new data
+   */
+  const handleDateChange = (range: DateRange) => {
+    // Create new URL search params
+    const params = new URLSearchParams(searchParams.toString());
+
+    // Format dates as ISO strings for URL params
+    params.set("startDate", range.start.toISOString());
+    params.set("endDate", range.end.toISOString());
+
+    // Navigate to updated URL (triggers Server Component refetch)
+    router.push(`?${params.toString()}`);
+
+    // Call optional callback for custom integration
+    if (onDateRangeChange) {
+      onDateRangeChange(range);
+    }
+  };
 
   // Deserialize initial data
   const deserializedInitialData = useMemo(
