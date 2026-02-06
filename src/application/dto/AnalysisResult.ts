@@ -1,6 +1,7 @@
 import { ContributorDto } from "./ContributorDto";
 import { ThroughputResult } from "./ThroughputResult";
 import { TimeseriesResult } from "./TimeseriesResult";
+import { DeploymentFrequencyResult } from "./DeploymentFrequencyResult";
 
 /**
  * DTO for successful repository analysis response
@@ -27,6 +28,7 @@ export interface AnalysisResult {
   };
   throughput?: ThroughputResult; // Optional PR throughput analysis
   timeseries?: TimeseriesResult; // Optional PR changes timeseries analysis
+  deploymentFrequency?: DeploymentFrequencyResult; // Optional deployment frequency analysis
 }
 
 /**

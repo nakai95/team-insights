@@ -103,6 +103,7 @@
       "overview": "概要",
       "throughput": "PRスループット",
       "changes": "PR変更タイムライン",
+      "deploymentFrequency": "デプロイ頻度",
       "changesComingSoon": "PR変更タイムラインタブは近日公開..."
     },
     "summary": {
@@ -355,6 +356,53 @@
         "totalAdditions": "総追加行数",
         "totalDeletions": "総削除行数"
       }
+    }
+  },
+  "deployment": {
+    "title": "デプロイ頻度",
+    "emptyState": {
+      "title": "デプロイデータなし",
+      "message": "このリポジトリのデプロイイベントが見つかりません。",
+      "guide": {
+        "title": "デプロイを追跡するには、以下の方法があります:",
+        "releases": "バージョン用のGitHubリリースを作成",
+        "tags": "セマンティックバージョニング（v1.0.0）でコミットにタグ付け",
+        "actions": "GitHub Actionsでデプロイイベントを作成するように設定"
+      }
+    },
+    "summary": {
+      "totalDeployments": "総デプロイ数",
+      "allEvents": "すべてのデプロイイベント",
+      "averagePerWeek": "週平均",
+      "weeklyRate": "週間デプロイレート",
+      "averagePerMonth": "月平均",
+      "monthlyRate": "月間デプロイレート",
+      "analysisPeriod": "分析期間",
+      "daysOfData": "日分のデータ",
+      "dayOfData": "日分のデータ"
+    },
+    "doraLevel": {
+      "title": "DORAパフォーマンスレベル",
+      "improvementTitle": "改善のための提案:"
+    },
+    "charts": {
+      "weeklyTitle": "週次デプロイ頻度",
+      "monthlyTitle": "月次デプロイ頻度",
+      "loading": "チャートデータを読み込み中...",
+      "deployments": "デプロイ",
+      "trend": "トレンド:",
+      "movingAverage": "4週間移動平均",
+      "week": "週:",
+      "start": "開始:",
+      "fourWeekAvg": "4週間平均:",
+      "trendDirections": {
+        "increasing": "増加",
+        "decreasing": "減少",
+        "stable": "安定"
+      }
+    },
+    "recent": {
+      "title": "最近のデプロイ"
     }
   },
   "errors": {

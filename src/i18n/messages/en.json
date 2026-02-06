@@ -103,6 +103,7 @@
       "overview": "Overview",
       "throughput": "PR Throughput",
       "changes": "PR Changes Timeseries",
+      "deploymentFrequency": "Deployment Frequency",
       "changesComingSoon": "PR Changes Timeseries tab coming soon..."
     },
     "summary": {
@@ -355,6 +356,53 @@
         "totalAdditions": "Total Additions",
         "totalDeletions": "Total Deletions"
       }
+    }
+  },
+  "deployment": {
+    "title": "Deployment Frequency",
+    "emptyState": {
+      "title": "No Deployment Data",
+      "message": "No deployment events found for this repository.",
+      "guide": {
+        "title": "To track deployments, you can:",
+        "releases": "Create GitHub Releases for your versions",
+        "tags": "Tag your commits with semantic versioning (v1.0.0)",
+        "actions": "Set up GitHub Actions to create Deployment events"
+      }
+    },
+    "summary": {
+      "totalDeployments": "Total Deployments",
+      "allEvents": "All deployment events",
+      "averagePerWeek": "Average per Week",
+      "weeklyRate": "Weekly deployment rate",
+      "averagePerMonth": "Average per Month",
+      "monthlyRate": "Monthly deployment rate",
+      "analysisPeriod": "Analysis Period",
+      "daysOfData": "days of data",
+      "dayOfData": "day of data"
+    },
+    "doraLevel": {
+      "title": "DORA Performance Level",
+      "improvementTitle": "Suggestions for Improvement:"
+    },
+    "charts": {
+      "weeklyTitle": "Weekly Deployment Frequency",
+      "monthlyTitle": "Monthly Deployment Frequency",
+      "loading": "Loading chart data...",
+      "deployments": "Deployments",
+      "trend": "Trend:",
+      "movingAverage": "4-week Moving Avg",
+      "week": "Week:",
+      "start": "Start:",
+      "fourWeekAvg": "4-week avg:",
+      "trendDirections": {
+        "increasing": "Increasing",
+        "decreasing": "Decreasing",
+        "stable": "Stable"
+      }
+    },
+    "recent": {
+      "title": "Recent Deployments"
     }
   },
   "errors": {

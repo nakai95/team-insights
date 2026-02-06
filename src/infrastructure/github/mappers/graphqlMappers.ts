@@ -14,9 +14,15 @@ import {
   PullRequest,
   ReviewComment,
   RateLimitInfo,
+  Release,
+  Deployment,
+  Tag,
 } from "@/domain/interfaces/IGitHubRepository";
 import { GitHubGraphQLPullRequest } from "../graphql/pullRequests";
 import { GitHubGraphQLCommit } from "../graphql/commits";
+import { GitHubGraphQLRelease } from "../graphql/releases";
+import { GitHubGraphQLDeployment } from "../graphql/deployments";
+import { GitHubGraphQLTag } from "../graphql/tags";
 
 /**
  * Map GraphQL PR state to domain PR state
@@ -124,5 +130,48 @@ export function mapRateLimit(gqlRateLimit: {
     limit: gqlRateLimit.limit,
     remaining: gqlRateLimit.remaining,
     resetAt: new Date(gqlRateLimit.resetAt),
+  };
+}
+
+/**
+ * Map GraphQL Release to domain Release
+ */
+export function mapRelease(gqlRelease: GitHubGraphQLRelease): Release {
+  return {
+    name: gqlRelease.name,
+    tagName: gqlRelease.tagName,
+    createdAt: gqlRelease.createdAt,
+    publishedAt: gqlRelease.publishedAt,
+    isPrerelease: gqlRelease.isPrerelease,
+    isDraft: gqlRelease.isDraft,
+  };
+}
+
+/**
+ * Map GraphQL Deployment to domain Deployment
+ */
+export function mapDeployment(
+  gqlDeployment: GitHubGraphQLDeployment,
+): Deployment {
+  return {
+    id: gqlDeployment.id,
+    createdAt: gqlDeployment.createdAt,
+    environment: gqlDeployment.environment,
+    state: gqlDeployment.state,
+    ref: gqlDeployment.ref?.name ?? null,
+    latestStatus: gqlDeployment.latestStatus,
+  };
+}
+
+/**
+ * Map GraphQL Tag to domain Tag
+ */
+export function mapTag(gqlTag: GitHubGraphQLTag): Tag {
+  return {
+    name: gqlTag.name,
+    target: {
+      committedDate: gqlTag.target.committedDate,
+      tagger: gqlTag.target.tagger,
+    },
   };
 }

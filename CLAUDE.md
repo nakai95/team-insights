@@ -1,6 +1,6 @@
 # team-insights Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-01-23
+Auto-generated from all feature plans. Last updated: 2026-02-06
 
 ## Active Technologies
 
@@ -126,6 +126,20 @@ if (insight.type === "optimal") { ... } // Don't do this
 
 ## Recent Changes
 
+- 2026-02-06: Added DORA Metrics - Deployment Frequency feature (006-dora-deployment-frequency)
+  - First DORA metric implementation: Deployment Frequency dashboard with weekly/monthly aggregations
+  - Retrieves deployment events from GitHub Releases, Deployments, and Tags via GraphQL API
+  - DORA performance level classification (Elite/High/Medium/Low) based on industry benchmarks
+  - Trend analysis with 4-week moving average and direction indicators (increasing/decreasing/stable)
+  - New domain value objects: DeploymentEvent, DeploymentFrequency, DORAPerformanceLevel
+  - New application use case: CalculateDeploymentFrequency with deduplication logic
+  - Extended IGitHubRepository interface with getReleases(), getDeployments(), getTags() methods
+  - New GraphQL queries and mappers for deployment data sources
+  - Tab-based UI integration: DeploymentFrequencyTab, DeploymentFrequencyChart, DeploymentBarChart
+  - Performance: Supports 500+ deployment events, <2s load time for large repositories
+  - Error handling: Empty states, loading indicators, error boundaries, React.memo optimization
+  - E2E tests for critical user paths in deployment frequency analysis
+
 - 2026-01-23: Added PR Changes Timeseries Analysis feature (005-pr-changes-timeseries)
   - Weekly visualization of PR code changes (additions/deletions/changedFiles) with Recharts
   - Statistical outlier detection (2 standard deviations threshold) for identifying large refactoring weeks
@@ -141,12 +155,9 @@ if (insight.type === "optimal") { ... } // Don't do this
   - Performance: All API operations now use GraphQL for consistency
   - Infrastructure-only change: `OctokitAdapter.ts` and `EnvTokenAdapter.ts` implementation updated
   - No breaking changes: All interfaces and tests remain unchanged
-- 2026-01-02: Migrated GitHub API from REST to GraphQL (004-github-api-graphql)
   - Replaced sequential REST API calls with single GraphQL queries
   - Performance improvement: 15 seconds → <1 second for large repositories
   - API efficiency: 90%+ reduction in API requests (100+ REST calls → 1-2 GraphQL queries)
-- 2025-12-30: Added light/dark mode toggle with next-themes integration
-- 2025-12-25: Added PR Throughput Analysis feature (003-pr-throughput-analysis)
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

@@ -1,0 +1,139 @@
+# GitHub Deployments GraphQL Query Contract
+# Purpose: Fetch GitHub Deployments for deployment frequency analysis
+# Source: https://docs.github.com/en/graphql/reference/objects#deployment
+
+query GetDeployments($owner: String!, $repo: String!, $first: Int!, $after: String) {
+  repository(owner: $owner, name: $repo) {
+    deployments(
+      first: $first
+      after: $after
+      orderBy: { field: CREATED_AT, direction: DESC }
+    ) {
+      nodes {
+        # Unique deployment ID
+        id
+
+        # When deployment was created (ISO 8601 timestamp)
+        # PRIMARY TIMESTAMP for deployment frequency
+        createdAt
+
+        # When deployment was last updated
+        updatedAt
+
+        # Target environment (e.g., "production", "staging", "development")
+        environment
+
+        # Current deployment state (ACTIVE, ERROR, FAILURE, etc.)
+        state
+
+        # Optional deployment description
+        description
+
+        # Git reference deployed (branch/tag)
+        ref {
+          name
+          target {
+            ... on Commit {
+              oid
+              committedDate
+            }
+          }
+        }
+
+        # Most recent status update
+        latestStatus {
+          state
+          createdAt
+          description
+        }
+      }
+
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+
+      totalCount
+    }
+  }
+
+  # Rate limit information for tracking API usage
+  rateLimit {
+    limit
+    cost
+    remaining
+    resetAt
+  }
+}
+
+# Expected Response Structure
+# {
+#   "repository": {
+#     "deployments": {
+#       "nodes": [
+#         {
+#           "id": "MDEwOkRlcGxveW1lbnQxMjM0NTY3ODk=",
+#           "createdAt": "2024-01-15T10:00:00Z",
+#           "updatedAt": "2024-01-15T10:05:00Z",
+#           "environment": "production",
+#           "state": "ACTIVE",
+#           "description": "Deploy v1.0.0 to production",
+#           "ref": {
+#             "name": "refs/tags/v1.0.0",
+#             "target": {
+#               "oid": "abc123def456",
+#               "committedDate": "2024-01-15T09:00:00Z"
+#             }
+#           },
+#           "latestStatus": {
+#             "state": "SUCCESS",
+#             "createdAt": "2024-01-15T10:05:00Z",
+#             "description": "Deployment completed successfully"
+#           }
+#         }
+#       ],
+#       "pageInfo": {
+#         "hasNextPage": true,
+#         "endCursor": "Y3Vyc29yOnYyOpK5MjAyNC0wMS0xNVQxMDowMDowMC0wODowMM4AXyZo"
+#       },
+#       "totalCount": 156
+#     }
+#   },
+#   "rateLimit": {
+#     "limit": 5000,
+#     "cost": 3,
+#     "remaining": 4997,
+#     "resetAt": "2024-01-15T11:00:00Z"
+#   }
+# }
+
+# Deployment State Enum Values:
+# - ABANDONED: Deployment was abandoned
+# - ACTIVE: Deployment is currently active
+# - DESTROYED: Deployment was destroyed
+# - ERROR: Deployment encountered an error
+# - FAILURE: Deployment failed
+# - INACTIVE: Deployment is no longer active
+# - IN_PROGRESS: Deployment is in progress
+# - PENDING: Deployment is pending
+# - QUEUED: Deployment is queued
+# - WAITING: Deployment is waiting
+
+# Deployment Status State Enum Values:
+# - ERROR: Deployment status error
+# - FAILURE: Deployment status failure
+# - INACTIVE: Deployment status inactive
+# - IN_PROGRESS: Deployment status in progress
+# - PENDING: Deployment status pending
+# - QUEUED: Deployment status queued
+# - SUCCESS: Deployment status success
+# - WAITING: Deployment status waiting
+
+# Usage Notes:
+# - Use createdAt as deployment timestamp (when deployment initiated)
+# - Filter by environment field for production deployments (optional per FR-005)
+# - Check latestStatus.state === "SUCCESS" to ensure successful deployment
+# - Use ref.name for deduplication with releases/tags
+# - Fetch 100 deployments per page (maximum allowed)
+# - Rate cost: ~2-3 GraphQL points per query (due to nested connections)
+# - Common environment names: "production", "prod", "staging", "development", "qa"
