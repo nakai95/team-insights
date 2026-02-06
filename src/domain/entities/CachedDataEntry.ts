@@ -60,21 +60,21 @@ export class CachedDataEntry {
     dateRange: DateRange,
     data: unknown,
     ttlMs: number,
-  ): Result<CachedDataEntry, string> {
+  ): Result<CachedDataEntry> {
     // Validate repository ID
     if (!repositoryId || !repositoryId.includes("/")) {
-      return err("Repository ID must be in format 'owner/repo'");
+      return err(new Error("Repository ID must be in format 'owner/repo'"));
     }
 
     // Validate TTL
     if (ttlMs <= 0) {
-      return err("TTL must be positive");
+      return err(new Error("TTL must be positive"));
     }
 
     // Create cache key
     const keyResult = CacheKey.create(repositoryId, dataType, dateRange);
     if (!keyResult.ok) {
-      return err(keyResult.error);
+      return err(new Error(keyResult.error));
     }
 
     // Calculate timestamps
@@ -87,7 +87,7 @@ export class CachedDataEntry {
 
     // Validate size
     if (sizeBytes <= 0) {
-      return err("Data size must be positive");
+      return err(new Error("Data size must be positive"));
     }
 
     return ok(
@@ -103,7 +103,7 @@ export class CachedDataEntry {
         sizeBytes,
         false, // Not revalidating initially
       ),
-    ) as Result<CachedDataEntry, string>;
+    );
   }
 
   /**
@@ -123,11 +123,11 @@ export class CachedDataEntry {
     lastAccessedAt: string;
     sizeBytes: number;
     isRevalidating: boolean;
-  }): Result<CachedDataEntry, string> {
+  }): Result<CachedDataEntry> {
     // Parse cache key
     const keyResult = CacheKey.parse(raw.key);
     if (!keyResult.ok) {
-      return err(keyResult.error);
+      return err(new Error(keyResult.error));
     }
 
     // Parse dates
@@ -145,7 +145,7 @@ export class CachedDataEntry {
       isNaN(start.getTime()) ||
       isNaN(end.getTime())
     ) {
-      return err("Invalid date format in cached data");
+      return err(new Error("Invalid date format in cached data"));
     }
 
     // Create DateRange (bypass validation since it's already stored)
@@ -167,7 +167,7 @@ export class CachedDataEntry {
         raw.sizeBytes,
         raw.isRevalidating,
       ),
-    ) as Result<CachedDataEntry, string>;
+    );
   }
 
   /**

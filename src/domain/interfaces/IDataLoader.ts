@@ -33,12 +33,24 @@ export type DataLoadErrorType =
 
 /**
  * Data loading error with metadata
+ *
+ * Extends Error to be compatible with Result<T> pattern used by other interfaces
  */
-export interface DataLoadError {
-  type: DataLoadErrorType;
-  message: string;
-  rateLimitReset?: Date; // For RATE_LIMIT_EXCEEDED: when rate limit resets
-  retryAfter?: number; // For RATE_LIMIT_EXCEEDED: milliseconds until retry allowed
+export class DataLoadError extends Error {
+  constructor(
+    public readonly type: DataLoadErrorType,
+    message: string,
+    public readonly rateLimitReset?: Date, // For RATE_LIMIT_EXCEEDED: when rate limit resets
+    public readonly retryAfter?: number, // For RATE_LIMIT_EXCEEDED: milliseconds until retry allowed
+  ) {
+    super(message);
+    this.name = "DataLoadError";
+
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, DataLoadError);
+    }
+  }
 }
 
 /**
@@ -91,7 +103,7 @@ export interface IDataLoader {
    * if (result.ok) {
    *   console.log(`Fetched ${result.value.length} PRs`);
    * } else {
-   *   if (result.error.type === DataLoadErrorType.RATE_LIMIT_EXCEEDED) {
+   *   if (result.error instanceof DataLoadError && result.error.type === DataLoadErrorType.RATE_LIMIT_EXCEEDED) {
    *     console.log(`Rate limit hit, retry after ${result.error.retryAfter}ms`);
    *   }
    * }
@@ -100,7 +112,7 @@ export interface IDataLoader {
     repositoryId: string,
     dateRange: DateRange,
     signal?: AbortSignal,
-  ): Promise<Result<PullRequest[], DataLoadError>>;
+  ): Promise<Result<PullRequest[]>>;
 
   /**
    * Fetch deployment events for a date range
@@ -125,7 +137,7 @@ export interface IDataLoader {
     repositoryId: string,
     dateRange: DateRange,
     signal?: AbortSignal,
-  ): Promise<Result<DeploymentEvent[], DataLoadError>>;
+  ): Promise<Result<DeploymentEvent[]>>;
 
   /**
    * Fetch commits for a date range
@@ -150,7 +162,7 @@ export interface IDataLoader {
     repositoryId: string,
     dateRange: DateRange,
     signal?: AbortSignal,
-  ): Promise<Result<Commit[], DataLoadError>>;
+  ): Promise<Result<Commit[]>>;
 
   /**
    * Fetch rate limit status from GitHub API
@@ -168,5 +180,5 @@ export interface IDataLoader {
    *   }
    * }
    */
-  getRateLimitStatus(): Promise<Result<RateLimitInfo, DataLoadError>>;
+  getRateLimitStatus(): Promise<Result<RateLimitInfo>>;
 }

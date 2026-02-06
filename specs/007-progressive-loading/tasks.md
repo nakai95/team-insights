@@ -63,19 +63,19 @@
 
 ### Infrastructure Layer - GitHub API
 
-- [ ] T018 Extend GitHubGraphQLAdapter with date range filtering for fetchPRs in src/infrastructure/github/GitHubGraphQLAdapter.ts
-- [ ] T019 [P] Add date range filtering for fetchDeployments in src/infrastructure/github/GitHubGraphQLAdapter.ts
-- [ ] T020 [P] Add date range filtering for fetchCommits (if needed) in src/infrastructure/github/GitHubGraphQLAdapter.ts
-- [ ] T021 Add AbortSignal support to all fetch methods in src/infrastructure/github/GitHubGraphQLAdapter.ts
+- [x] T018 Extend GitHubGraphQLAdapter with date range filtering for fetchPRs in src/infrastructure/github/GitHubGraphQLAdapter.ts
+- [x] T019 [P] Add date range filtering for fetchDeployments in src/infrastructure/github/GitHubGraphQLAdapter.ts
+- [x] T020 [P] Add date range filtering for fetchCommits (if needed) in src/infrastructure/github/GitHubGraphQLAdapter.ts
+- [x] T021 Add AbortSignal support to all fetch methods in src/infrastructure/github/GitHubGraphQLAdapter.ts
 
 ### Application Layer - DTOs
 
-- [ ] T022 [P] Create CachedDataDTO in src/application/dto/CachedDataDTO.ts
-- [ ] T023 [P] Create LoadingStateDTO in src/application/dto/LoadingStateDTO.ts
+- [x] T022 [P] Create CachedDataDTO in src/application/dto/CachedDataDTO.ts
+- [x] T023 [P] Create LoadingStateDTO in src/application/dto/LoadingStateDTO.ts
 
 ### Application Layer - Mappers
 
-- [ ] T024 Create CacheMapper for domain ↔ DTO conversions in src/application/mappers/CacheMapper.ts
+- [x] T024 Create CacheMapper for domain ↔ DTO conversions in src/application/mappers/CacheMapper.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
