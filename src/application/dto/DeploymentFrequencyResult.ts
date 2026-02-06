@@ -9,6 +9,7 @@
 import {
   WeeklyDeploymentData,
   MonthlyDeploymentData,
+  TrendAnalysis,
 } from "@/domain/value-objects/DeploymentFrequency";
 
 export interface DeploymentEventSummary {
@@ -37,4 +38,5 @@ export interface DeploymentFrequencyResult {
   weeklyData: WeeklyDeploymentData[];
   monthlyData: MonthlyDeploymentData[];
   recentDeployments: DeploymentEventSummary[];
+  trendAnalysis?: TrendAnalysis; // Optional trend analysis
 }

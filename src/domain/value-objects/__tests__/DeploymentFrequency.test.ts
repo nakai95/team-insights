@@ -278,4 +278,248 @@ describe("DeploymentFrequency", () => {
       }).toThrow("periodDays must be non-negative");
     });
   });
+
+  describe("trend analysis", () => {
+    describe("calculateMovingAverage", () => {
+      it("should return empty array for empty data", () => {
+        const frequency = DeploymentFrequency.create([]);
+        const movingAvg = frequency.calculateMovingAverage();
+
+        expect(movingAvg).toEqual([]);
+      });
+
+      it("should calculate 4-week moving average correctly", () => {
+        // Create events with consistent weekly pattern
+        const events: DeploymentEvent[] = [];
+        for (let i = 0; i < 8; i++) {
+          const date = new Date("2024-01-01");
+          date.setDate(date.getDate() + i * 7); // Weekly deployments
+          events.push(
+            DeploymentEvent.fromRelease(
+              createRelease(`v1.${i}.0`, date.toISOString()),
+            ),
+          );
+        }
+
+        const frequency = DeploymentFrequency.create(events);
+        const movingAvg = frequency.calculateMovingAverage(4);
+
+        expect(movingAvg.length).toBe(8);
+        // First value is average of 1 week
+        expect(movingAvg[0]).toBe(1);
+        // Fourth value is average of 4 weeks
+        expect(movingAvg[3]).toBe(1);
+      });
+
+      it("should handle custom window size", () => {
+        const events = [
+          DeploymentEvent.fromRelease(
+            createRelease("v1.0.0", "2024-01-01T10:00:00Z"),
+          ),
+          DeploymentEvent.fromRelease(
+            createRelease("v1.0.1", "2024-01-08T10:00:00Z"),
+          ),
+          DeploymentEvent.fromRelease(
+            createRelease("v1.0.2", "2024-01-15T10:00:00Z"),
+          ),
+        ];
+
+        const frequency = DeploymentFrequency.create(events);
+        const movingAvg = frequency.calculateMovingAverage(2);
+
+        expect(movingAvg.length).toBe(3);
+        expect(movingAvg[0]).toBe(1); // Avg of 1 value
+        expect(movingAvg[1]).toBe(1); // Avg of 2 values: (1+1)/2
+        expect(movingAvg[2]).toBe(1); // Avg of 2 values: (1+1)/2
+      });
+    });
+
+    describe("analyzeTrend", () => {
+      it("should detect stable trend with no data", () => {
+        const frequency = DeploymentFrequency.create([]);
+        const trend = frequency.analyzeTrend();
+
+        expect(trend.direction).toBe("stable");
+        expect(trend.slope).toBe(0);
+        expect(trend.confidence).toBe(0);
+        expect(trend.movingAverage).toEqual([]);
+      });
+
+      it("should detect stable trend with single data point", () => {
+        const events = [
+          DeploymentEvent.fromRelease(
+            createRelease("v1.0.0", "2024-01-01T10:00:00Z"),
+          ),
+        ];
+
+        const frequency = DeploymentFrequency.create(events);
+        const trend = frequency.analyzeTrend();
+
+        expect(trend.direction).toBe("stable");
+        expect(trend.slope).toBe(0);
+        expect(trend.confidence).toBe(0);
+      });
+
+      it("should detect increasing trend", () => {
+        // Create increasing deployment pattern: 1, 2, 3, 4, 5 per week
+        const events: DeploymentEvent[] = [];
+        for (let week = 0; week < 5; week++) {
+          for (let deploy = 0; deploy < week + 1; deploy++) {
+            const date = new Date("2024-01-01");
+            date.setDate(date.getDate() + week * 7 + deploy);
+            events.push(
+              DeploymentEvent.fromRelease(
+                createRelease(`v1.${week}.${deploy}`, date.toISOString()),
+              ),
+            );
+          }
+        }
+
+        const frequency = DeploymentFrequency.create(events);
+        const trend = frequency.analyzeTrend();
+
+        expect(trend.direction).toBe("increasing");
+        expect(trend.slope).toBeGreaterThan(0);
+        expect(trend.confidence).toBeGreaterThan(0.5);
+      });
+
+      it("should detect decreasing trend", () => {
+        // Create decreasing deployment pattern: 5, 4, 3, 2, 1 per week
+        const events: DeploymentEvent[] = [];
+        for (let week = 0; week < 5; week++) {
+          const deploysThisWeek = 5 - week;
+          for (let deploy = 0; deploy < deploysThisWeek; deploy++) {
+            const date = new Date("2024-01-01");
+            date.setDate(date.getDate() + week * 7 + deploy);
+            events.push(
+              DeploymentEvent.fromRelease(
+                createRelease(`v1.${week}.${deploy}`, date.toISOString()),
+              ),
+            );
+          }
+        }
+
+        const frequency = DeploymentFrequency.create(events);
+        const trend = frequency.analyzeTrend();
+
+        expect(trend.direction).toBe("decreasing");
+        expect(trend.slope).toBeLessThan(0);
+        expect(trend.confidence).toBeGreaterThan(0.5);
+      });
+
+      it("should detect stable trend with consistent data", () => {
+        // Create consistent deployment pattern: 3 per week
+        const events: DeploymentEvent[] = [];
+        for (let week = 0; week < 6; week++) {
+          for (let deploy = 0; deploy < 3; deploy++) {
+            const date = new Date("2024-01-01");
+            date.setDate(date.getDate() + week * 7 + deploy);
+            events.push(
+              DeploymentEvent.fromRelease(
+                createRelease(`v1.${week}.${deploy}`, date.toISOString()),
+              ),
+            );
+          }
+        }
+
+        const frequency = DeploymentFrequency.create(events);
+        const trend = frequency.analyzeTrend();
+
+        expect(trend.direction).toBe("stable");
+        expect(Math.abs(trend.slope)).toBeLessThan(0.1);
+      });
+
+      it("should have low confidence for noisy data", () => {
+        // Create random-looking deployment pattern
+        const events: DeploymentEvent[] = [];
+        const weeklyPattern = [1, 5, 2, 4, 1, 6, 2];
+
+        for (let week = 0; week < weeklyPattern.length; week++) {
+          const deploysThisWeek = weeklyPattern[week]!;
+          for (let deploy = 0; deploy < deploysThisWeek; deploy++) {
+            const date = new Date("2024-01-01");
+            date.setDate(date.getDate() + week * 7 + deploy);
+            events.push(
+              DeploymentEvent.fromRelease(
+                createRelease(`v1.${week}.${deploy}`, date.toISOString()),
+              ),
+            );
+          }
+        }
+
+        const frequency = DeploymentFrequency.create(events);
+        const trend = frequency.analyzeTrend();
+
+        // Noisy data should have lower confidence
+        expect(trend.confidence).toBeLessThan(0.8);
+      });
+
+      it("should respect custom window size", () => {
+        // Create varying deployment pattern for window size test
+        const events: DeploymentEvent[] = [];
+        const weeklyPattern = [1, 3, 2, 5, 4, 6, 3, 4, 5, 2];
+
+        for (let week = 0; week < weeklyPattern.length; week++) {
+          const deploysThisWeek = weeklyPattern[week]!;
+          for (let deploy = 0; deploy < deploysThisWeek; deploy++) {
+            const date = new Date("2024-01-01");
+            date.setDate(date.getDate() + week * 7 + deploy);
+            events.push(
+              DeploymentEvent.fromRelease(
+                createRelease(`v1.${week}.${deploy}`, date.toISOString()),
+              ),
+            );
+          }
+        }
+
+        const frequency = DeploymentFrequency.create(events);
+        const trend2 = frequency.analyzeTrend(2);
+        const trend4 = frequency.analyzeTrend(4);
+
+        expect(trend2.movingAverage.length).toBe(10);
+        expect(trend4.movingAverage.length).toBe(10);
+        // Different window sizes should produce different moving averages
+        // With varying data, window size 2 and 4 will differ at index 5
+        expect(trend2.movingAverage[5]).not.toBe(trend4.movingAverage[5]);
+      });
+    });
+
+    describe("getTrendDirection", () => {
+      it("should return trend direction", () => {
+        const events: DeploymentEvent[] = [];
+        for (let week = 0; week < 5; week++) {
+          for (let deploy = 0; deploy < week + 1; deploy++) {
+            const date = new Date("2024-01-01");
+            date.setDate(date.getDate() + week * 7 + deploy);
+            events.push(
+              DeploymentEvent.fromRelease(
+                createRelease(`v1.${week}.${deploy}`, date.toISOString()),
+              ),
+            );
+          }
+        }
+
+        const frequency = DeploymentFrequency.create(events);
+        const direction = frequency.getTrendDirection();
+
+        expect(direction).toBe("increasing");
+      });
+
+      it("should support custom window size", () => {
+        const events = [
+          DeploymentEvent.fromRelease(
+            createRelease("v1.0.0", "2024-01-01T10:00:00Z"),
+          ),
+          DeploymentEvent.fromRelease(
+            createRelease("v1.0.1", "2024-01-08T10:00:00Z"),
+          ),
+        ];
+
+        const frequency = DeploymentFrequency.create(events);
+        const direction = frequency.getTrendDirection(2);
+
+        expect(["increasing", "decreasing", "stable"]).toContain(direction);
+      });
+    });
+  });
 });

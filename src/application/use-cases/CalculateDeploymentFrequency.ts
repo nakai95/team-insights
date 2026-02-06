@@ -108,7 +108,13 @@ export class CalculateDeploymentFrequency {
       // 6. Calculate DORA performance level
       const doraLevel = DORAPerformanceLevel.fromDeploymentFrequency(frequency);
 
-      // 7. Build result DTO
+      // 7. Analyze deployment trends (if we have enough data)
+      const trendAnalysis =
+        frequency.weeklyData.length >= 4
+          ? frequency.analyzeTrend(4)
+          : undefined;
+
+      // 8. Build result DTO
       const result: DeploymentFrequencyResult = {
         doraLevel: doraLevel.toDTO(),
         totalDeployments: frequency.totalCount,
@@ -121,6 +127,7 @@ export class CalculateDeploymentFrequency {
         recentDeployments: frequency
           .getRecentDeployments(10)
           .map(this.eventToSummary),
+        trendAnalysis,
       };
 
       logger.info("Deployment frequency calculation complete", {

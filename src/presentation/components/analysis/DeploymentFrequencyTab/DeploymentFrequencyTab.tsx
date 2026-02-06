@@ -97,7 +97,11 @@ export function DeploymentFrequencyTab({ data }: DeploymentFrequencyTabProps) {
           <CardTitle>Weekly Deployment Frequency</CardTitle>
         </CardHeader>
         <CardContent>
-          <DeploymentFrequencyChart weeklyData={data.weeklyData} />
+          <DeploymentFrequencyChart
+            weeklyData={data.weeklyData}
+            movingAverage={data.trendAnalysis?.movingAverage}
+            trendDirection={data.trendAnalysis?.direction}
+          />
         </CardContent>
       </Card>
 

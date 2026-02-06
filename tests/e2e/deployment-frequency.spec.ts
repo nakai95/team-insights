@@ -349,4 +349,107 @@ test.describe("Deployment Frequency Tab", () => {
     const currentUrl = page.url();
     expect(currentUrl).toContain("tab=deployment-frequency");
   });
+
+  test("should display trend indicators and moving average", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    // Check if authenticated
+    const signOutButton = page.locator("header").getByText(/sign out/i);
+    const isAuthenticated = await signOutButton.isVisible().catch(() => false);
+
+    if (!isAuthenticated) {
+      test.skip();
+      return;
+    }
+
+    const repoUrl = "https://github.com/vercel/next.js";
+
+    await page.getByLabel(/repository url/i).fill(repoUrl);
+    await page.getByRole("button", { name: /analyze repository/i }).click();
+
+    // Wait for analysis
+    await expect(page.getByText(/repository analysis/i)).toBeVisible({
+      timeout: 60000,
+    });
+
+    // Navigate to Deployment Frequency tab
+    const deploymentTab = page.getByRole("button", {
+      name: /deployment frequency/i,
+    });
+    await deploymentTab.click();
+    await page.waitForTimeout(1000);
+
+    const bodyText = await page.textContent("body");
+
+    // Check if trend indicator is displayed (if enough data exists)
+    if (bodyText?.includes("Trend:")) {
+      await expect(page.getByText(/trend:/i)).toBeVisible();
+
+      // One of the trend directions should be present
+      const hasIncreasing = bodyText?.includes("Increasing") ?? false;
+      const hasDecreasing = bodyText?.includes("Decreasing") ?? false;
+      const hasStable = bodyText?.includes("Stable") ?? false;
+
+      const hasAnyTrend = hasIncreasing || hasDecreasing || hasStable;
+      expect(hasAnyTrend).toBe(true);
+    }
+
+    // Verify SVG chart is rendered (trend line should be present if data exists)
+    const svgElements = await page.locator("svg").count();
+    expect(svgElements).toBeGreaterThan(0);
+  });
+
+  test("should show trend visualization for repositories with sufficient data", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    // Check if authenticated
+    const signOutButton = page.locator("header").getByText(/sign out/i);
+    const isAuthenticated = await signOutButton.isVisible().catch(() => false);
+
+    if (!isAuthenticated) {
+      test.skip();
+      return;
+    }
+
+    // Use a repository likely to have consistent deployment history
+    const repoUrl = "https://github.com/facebook/react";
+
+    await page.getByLabel(/repository url/i).fill(repoUrl);
+    await page.getByRole("button", { name: /analyze repository/i }).click();
+
+    // Wait for analysis
+    await expect(page.getByText(/repository analysis/i)).toBeVisible({
+      timeout: 60000,
+    });
+
+    // Navigate to Deployment Frequency tab
+    const deploymentTab = page.getByRole("button", {
+      name: /deployment frequency/i,
+    });
+    await deploymentTab.click();
+    await page.waitForTimeout(1000);
+
+    const bodyText = await page.textContent("body");
+
+    // If there's deployment data, verify key elements
+    if (bodyText?.includes("Total Deployments")) {
+      // Check for weekly chart
+      await expect(
+        page.getByText(/weekly deployment frequency/i),
+      ).toBeVisible();
+
+      // Check for monthly chart
+      await expect(
+        page.getByText(/monthly deployment frequency/i),
+      ).toBeVisible();
+
+      // Verify charts are rendered
+      const charts = await page.locator("svg").count();
+      expect(charts).toBeGreaterThanOrEqual(2); // At least 2 charts
+    }
+  });
 });

@@ -11,13 +11,26 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import type { Payload } from "recharts/types/component/DefaultTooltipContent";
-import type { WeeklyDeploymentData } from "@/domain/value-objects/DeploymentFrequency";
+import type {
+  WeeklyDeploymentData,
+  TrendDirection,
+} from "@/domain/value-objects/DeploymentFrequency";
 
 export interface DeploymentFrequencyChartProps {
   /**
    * Weekly deployment data
    */
   weeklyData: WeeklyDeploymentData[];
+
+  /**
+   * Moving average values (optional)
+   */
+  movingAverage?: number[];
+
+  /**
+   * Trend direction (optional)
+   */
+  trendDirection?: TrendDirection;
 }
 
 /**
@@ -35,7 +48,9 @@ interface CustomTooltipProps {
  */
 function CustomTooltip({ active, payload }: CustomTooltipProps) {
   if (active && payload && payload.length > 0 && payload[0]) {
-    const data = payload[0].payload as WeeklyDeploymentData;
+    const data = payload[0].payload as WeeklyDeploymentData & {
+      movingAverage?: number;
+    };
     return (
       <div className="bg-white p-3 border border-gray-300 rounded shadow-lg dark:bg-gray-800 dark:border-gray-600">
         <p className="font-semibold text-gray-900 dark:text-gray-100">
@@ -47,6 +62,11 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
         <p className="text-sm text-gray-700 dark:text-gray-300">
           Deployments: {data.deploymentCount}
         </p>
+        {data.movingAverage !== undefined && (
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            4-week avg: {data.movingAverage.toFixed(1)}
+          </p>
+        )}
       </div>
     );
   }
@@ -55,52 +75,124 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
 }
 
 /**
+ * Get trend indicator icon based on direction
+ */
+function getTrendIcon(direction?: TrendDirection): string | null {
+  switch (direction) {
+    case "increasing":
+      return "↗";
+    case "decreasing":
+      return "↘";
+    case "stable":
+      return "→";
+    default:
+      return null;
+  }
+}
+
+/**
+ * Get trend indicator color based on direction
+ */
+function getTrendColor(direction?: TrendDirection): string {
+  switch (direction) {
+    case "increasing":
+      return "text-green-600 dark:text-green-400";
+    case "decreasing":
+      return "text-red-600 dark:text-red-400";
+    case "stable":
+      return "text-gray-600 dark:text-gray-400";
+    default:
+      return "text-gray-600 dark:text-gray-400";
+  }
+}
+
+/**
  * Deployment Frequency Line Chart Component
  *
  * Displays weekly deployment counts over time with a line chart
+ * and optional moving average trend line
  */
 export function DeploymentFrequencyChart({
   weeklyData,
+  movingAverage,
+  trendDirection,
 }: DeploymentFrequencyChartProps) {
+  // Combine weekly data with moving average for chart
+  const chartData = weeklyData.map((week, index) => ({
+    ...week,
+    movingAverage: movingAverage?.[index],
+  }));
+
+  const trendIcon = getTrendIcon(trendDirection);
+  const trendColor = getTrendColor(trendDirection);
+
   return (
-    <ResponsiveContainer width="100%" height={350}>
-      <LineChart
-        data={weeklyData}
-        margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+    <div>
+      {/* Trend Indicator */}
+      {trendDirection && trendIcon && (
+        <div className="mb-2 flex items-center gap-2 text-sm">
+          <span className="text-gray-600 dark:text-gray-400">Trend:</span>
+          <span className={`font-semibold ${trendColor} flex items-center`}>
+            {trendIcon}{" "}
+            {trendDirection.charAt(0).toUpperCase() + trendDirection.slice(1)}
+          </span>
+        </div>
+      )}
+
+      <ResponsiveContainer
+        width="100%"
+        height={350}
+        className="min-h-[280px] sm:min-h-[350px]"
       >
-        <CartesianGrid
-          strokeDasharray="3 3"
-          className="stroke-gray-200 dark:stroke-gray-700"
-        />
-        <XAxis
-          dataKey="weekKey"
-          className="text-xs text-gray-600 dark:text-gray-400"
-          tick={{ fontSize: 12 }}
-          angle={-45}
-          textAnchor="end"
-          height={80}
-        />
-        <YAxis
-          className="text-xs text-gray-600 dark:text-gray-400"
-          tick={{ fontSize: 12 }}
-          label={{
-            value: "Deployments",
-            angle: -90,
-            position: "insideLeft",
-            style: { textAnchor: "middle", fontSize: 12 },
-          }}
-        />
-        <Tooltip content={<CustomTooltip />} />
-        <Line
-          type="monotone"
-          dataKey="deploymentCount"
-          stroke="#3b82f6"
-          strokeWidth={2}
-          dot={{ fill: "#3b82f6", r: 4 }}
-          activeDot={{ r: 6 }}
-          name="Deployments"
-        />
-      </LineChart>
-    </ResponsiveContainer>
+        <LineChart
+          data={chartData}
+          margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+        >
+          <CartesianGrid
+            strokeDasharray="3 3"
+            className="stroke-gray-200 dark:stroke-gray-700"
+          />
+          <XAxis
+            dataKey="weekKey"
+            className="text-xs text-gray-600 dark:text-gray-400"
+            tick={{ fontSize: 12 }}
+            angle={-45}
+            textAnchor="end"
+            height={80}
+          />
+          <YAxis
+            className="text-xs text-gray-600 dark:text-gray-400"
+            tick={{ fontSize: 12 }}
+            label={{
+              value: "Deployments",
+              angle: -90,
+              position: "insideLeft",
+              style: { textAnchor: "middle", fontSize: 12 },
+            }}
+          />
+          <Tooltip content={<CustomTooltip />} />
+          <Line
+            type="monotone"
+            dataKey="deploymentCount"
+            stroke="#3b82f6"
+            strokeWidth={2}
+            dot={{ fill: "#3b82f6", r: 4 }}
+            activeDot={{ r: 6 }}
+            name="Deployments"
+          />
+          {movingAverage && movingAverage.length > 0 && (
+            <Line
+              type="monotone"
+              dataKey="movingAverage"
+              stroke="#10b981"
+              strokeWidth={2}
+              strokeDasharray="5 5"
+              dot={false}
+              name="4-week Moving Avg"
+            />
+          )}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
