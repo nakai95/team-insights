@@ -103,6 +103,7 @@
       "overview": "概要",
       "throughput": "PRスループット",
       "changes": "PR変更タイムライン",
+      "deploymentFrequency": "デプロイ頻度",
       "changesComingSoon": "PR変更タイムラインタブは近日公開..."
     },
     "summary": {

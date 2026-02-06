@@ -103,6 +103,7 @@
       "overview": "Overview",
       "throughput": "PR Throughput",
       "changes": "PR Changes Timeseries",
+      "deploymentFrequency": "Deployment Frequency",
       "changesComingSoon": "PR Changes Timeseries tab coming soon..."
     },
     "summary": {

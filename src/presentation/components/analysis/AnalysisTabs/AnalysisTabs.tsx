@@ -113,7 +113,7 @@ export function AnalysisTabs({
             onClick={() => handleTabChange("deployment-frequency")}
             className="rounded-b-none text-xs sm:text-sm"
           >
-            Deployment Frequency
+            {t("deploymentFrequency")}
           </Button>
         </div>
       </div>
