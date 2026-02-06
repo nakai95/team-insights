@@ -89,12 +89,12 @@
 
 ### Application Layer - Use Cases
 
-- [ ] T025 [US1] Create LoadInitialData use case with cache check and parallel API fetching in src/application/use-cases/LoadInitialData.ts
+- [x] T025 [US1] Create LoadInitialData use case with cache check and parallel API fetching in src/application/use-cases/LoadInitialData.ts
 
 ### Infrastructure Layer - GraphQL Queries
 
-- [ ] T026 [P] [US1] Create GraphQL query for date-filtered PRs in src/infrastructure/github/graphql/queries/getRangedPullRequests.ts
-- [ ] T027 [P] [US1] Create GraphQL query for date-filtered deployments in src/infrastructure/github/graphql/queries/getRangedDeployments.ts
+- [x] T026 [P] [US1] Create GraphQL query for date-filtered PRs in src/infrastructure/github/graphql/queries/getRangedPullRequests.ts
+- [x] T027 [P] [US1] Create GraphQL query for date-filtered deployments in src/infrastructure/github/graphql/queries/getRangedDeployments.ts
 
 ### Application Layer - Server Integration
 
@@ -103,9 +103,9 @@
 
 ### Presentation Layer - Skeleton UI
 
-- [ ] T030 [P] [US1] Create DashboardSkeleton component for Suspense fallback in src/presentation/components/layout/DashboardSkeleton.tsx
-- [ ] T031 [P] [US1] Create SkeletonChart component for individual chart placeholders in src/presentation/components/shared/SkeletonChart.tsx
-- [ ] T032 [US1] Create loading.tsx with DashboardSkeleton for Suspense boundary in app/[locale]/dashboard/loading.tsx
+- [x] T030 [P] [US1] Create DashboardSkeleton component for Suspense fallback in src/presentation/components/layout/DashboardSkeleton.tsx
+- [x] T031 [P] [US1] Create SkeletonChart component for individual chart placeholders in src/presentation/components/shared/SkeletonChart.tsx
+- [x] T032 [US1] Create loading.tsx with DashboardSkeleton for Suspense boundary in app/[locale]/dashboard/loading.tsx
 
 ### Presentation Layer - Client Components
 
