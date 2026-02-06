@@ -16,18 +16,18 @@ This document consolidates all technology decisions for Team Insights' progressi
 | ---------------------- | ------------------------------------- | ------------- | ------------------------------------------------------------------ |
 | **IndexedDB Wrapper**  | idb 8.x                               | +1.19 KB      | Minimal overhead, TypeScript excellence, 20x smaller than Dexie.js |
 | **Date Range Picker**  | shadcn/ui + react-day-picker v9       | 0 KB          | Zero new dependencies, perfect dark mode, presets included         |
-| **State Management**   | Zustand                               | +1 KB         | Fine-grained reactivity, DevTools, minimal complexity              |
+| **State Management**   | URL Params + useState/useTransition   | 0 KB          | No global state library, shareable URLs, SSR-compatible            |
 | **Cache Invalidation** | Stale-While-Revalidate (1hr TTL)      | 0 KB          | Best UX, 75% API reduction, industry standard                      |
 | **Query Batching**     | Hybrid Waterfall (Parallel + Chunked) | 0 KB          | Meets 5s target, progressive enhancement, graceful degradation     |
 | **Background Loading** | React 18 startTransition              | 0 KB          | Zero overhead, native React 18, non-blocking updates               |
 
-**Total Bundle Impact**: ~2.2 KB gzipped
+**Total Bundle Impact**: ~1.2 KB gzipped (idb only - no Zustand)
 
 ### Key Clarifications Resolved
 
 1. **IndexedDB Wrapper**: Use `idb` library for promise-based IndexedDB with TypeScript support
 2. **Date Range Picker**: Use shadcn/ui date-range-picker component (copy-paste, no new dependencies)
-3. **Loading State Management**: Use Zustand for concurrent stream tracking with fine-grained reactivity
+3. **Loading State Management**: Use URL params (date range) + component-level useState/useTransition (no global state library)
 4. **Cache Invalidation**: Implement hybrid TTL + manual refresh with stale-while-revalidate pattern
 5. **GraphQL Batching**: Use hybrid waterfall (initial 30-day parallel + background chunked loading)
 6. **Background Worker**: Use React 18 `startTransition` for non-blocking state updates (no Web Workers)
@@ -114,52 +114,92 @@ npx shadcn-ui@latest add calendar
 
 ## 3. Loading State Management Decision
 
-### Recommendation: **Zustand**
+### Recommendation: **URL Params + Component-Level useState/useTransition**
 
-**Version**: Latest
-**Bundle Size**: ~1 KB gzipped
-**Weekly Downloads**: ~4M
-**Repository**: https://zustand.docs.pmnd.rs/
+**Bundle Size**: 0 KB (built into React/Next.js)
+**Dependencies**: None (Next.js 15 App Router built-in)
 
 ### Rationale
 
-1. **Perfect Balance**: Low complexity with high power (fine-grained reactivity)
-2. **Fine-Grained Reactivity**: Components only re-render when their slice changes
-3. **DevTools Integration**: Redux DevTools extension support out-of-box
-4. **TypeScript Excellence**: Matches project's strict mode requirements
-5. **Next.js 15 Compatible**: Recommended for 2026 App Router patterns
+1. **Zero Dependencies**: No additional libraries needed (Zustand removed)
+2. **Shareable URLs**: Users can bookmark/share specific date ranges
+3. **SSR-Compatible**: Server Components read URL params, pass to Client Components as props
+4. **Browser History**: Back/forward buttons work naturally with date range changes
+5. **Independent Component Loading**: Each metric component manages its own loading state with useTransition
+6. **Google Analytics Pattern**: Proven approach (Google Analytics dashboard uses similar strategy)
 
 ### Alternatives Rejected
 
-- **React Context + useReducer**: Manual optimization requirements, more boilerplate
-- **TanStack Query**: Larger bundle (10 KB), opinionated patterns conflict with custom logic
-- **useReducer Only**: Cannot share state across components, difficult concurrent coordination
+- **Zustand**: Overkill for simple date range state, adds unnecessary complexity
+- **React Context + useReducer**: Not needed - URL params provide state sharing, useTransition handles loading
+- **TanStack Query**: Larger bundle (10 KB), opinionated patterns conflict with custom progressive loading logic
+- **localStorage**: Not shareable, not SSR-compatible, worse UX than URL params
 
 ### Implementation
 
 ```typescript
-// src/infrastructure/stores/useProgressiveLoadingStore.ts
-import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+// app/dashboard/page.tsx (Server Component)
+export default async function DashboardPage({
+  searchParams
+}: {
+  searchParams: { range?: string; start?: string; end?: string }
+}) {
+  const dateRange = parseDateRange(searchParams); // Validate & parse
+  const initialData = await loadInitialData(dateRange); // Fetch 30-day data
 
-export const useProgressiveLoadingStore = create<LoadingStore>()(
-  devtools(
-    (set) => ({
-      streams: { prs: {...}, deployments: {...}, commits: {...} },
-      startStream: (type, loadingType) => set(...),
-      updateProgress: (type, progress, eta) => set(...),
-    }),
-    { name: 'ProgressiveLoadingStore' }
-  )
-);
+  return <DashboardClient initialData={initialData} dateRange={dateRange} />;
+}
 
-// Component usage (only re-renders when PR progress changes)
-const prProgress = useProgressiveLoadingStore((state) => state.streams.prs.progress);
+// presentation/components/analysis/PRAnalysisClient.tsx (Client Component)
+'use client';
+
+export function PRAnalysisClient({ initialData, dateRange }: Props) {
+  const [data, setData] = useState(initialData);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  // Background loading for historical data
+  useEffect(() => {
+    const abortController = new AbortController();
+
+    startTransition(async () => {
+      const historicalData = await loadHistoricalData(
+        dateRange,
+        abortController.signal
+      );
+      setData(prev => [...prev, ...historicalData]);
+    });
+
+    return () => abortController.abort();
+  }, [dateRange]);
+
+  // Date range change updates URL
+  const handleDateChange = (newRange: DateRange) => {
+    router.push(`/dashboard?range=${newRange.preset}&start=${newRange.start}&end=${newRange.end}`);
+  };
+
+  return (
+    <>
+      {isPending && <LoadingIndicator />}
+      <DateRangeSelector value={dateRange} onChange={handleDateChange} />
+      <PRChart data={data} />
+    </>
+  );
+}
+
+// domain/value-objects/DateRangeSelection.ts
+export const DateRangePreset = {
+  LAST_7_DAYS: 'last_7_days',
+  LAST_30_DAYS: 'last_30_days',
+  LAST_90_DAYS: 'last_90_days',
+  LAST_6_MONTHS: 'last_6_months',
+  LAST_YEAR: 'last_year',
+  CUSTOM: 'custom',
+} as const;
+export type DateRangePreset = typeof DateRangePreset[keyof typeof DateRangePreset];
 ```
 
-```bash
-pnpm add zustand
-```
+**No additional installation needed** - uses built-in React/Next.js features
 
 ---
 

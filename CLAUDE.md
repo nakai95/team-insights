@@ -4,6 +4,9 @@ Auto-generated from all feature plans. Last updated: 2026-02-06
 
 ## Active Technologies
 
+- TypeScript 5.3 with strict mode enabled + Next.js 15 (App Router), React 18.3, @octokit/graphql 9.0.3, Recharts 3.5.0, next-themes 0.4.6 (007-progressive-loading)
+- IndexedDB (client-side caching with LRU eviction), no server-side database (007-progressive-loading)
+
 - IndexedDB for client-side caching (repository data, PRs, deployments, commits with date ranges and timestamps) (007-progressive-loading)
 
 - TypeScript 5.3, Next.js 15 (App Router) + @octokit/graphql 9.0.3
@@ -128,6 +131,8 @@ if (insight.type === "optimal") { ... } // Don't do this
 
 ## Recent Changes
 
+- 007-progressive-loading: Added TypeScript 5.3 with strict mode enabled + Next.js 15 (App Router), React 18.3, @octokit/graphql 9.0.3, Recharts 3.5.0, next-themes 0.4.6
+
 - 007-progressive-loading: Added TypeScript 5.3, Next.js 15 (App Router)
 
 - 2026-02-06: Added DORA Metrics - Deployment Frequency feature (006-dora-deployment-frequency)
@@ -144,7 +149,6 @@ if (insight.type === "optimal") { ... } // Don't do this
   - Error handling: Empty states, loading indicators, error boundaries, React.memo optimization
   - E2E tests for critical user paths in deployment frequency analysis
 
-- 2026-01-23: Added PR Changes Timeseries Analysis feature (005-pr-changes-timeseries)
   - Weekly visualization of PR code changes (additions/deletions/changedFiles) with Recharts
   - Statistical outlier detection (2 standard deviations threshold) for identifying large refactoring weeks
   - 4-week trend analysis (increasing/decreasing/stable) for development velocity tracking

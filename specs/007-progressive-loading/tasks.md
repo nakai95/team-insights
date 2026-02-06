@@ -1,11 +1,12 @@
 # Tasks: Progressive Data Loading
 
+**Feature**: 007-progressive-loading
 **Input**: Design documents from `/specs/007-progressive-loading/`
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/
 
-**Tests**: Tests are NOT explicitly requested in the feature specification. Test tasks are included as optional checkpoints but can be deferred to Phase 7 polish if needed for faster delivery.
+**Tests**: This feature does NOT require test-first development. Tests will be added incrementally as needed.
 
-**Organization**: Tasks are grouped by user story (US1-US4) to enable independent implementation and testing of each story.
+**Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
 ## Format: `[ID] [P?] [Story] Description`
 
@@ -13,55 +14,68 @@
 - **[Story]**: Which user story this task belongs to (e.g., US1, US2, US3, US4)
 - Include exact file paths in descriptions
 
-## Path Conventions
-
-All paths are relative to repository root:
-
-- `src/domain/` - Business logic (entities, value objects, interfaces)
-- `src/application/` - Use cases
-- `src/infrastructure/` - External dependencies (IndexedDB, GraphQL, Zustand)
-- `src/presentation/` - React components and hooks
-
 ---
 
 ## Phase 1: Setup (Shared Infrastructure)
 
-**Purpose**: Project initialization, dependency installation, and basic configuration
+**Purpose**: Project initialization and dependency installation
 
-- [ ] T001 Install dependencies: `pnpm add idb zustand` for IndexedDB wrapper and state management
-- [ ] T002 Install dev dependencies: `pnpm add -D @types/fake-indexeddb fake-indexeddb` for testing IndexedDB operations
-- [ ] T003 [P] Create domain types directory structure: `src/domain/types/`
-- [ ] T004 [P] Create domain value-objects directory structure: `src/domain/value-objects/`
-- [ ] T005 [P] Create domain entities directory structure: `src/domain/entities/`
-- [ ] T006 [P] Create domain repositories directory structure: `src/domain/repositories/`
-- [ ] T007 [P] Create application use-cases directory structure: `src/application/use-cases/`
-- [ ] T008 [P] Create infrastructure cache directory structure: `src/infrastructure/cache/`
-- [ ] T009 [P] Create infrastructure stores directory structure: `src/infrastructure/stores/`
-- [ ] T010 [P] Create presentation hooks directory structure: `src/presentation/hooks/`
-- [ ] T011 [P] Create presentation components directory structure: `src/presentation/components/progressive-loading/`
+- [ ] T001 Install idb dependency for IndexedDB wrapper: `pnpm add idb`
+- [ ] T002 [P] Install fake-indexeddb for testing: `pnpm add -D @types/fake-indexeddb fake-indexeddb`
+- [ ] T003 [P] Verify specs/007-progressive-loading/contracts/\*\* exclusion in tsconfig.json
+- [ ] T004 [P] Verify specs/007-progressive-loading/contracts/\*\* exclusion in eslint.config.mjs
 
 ---
 
 ## Phase 2: Foundational (Blocking Prerequisites)
 
-**Purpose**: Core domain types and shared infrastructure that MUST be complete before ANY user story can be implemented
+**Purpose**: Core domain entities, value objects, and infrastructure interfaces that ALL user stories depend on
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-### Core Domain Types
+### Domain Layer - Value Objects
 
-- [ ] T012 [P] Create string literal enum types in `src/domain/types/LoadingTypes.ts`: DataType, StreamType, LoadingStatus, LoadingType, CacheStatus, DateRangePreset (using mandatory pattern: `export const X = {...} as const`)
-- [ ] T013 [P] Create Result type helper in `src/domain/types/Result.ts` if not already exists (Result<T> for success/failure operations)
+- [ ] T005 [P] Create DataType enum using string literal pattern in src/domain/types/DataType.ts
+- [ ] T006 [P] Create CacheStatus enum in src/domain/types/CacheStatus.ts
+- [ ] T007 [P] Create DateRangePreset enum in src/domain/types/DateRangePreset.ts
+- [ ] T008 [P] Create DateRange value object with factory methods (last7Days, last30Days, etc.) in src/domain/value-objects/DateRange.ts
+- [ ] T009 [P] Create CacheKey value object with parsing and validation in src/domain/value-objects/CacheKey.ts
 
-### Base Repository Interfaces
+### Domain Layer - Entities
 
-- [ ] T014 [P] Create ICacheRepository interface in `src/domain/repositories/ICacheRepository.ts`: get(), set(), delete(), clearRepository(), clearAll(), getAll(), getStats() methods
-- [ ] T015 [P] Create IDataLoader interface in `src/domain/repositories/IDataLoader.ts`: fetchPRs(), fetchDeployments(), fetchCommits() methods with AbortSignal support
-- [ ] T016 [P] Create ILoadingStateManager interface in `src/domain/repositories/ILoadingStateManager.ts`: getState(), startLoading(), updateProgress(), completeLoading(), failLoading(), isAnyStreamLoading(), subscribe() methods
+- [ ] T010 Create CachedDataEntry entity with staleness detection and touch() method in src/domain/entities/CachedDataEntry.ts
+- [ ] T011 [P] Create DateRangeSelection entity with cache status tracking in src/domain/entities/DateRangeSelection.ts
 
-### Configuration Constants
+### Domain Layer - Interfaces
 
-- [ ] T017 Create cache configuration constants in `src/infrastructure/cache/CacheConfig.ts`: ACTIVE_REPO_TTL, ARCHIVED_REPO_TTL, MIN_RATE_LIMIT_PERCENTAGE, MAX_CACHE_SIZE, MAX_ENTRIES
+- [ ] T012 [P] Create ICacheRepository interface in src/domain/interfaces/ICacheRepository.ts
+- [ ] T013 [P] Create IDataLoader interface with date range filtering in src/domain/interfaces/IDataLoader.ts
+
+### Domain Layer - Services
+
+- [ ] T014 Create CacheEvictionService for LRU eviction logic in src/domain/services/CacheEvictionService.ts
+
+### Infrastructure Layer - Cache Adapters
+
+- [ ] T015 Create IndexedDBAdapter implementing ICacheRepository with idb library in src/infrastructure/storage/IndexedDBAdapter.ts
+- [ ] T016 [P] Create InMemoryCacheAdapter fallback implementation in src/infrastructure/storage/InMemoryCacheAdapter.ts
+- [ ] T017 Create cache initialization function with fallback detection in src/infrastructure/storage/initializeCache.ts
+
+### Infrastructure Layer - GitHub API
+
+- [ ] T018 Extend GitHubGraphQLAdapter with date range filtering for fetchPRs in src/infrastructure/github/GitHubGraphQLAdapter.ts
+- [ ] T019 [P] Add date range filtering for fetchDeployments in src/infrastructure/github/GitHubGraphQLAdapter.ts
+- [ ] T020 [P] Add date range filtering for fetchCommits (if needed) in src/infrastructure/github/GitHubGraphQLAdapter.ts
+- [ ] T021 Add AbortSignal support to all fetch methods in src/infrastructure/github/GitHubGraphQLAdapter.ts
+
+### Application Layer - DTOs
+
+- [ ] T022 [P] Create CachedDataDTO in src/application/dto/CachedDataDTO.ts
+- [ ] T023 [P] Create LoadingStateDTO in src/application/dto/LoadingStateDTO.ts
+
+### Application Layer - Mappers
+
+- [ ] T024 Create CacheMapper for domain ↔ DTO conversions in src/application/mappers/CacheMapper.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -69,161 +83,157 @@ All paths are relative to repository root:
 
 ## Phase 3: User Story 1 - Fast Initial Dashboard Load (Priority: P1) 🎯 MVP
 
-**Goal**: Display recent 30-day metrics within 5 seconds when users open the dashboard, providing immediate feedback without waiting for historical data
+**Goal**: Display recent 30-day metrics within 5 seconds with Server Components and cache-aware loading
 
-**Independent Test**: Open dashboard and verify PR metrics, throughput insights, and deployment frequency for last 30 days display within 5 seconds, even with large repository (500+ PRs)
+**Independent Test**: Open dashboard and verify PR metrics, deployments, and commits for last 30 days display within 5 seconds, with skeleton UI shown immediately
 
-### Domain Layer for US1
+### Application Layer - Use Cases
 
-- [ ] T018 [P] [US1] Create DateRange value object in `src/domain/value-objects/DateRange.ts`: create(), last7Days(), last30Days(), last90Days(), last6Months(), lastYear() factory methods, durationDays computed property, contains(), overlaps(), split() methods
-- [ ] T019 [P] [US1] Create DateRange unit tests in `src/domain/value-objects/__tests__/DateRange.test.ts`: test validation (end after start), test factory methods, test duration calculation, test contains/overlaps logic
-- [ ] T020 [P] [US1] Create CacheKey value object in `src/domain/value-objects/CacheKey.ts`: create() factory, parse() method, format validation (regex), equals() comparison, toString() method
-- [ ] T021 [P] [US1] Create CacheKey unit tests in `src/domain/value-objects/__tests__/CacheKey.test.ts`: test format validation, test parsing, test equality comparison
-- [ ] T022 [US1] Create CachedDataEntry entity in `src/domain/entities/CachedDataEntry.ts`: create() factory, fromIndexedDB() deserializer, isStale() method, touch() for LRU, Zod schema validation for raw data
-- [ ] T023 [US1] Create CachedDataEntry unit tests in `src/domain/entities/__tests__/CachedDataEntry.test.ts`: test creation, test staleness detection, test touch updates lastAccessedAt, test Zod validation
+- [ ] T025 [US1] Create LoadInitialData use case with cache check and parallel API fetching in src/application/use-cases/LoadInitialData.ts
 
-### Infrastructure Layer for US1
+### Infrastructure Layer - GraphQL Queries
 
-- [ ] T024 [US1] Create basic IndexedDBAdapter in `src/infrastructure/cache/IndexedDBAdapter.ts`: implements ICacheRepository, init() method with schema (version 1, objectStore 'cacheEntries', indexes on 'cachedAt' and 'repositoryId'), get() with TTL check, set() with serialization, basic error handling
-- [ ] T025 [US1] Create IndexedDB tests in `src/infrastructure/cache/__tests__/IndexedDBAdapter.test.ts`: use fake-indexeddb, test init(), test get/set operations, test TTL expiration, test error handling
-- [ ] T026 [US1] Extend GraphQLBatchLoader in `src/infrastructure/api/GraphQLBatchLoader.ts`: add fetchPRs() method with date range filtering (since/until parameters), implement pagination, add AbortSignal support, map GraphQL response to PullRequest[]
-- [ ] T027 [US1] Extend GraphQLBatchLoader for deployments/commits: add fetchDeployments() and fetchCommits() methods with same date range and AbortSignal patterns
+- [ ] T026 [P] [US1] Create GraphQL query for date-filtered PRs in src/infrastructure/github/graphql/queries/getRangedPullRequests.ts
+- [ ] T027 [P] [US1] Create GraphQL query for date-filtered deployments in src/infrastructure/github/graphql/queries/getRangedDeployments.ts
 
-### Application Layer for US1
+### Application Layer - Server Integration
 
-- [ ] T028 [US1] Create LoadInitialData use case in `src/application/use-cases/LoadInitialData.ts`: constructor with ICacheRepository, IDataLoader dependencies, execute() method: check cache first (last 30 days), if cache miss fetch from API using Promise.all for parallel queries, store results in cache, return Result<InitialData> with prs/deployments/commits
-- [ ] T029 [US1] Create LoadInitialData tests in `src/application/use-cases/__tests__/LoadInitialData.test.ts`: mock dependencies, test cache hit path (instant return), test cache miss path (API fetch + cache store), test parallel loading, test error handling, test AbortSignal cancellation
+- [ ] T028 [US1] Modify dashboard page.tsx to become Server Component that fetches 30-day data in app/[locale]/dashboard/page.tsx
+- [ ] T029 [US1] Add URL query param parsing for date range in app/[locale]/dashboard/page.tsx
 
-### Presentation Layer for US1
+### Presentation Layer - Skeleton UI
 
-- [ ] T030 [US1] Create LoadingIndicator component in `src/presentation/components/progressive-loading/LoadingIndicator.tsx`: accept loadingState prop, show spinner for LOADING status, show "Loading recent data (last 30 days)..." message for INITIAL type, show error badge for ERROR status
-- [ ] T031 [US1] Create useProgressiveLoading hook in `src/presentation/hooks/useProgressiveLoading.ts`: accept repositoryId param, use LoadInitialData use case, useState for initialData, useRef for AbortController, useEffect to load on mount and cleanup on unmount, return { initialData, loadingState, error }
-- [ ] T032 [US1] Integrate useProgressiveLoading into existing dashboard page: import hook, replace existing full-load logic with progressive loading, display LoadingIndicator during initial load, pass initialData to existing chart components
+- [ ] T030 [P] [US1] Create DashboardSkeleton component for Suspense fallback in src/presentation/components/layout/DashboardSkeleton.tsx
+- [ ] T031 [P] [US1] Create SkeletonChart component for individual chart placeholders in src/presentation/components/shared/SkeletonChart.tsx
+- [ ] T032 [US1] Create loading.tsx with DashboardSkeleton for Suspense boundary in app/[locale]/dashboard/loading.tsx
 
-**Checkpoint**: User Story 1 complete - dashboard shows 30-day data within 5 seconds
+### Presentation Layer - Client Components
+
+- [ ] T033 [US1] Refactor PRAnalysisClient to accept initialData prop from Server Component in src/presentation/components/analysis/PRAnalysisClient.tsx
+- [ ] T034 [P] [US1] Refactor DeploymentFrequencyClient to accept initialData prop in src/presentation/components/analysis/DeploymentFrequencyClient.tsx
+
+**Checkpoint**: At this point, User Story 1 should display 30-day data within 5 seconds with skeleton UI
 
 ---
 
 ## Phase 4: User Story 2 - Background Historical Data Loading (Priority: P2)
 
-**Goal**: Automatically load historical data beyond 30 days in background after initial display, without blocking user interaction
+**Goal**: Automatically load historical data (31-365 days) in background without blocking UI, using useTransition for non-blocking updates
 
-**Independent Test**: Load dashboard, verify 30-day data appears first within 5s, then confirm historical data (31-365 days) progressively appears in charts without user action, with visual indicator showing background loading progress
+**Independent Test**: Load dashboard, verify 30-day data appears first, then confirm historical data progressively appears with "Loading more data..." indicator, and UI remains interactive throughout
 
-### Domain Layer for US2
+### Application Layer - Use Cases
 
-- [ ] T033 [P] [US2] Create LoadingProgress value object in `src/domain/value-objects/LoadingProgress.ts`: create() factory with currentBatch/totalBatches, percentage computed property (currentBatch/totalBatches \* 100), withETA() method to add estimated time remaining
-- [ ] T034 [P] [US2] Create LoadingProgress unit tests in `src/domain/value-objects/__tests__/LoadingProgress.test.ts`: test percentage calculation, test validation (currentBatch <= totalBatches), test ETA computation
-- [ ] T035 [US2] Create LoadingState entity in `src/domain/entities/LoadingState.ts`: factory methods: idle(), startInitial(), startBackground(), updateProgress(), complete(), fail(), enforce status transitions (idle → loading → complete/error), validate progress updates only when status is LOADING
-- [ ] T036 [US2] Create LoadingState unit tests in `src/domain/entities/__tests__/LoadingState.test.ts`: test status transitions, test progress updates, test error state handling, test immutability (factory methods return new instances)
+- [ ] T035 [US2] Create LoadHistoricalData use case with chunked batching (90-day chunks) in src/application/use-cases/LoadHistoricalData.ts
+- [ ] T036 [US2] Add rate limit awareness checks in LoadHistoricalData to pause when budget low in src/application/use-cases/LoadHistoricalData.ts
 
-### Infrastructure Layer for US2
+### Presentation Layer - Hooks
 
-- [ ] T037 [US2] Create ZustandLoadingStore in `src/infrastructure/stores/useProgressiveLoadingStore.ts`: create store with devtools middleware, state: Record<StreamType, LoadingState>, actions: startLoading(), updateProgress(), completeLoading(), failLoading(), implement fine-grained selectors to prevent unnecessary re-renders
-- [ ] T038 [US2] Create ZustandLoadingManager adapter in `src/infrastructure/stores/ZustandLoadingManager.ts`: implements ILoadingStateManager, wrap Zustand store methods, provide getState(), startLoading(), updateProgress(), completeLoading(), failLoading(), isAnyStreamLoading(), subscribe() implementations
-- [ ] T039 [US2] Create DateRangeQueryBuilder utility in `src/infrastructure/api/DateRangeQueryBuilder.ts`: splitIntoChunks() method to divide date range into 90-day batches, buildChunkQueries() to generate GraphQL queries for each chunk
+- [ ] T037 [US2] Create useBackgroundLoader hook with useTransition for non-blocking state updates in src/presentation/hooks/useBackgroundLoader.ts
+- [ ] T038 [US2] Add AbortController cleanup on unmount in useBackgroundLoader hook in src/presentation/hooks/useBackgroundLoader.ts
 
-### Application Layer for US2
+### Presentation Layer - Loading Indicators
 
-- [ ] T040 [US2] Create LoadHistoricalData use case in `src/application/use-cases/LoadHistoricalData.ts`: constructor with ICacheRepository, IDataLoader, ILoadingStateManager dependencies, execute() method: split 31-365 days into chunks (31-120, 121-210, 211-365), iterate chunks with for loop, check AbortSignal before each iteration, use Promise.all for parallel queries within each chunk, update progress after each chunk, check rate limit status before continuing, invoke onProgress callback with partial data, mark streams complete when done
-- [ ] T041 [US2] Create LoadHistoricalData tests in `src/application/use-cases/__tests__/LoadHistoricalData.test.ts`: mock dependencies, test chunked loading (3 batches), test progress updates, test rate limit awareness (pause when low), test AbortSignal cancellation mid-load, test onProgress callback invocation
+- [ ] T039 [P] [US2] Create LoadingIndicator component for "Loading more data..." text during background load in src/presentation/components/shared/LoadingIndicator.tsx
 
-### Presentation Layer for US2
+### Presentation Layer - Client Component Integration
 
-- [ ] T042 [US2] Update LoadingIndicator component: add support for BACKGROUND loading type, show subtle "Loading historical data... (X%)" message, add progress bar for background loading, ensure UI doesn't block during background load
-- [ ] T043 [US2] Update useProgressiveLoading hook: add useTransition for non-blocking state updates, after LoadInitialData completes invoke LoadHistoricalData, use startTransition to wrap historicalData state updates, subscribe to Zustand loading states for progress tracking, return { initialData, historicalData, loadingStates, isPending, isBackgroundLoading }
-- [ ] T044 [US2] Update dashboard integration: merge initialData and historicalData for chart display, show background loading indicator, ensure charts auto-update when new historical batches arrive, verify UI remains responsive (<200ms interactions) during background load
+- [ ] T040 [US2] Integrate useBackgroundLoader into PRAnalysisClient component in src/presentation/components/analysis/PRAnalysisClient.tsx
+- [ ] T041 [P] [US2] Integrate useBackgroundLoader into DeploymentFrequencyClient component in src/presentation/components/analysis/DeploymentFrequencyClient.tsx
 
-**Checkpoint**: User Story 2 complete - historical data loads automatically in background without blocking UI
+**Checkpoint**: At this point, User Stories 1 AND 2 should both work - initial load is fast, background loading happens without blocking
 
 ---
 
 ## Phase 5: User Story 3 - Custom Date Range Selection (Priority: P2)
 
-**Goal**: Allow users to select custom date ranges (last 7/30/90 days, 6 months, 1 year, custom) for analyzing metrics during specific time periods
+**Goal**: Allow users to select custom date ranges with presets and custom calendar, updating URL params for shareability
 
-**Independent Test**: Select different date range presets (last 7/30/90 days, custom) and verify data loads from cache if available or fetches from API if needed, with instant display for cached data
+**Independent Test**: Click date range selector, choose different presets (7/30/90 days), verify data updates and URL changes to reflect selection
 
-### Domain Layer for US3
+### Infrastructure Layer - shadcn/ui Components
 
-- [ ] T045 [P] [US3] Create DateRangeSelection entity in `src/domain/entities/DateRangeSelection.ts`: factory methods: fromPreset() to create from DateRangePreset enum, fromCustomRange() for custom start/end dates, withCacheStatus() to update cache metadata, validate preset and range synchronization, compute cacheStatus based on TTL
-- [ ] T046 [P] [US3] Create DateRangeSelection unit tests in `src/domain/entities/__tests__/DateRangeSelection.test.ts`: test preset creation (preset matches range), test custom range creation, test cache status computation, test validation
+- [ ] T042 [US3] Install shadcn/ui calendar component: `npx shadcn-ui@latest add calendar`
 
-### Application Layer for US3
+### Presentation Layer - Date Range UI
 
-- [ ] T047 [US3] Create ChangeDataRange use case in `src/application/use-cases/ChangeDataRange.ts`: constructor with ICacheRepository, IDataLoader dependencies, execute() method: accept DateRangeSelection, check cache for requested range, if cache hit return instantly with data and HIT_FRESH status, if cache miss fetch from API, store in cache, return data with MISS status, handle partial cache hits (some chunks cached, some not)
-- [ ] T048 [US3] Create ChangeDataRange tests in `src/application/use-cases/__tests__/ChangeDataRange.test.ts`: mock dependencies, test cache hit path (<500ms), test cache miss path (fetch + store), test partial cache hits, test error handling
+- [ ] T043 [US3] Create DateRangeSelector component with presets (Last 7/30/90 days, 6 months, 1 year, custom) in src/presentation/components/shared/DateRangeSelector.tsx
+- [ ] T044 [US3] Integrate react-day-picker for custom date selection in DateRangeSelector component in src/presentation/components/shared/DateRangeSelector.tsx
+- [ ] T045 [US3] Add dark mode support with next-themes integration in DateRangeSelector component in src/presentation/components/shared/DateRangeSelector.tsx
 
-### Presentation Layer for US3
+### Presentation Layer - URL Integration
 
-- [ ] T049 [US3] Install shadcn/ui calendar component: run `npx shadcn-ui@latest add calendar`
-- [ ] T050 [US3] Create DateRangePicker component in `src/presentation/components/progressive-loading/DateRangePicker.tsx`: copy date-range-picker from https://github.com/johnpolackin/date-range-picker-for-shadcn, customize presets (Last 7/30/90 days, 6 months, 1 year, Custom), integrate with next-themes for dark mode support, emit onChange event with DateRangeSelection
-- [ ] T051 [US3] Create useDateRangeSelection hook in `src/presentation/hooks/useDateRangeSelection.ts`: useState for selected range, default to last 30 days, handle preset changes, handle custom range changes, invoke ChangeDataRange use case when range changes, return { selectedRange, setRange, isLoading, data }
-- [ ] T052 [US3] Integrate DateRangePicker into dashboard: add above chart section, connect to useDateRangeSelection hook, update charts when range changes, preserve selected range in URL query params for shareable links
+- [ ] T046 [US3] Add handleDateChange function that updates URL params using Next.js router in PRAnalysisClient component in src/presentation/components/analysis/PRAnalysisClient.tsx
+- [ ] T047 [US3] Add DateRangeSelector to dashboard layout in app/[locale]/dashboard/page.tsx
 
-**Checkpoint**: User Story 3 complete - users can select custom date ranges with instant cached data display
+### Application Layer - Date Range Handling
+
+- [ ] T048 [US3] Create parseDateRange utility for URL param validation in Server Component in src/application/utils/parseDateRange.ts
+- [ ] T049 [US3] Modify LoadInitialData to support custom date ranges beyond 30 days in src/application/use-cases/LoadInitialData.ts
+
+**Checkpoint**: All three user stories should now work independently - initial fast load, background loading, and custom date selection
 
 ---
 
 ## Phase 6: User Story 4 - Client-Side Data Caching (Priority: P3)
 
-**Goal**: Cache previously loaded data locally so subsequent visits and date range changes are instant without re-fetching from GitHub API
+**Goal**: Implement stale-while-revalidate caching with automatic background refresh, manual refresh, and LRU eviction for instant subsequent visits
 
-**Independent Test**: Load dashboard, close browser, reopen within 24 hours, verify previously loaded data displays instantly without GitHub API calls (confirm via network inspector), check stale indicators for data older than 1 hour
+**Independent Test**: Load dashboard, close browser, reopen within 1 hour, verify data displays instantly from cache without API calls (check network tab)
 
-### Infrastructure Layer for US4
+### Application Layer - Cache Integration
 
-- [ ] T053 [US4] Implement LRU eviction in IndexedDBAdapter: add evictIfNeeded() private method, call after set(), fetch all entries sorted by lastAccessedAt, if count > MAX_ENTRIES remove oldest 10%, implement getAll() to fetch all entries for eviction logic
-- [ ] T054 [US4] Implement cache size management in IndexedDBAdapter: add getStats() method returning totalEntries/totalSizeBytes/oldestEntry/newestEntry, check storage quota using navigator.storage.estimate(), trigger eviction when approaching 90% of quota
-- [ ] T055 [US4] Create InMemoryCacheAdapter fallback in `src/infrastructure/cache/InMemoryCacheAdapter.ts`: implements ICacheRepository, use Map for storage, implement same interface as IndexedDBAdapter, use for Safari private mode or IndexedDB failures
-- [ ] T056 [US4] Update IndexedDBAdapter initialization: wrap init() with try-catch, if IndexedDB fails (Safari private mode, quota exceeded) log warning and fall back to InMemoryCacheAdapter, ensure graceful degradation
-- [ ] T057 [US4] Implement cache statistics tracking: add getStats() to return cache hit rate, total size, entry count, oldest/newest timestamps, expose via ILoadingStateManager for debugging
+- [ ] T050 [US4] Modify LoadInitialData to implement stale-while-revalidate pattern in src/application/use-cases/LoadInitialData.ts
+- [ ] T051 [US4] Add automatic background refresh when stale data detected in src/application/use-cases/LoadInitialData.ts
 
-### Application Layer for US4
+### Presentation Layer - Cache Status UI
 
-- [ ] T058 [US4] Create GetCachedData use case in `src/application/use-cases/GetCachedData.ts`: constructor with ICacheRepository, execute() method: fetch from cache by CacheKey, check staleness, return Result with data + cache status (HIT_FRESH, HIT_STALE, MISS), touch entry for LRU
-- [ ] T059 [US4] Create RefreshData use case in `src/application/use-cases/RefreshData.ts`: constructor with ICacheRepository, IDataLoader dependencies, execute() method: bypass cache, fetch fresh data from API, update cache with new data and reset TTL, return Result with fresh data
-- [ ] T060 [US4] Implement stale-while-revalidate pattern in LoadInitialData: if cached data exists but isStale(), return cached data immediately with HIT_STALE status, trigger background revalidation (fetch fresh data without blocking), update cache and notify UI when fresh data arrives
-- [ ] T061 [US4] Add rate limit awareness to background revalidation: check GitHub API rate limit status before revalidating, if remaining < MIN_RATE_LIMIT_PERCENTAGE (10%) pause revalidation, resume when rate limit resets, show appropriate status message to user
+- [ ] T052 [P] [US4] Create StaleDataBanner component to indicate when cached data is stale in src/presentation/components/shared/StaleDataBanner.tsx
+- [ ] T053 [P] [US4] Create RefreshButton component for manual cache invalidation in src/presentation/components/shared/RefreshButton.tsx
 
-### Presentation Layer for US4
+### Presentation Layer - Cache Hooks
 
-- [ ] T062 [US4] Create CacheStatusBadge component in `src/presentation/components/progressive-loading/CacheStatusBadge.tsx`: accept cacheStatus and lastUpdated props, show "Fresh" badge for HIT_FRESH, show "Stale (updated Xh ago)" badge for HIT_STALE with warning color, show "Refreshing..." badge for REVALIDATING with spinner
-- [ ] T063 [US4] Add manual refresh button to dashboard: show when data is stale (HIT_STALE or older than 2 hours), onClick invoke RefreshData use case, show loading state during refresh, update charts when fresh data arrives
-- [ ] T064 [US4] Update useProgressiveLoading hook for stale-while-revalidate: check cache first, if stale serve cached data immediately, trigger background revalidation, subscribe to revalidation completion, update state when fresh data arrives, return { data, cacheStatus, isRevalidating }
-- [ ] T065 [US4] Add cache management UI: implement clearRepository() button to clear cache for current repo, implement clearAll() button to clear entire cache (with confirmation), show cache statistics (size, entry count, hit rate) in debug panel
+- [ ] T054 [US4] Create useCache hook for cache operations and status tracking in src/presentation/hooks/useCache.ts
+- [ ] T055 [US4] Integrate StaleDataBanner and RefreshButton into dashboard layout in app/[locale]/dashboard/page.tsx
 
-**Checkpoint**: User Story 4 complete - cached data enables instant subsequent visits and reduces API usage by 80%
+### Application Layer - Cache Management
+
+- [ ] T056 [US4] Implement LRU eviction in CacheEvictionService when storage exceeds 80% (40MB of 50MB) in src/domain/services/CacheEvictionService.ts
+- [ ] T057 [US4] Add cache statistics tracking (totalEntries, totalSizeBytes, oldestEntry) in IndexedDBAdapter in src/infrastructure/storage/IndexedDBAdapter.ts
+
+### API Layer - Manual Invalidation
+
+- [ ] T058 [P] [US4] Create API route for manual cache invalidation in app/api/cache/invalidate/route.ts
+
+**Checkpoint**: All four user stories complete - fast initial load, background loading, custom ranges, and persistent caching with staleness handling
 
 ---
 
 ## Phase 7: Polish & Cross-Cutting Concerns
 
-**Purpose**: Testing, documentation, and improvements affecting multiple user stories
+**Purpose**: Performance optimizations, error handling, and final integration improvements
 
-### E2E Testing
+### Error Handling
 
-- [ ] T066 [P] Create E2E test for initial load in `tests/e2e/progressive-loading/initial-load.spec.ts`: use Playwright, navigate to dashboard, verify 30-day metrics display within 5 seconds, verify loading indicator shows during load, verify charts render correctly
-- [ ] T067 [P] Create E2E test for background loading in `tests/e2e/progressive-loading/background-load.spec.ts`: verify initial 30-day data appears first, verify background loading indicator shows, verify historical data progressively appears in charts, verify UI remains responsive during background load
-- [ ] T068 [P] Create E2E test for cache retrieval in `tests/e2e/progressive-loading/cache.spec.ts`: load dashboard, close and reopen browser, verify cached data displays instantly (<1s), verify no GitHub API calls via network inspector, verify stale indicator shows for old data
-
-### Documentation
-
-- [ ] T069 [P] Update CLAUDE.md with progressive loading technologies: add IndexedDB/idb entry, add Zustand state management entry, document cache configuration constants
-- [ ] T070 [P] Create progressive loading user guide in `docs/progressive-loading.md`: explain cache behavior, document date range selection, show manual refresh option, explain stale data indicators
+- [ ] T059 [P] Add error boundary for cache initialization failures with fallback to in-memory cache in src/presentation/components/shared/CacheErrorBoundary.tsx
+- [ ] T060 [P] Add toast notifications for rate limit errors during background loading in src/presentation/components/shared/RateLimitToast.tsx
+- [ ] T061 [P] Add error handling for network interruptions with automatic retry in LoadHistoricalData use case in src/application/use-cases/LoadHistoricalData.ts
 
 ### Performance Optimization
 
-- [ ] T071 Optimize React.memo usage in chart components: wrap PRSizeDistributionChart, PRChangesChart, DeploymentFrequencyChart with React.memo to prevent unnecessary re-renders during background loading
-- [ ] T072 Add performance monitoring: use performance.mark() and performance.measure() in LoadInitialData and LoadHistoricalData use cases, log timing metrics to console in development, track initial load time, background load time, cache retrieval time
-- [ ] T073 Optimize IndexedDB batch operations: use transaction() for multiple set() operations, implement bulk get/set methods for loading multiple cache entries, reduce IndexedDB overhead
+- [ ] T062 [P] Add React.memo to chart components to prevent re-renders during background loading in src/presentation/components/analysis/PRSizeDistributionChart.tsx
+- [ ] T063 [P] Add React.memo to DeploymentBarChart component in src/presentation/components/analysis/DeploymentBarChart.tsx
+- [ ] T064 Optimize cache key generation to avoid unnecessary string concatenation in CacheKey value object in src/domain/value-objects/CacheKey.ts
 
-### Code Quality
+### Documentation
 
-- [ ] T074 Run full test suite: `pnpm test` to verify all unit tests pass, ensure domain layer has 80%+ coverage
-- [ ] T075 Run type checking: `pnpm type-check` to verify no TypeScript errors
-- [ ] T076 Run linting: `pnpm lint` to verify ESLint rules pass
-- [ ] T077 Validate quickstart.md: follow implementation guide step-by-step, verify all code examples work, ensure phase structure matches actual implementation
+- [ ] T065 [P] Update CLAUDE.md with progressive loading patterns and URL param conventions in CLAUDE.md
+- [ ] T066 [P] Add JSDoc comments to all public interfaces in src/domain/interfaces/
+
+### Configuration
+
+- [ ] T067 Create CacheConfig constants file with TTL and size limits in src/domain/config/CacheConfig.ts
+- [ ] T068 [P] Create LoadingConfig constants file with chunk size and timeout settings in src/domain/config/LoadingConfig.ts
 
 ---
 
@@ -233,47 +243,107 @@ All paths are relative to repository root:
 
 - **Setup (Phase 1)**: No dependencies - can start immediately
 - **Foundational (Phase 2)**: Depends on Setup completion - BLOCKS all user stories
-- **User Story 1 (Phase 3)**: Depends on Foundational (Phase 2) - MVP delivery target
-- **User Story 2 (Phase 4)**: Depends on User Story 1 completion (uses LoadInitialData)
-- **User Story 3 (Phase 5)**: Depends on User Story 1 completion (uses same cache infrastructure)
-- **User Story 4 (Phase 6)**: Depends on User Stories 1-3 completion (enhances existing caching)
-- **Polish (Phase 7)**: Depends on desired user stories being complete
+- **User Stories (Phases 3-6)**: All depend on Foundational phase completion
+  - User stories can then proceed in parallel (if staffed)
+  - Or sequentially in priority order (P1 → P2 → P2 → P3)
+- **Polish (Phase 7)**: Depends on all user stories being complete
 
 ### User Story Dependencies
 
-- **User Story 1 (P1)**: Can start after Foundational (Phase 2) - No dependencies on other stories ✅ INDEPENDENT
-- **User Story 2 (P2)**: Builds on US1 (reuses LoadInitialData, extends with background loading) ⚠️ SEQUENTIAL
-- **User Story 3 (P2)**: Can start after US1 complete (reuses cache infrastructure) ⚠️ SEQUENTIAL
-- **User Story 4 (P3)**: Enhances US1-3 (adds LRU eviction, stale-while-revalidate, manual refresh) ⚠️ SEQUENTIAL
+- **User Story 1 (P1) - Phase 3**: Can start after Foundational (Phase 2) - No dependencies on other stories
+- **User Story 2 (P2) - Phase 4**: Can start after Foundational (Phase 2) - Enhances US1 but independently testable
+- **User Story 3 (P2) - Phase 5**: Can start after Foundational (Phase 2) - Uses US1's infrastructure but independently testable
+- **User Story 4 (P3) - Phase 6**: Can start after Foundational (Phase 2) - Enhances all previous stories but independently testable
 
 ### Within Each User Story
 
-- Domain layer tasks ([P] marked) can run in parallel
-- Infrastructure tasks typically sequential (depend on domain)
-- Application tasks depend on domain + infrastructure
-- Presentation tasks depend on application layer
-- Tests can run in parallel with implementation (TDD approach)
+- Application use cases before presentation hooks
+- Hooks before component integration
+- Core implementation before UI integration
+- Story complete before moving to next priority
 
 ### Parallel Opportunities
 
-**Phase 1 Setup**: All directory creation tasks (T003-T011) can run in parallel
-**Phase 2 Foundational**: Enum types (T012), Result type (T013), all 3 repository interfaces (T014-T016) can run in parallel
-**User Story 1 Domain**: DateRange (T018-T019), CacheKey (T020-T021) can run in parallel
-**User Story 2 Domain**: LoadingProgress (T033-T034), LoadingState (T035-T036) can run in parallel
-**User Story 3 Domain**: DateRangeSelection and tests (T045-T046) can run in parallel
-**Phase 7 E2E Tests**: All 3 E2E tests (T066-T068) can run in parallel
-**Phase 7 Documentation**: All doc tasks (T069-T070) can run in parallel
+**Foundational Phase**:
+
+```bash
+# Value objects can be implemented in parallel:
+T005 (DataType) + T006 (CacheStatus) + T007 (DateRangePreset) + T008 (DateRange) + T009 (CacheKey)
+
+# Entities in parallel after value objects:
+T010 (CachedDataEntry) + T011 (DateRangeSelection)
+
+# Interfaces in parallel:
+T012 (ICacheRepository) + T013 (IDataLoader)
+
+# Cache adapters in parallel:
+T015 (IndexedDBAdapter) + T016 (InMemoryCacheAdapter)
+
+# GitHub API methods in parallel:
+T019 (fetchDeployments) + T020 (fetchCommits)
+
+# DTOs in parallel:
+T022 (CachedDataDTO) + T023 (LoadingStateDTO)
+```
+
+**User Story 1**:
+
+```bash
+# GraphQL queries in parallel:
+T026 (getRangedPullRequests) + T027 (getRangedDeployments)
+
+# Skeleton components in parallel:
+T030 (DashboardSkeleton) + T031 (SkeletonChart)
+
+# Client component refactoring in parallel:
+T033 (PRAnalysisClient) + T034 (DeploymentFrequencyClient)
+```
+
+**User Story 2**:
+
+```bash
+# Loading indicator can be built while use case is being implemented:
+T039 (LoadingIndicator) can run parallel with T035-T036
+
+# Client integration in parallel:
+T040 (PRAnalysisClient) + T041 (DeploymentFrequencyClient)
+```
+
+**User Story 4**:
+
+```bash
+# UI components in parallel:
+T052 (StaleDataBanner) + T053 (RefreshButton) + T058 (API route)
+```
+
+**Polish Phase**:
+
+```bash
+# Error handling components in parallel:
+T059 (CacheErrorBoundary) + T060 (RateLimitToast) + T061 (retry logic)
+
+# Performance optimizations in parallel:
+T062 (PRSizeDistributionChart) + T063 (DeploymentBarChart)
+
+# Documentation in parallel:
+T065 (CLAUDE.md) + T066 (JSDoc comments)
+
+# Config files in parallel:
+T067 (CacheConfig) + T068 (LoadingConfig)
+```
 
 ---
 
-## Parallel Example: User Story 1 Domain Layer
+## Parallel Example: User Story 1
 
 ```bash
-# Launch all domain value objects for User Story 1 together:
-Task: "Create DateRange value object in src/domain/value-objects/DateRange.ts"
-Task: "Create DateRange unit tests in src/domain/value-objects/__tests__/DateRange.test.ts"
-Task: "Create CacheKey value object in src/domain/value-objects/CacheKey.ts"
-Task: "Create CacheKey unit tests in src/domain/value-objects/__tests__/CacheKey.test.ts"
+# Launch GraphQL queries together:
+Task: "Create GraphQL query for date-filtered PRs in src/infrastructure/github/graphql/queries/getRangedPullRequests.ts"
+Task: "Create GraphQL query for date-filtered deployments in src/infrastructure/github/graphql/queries/getRangedDeployments.ts"
+
+# Launch skeleton components together:
+Task: "Create DashboardSkeleton component in src/presentation/components/layout/DashboardSkeleton.tsx"
+Task: "Create SkeletonChart component in src/presentation/components/shared/SkeletonChart.tsx"
 ```
 
 ---
@@ -282,86 +352,143 @@ Task: "Create CacheKey unit tests in src/domain/value-objects/__tests__/CacheKey
 
 ### MVP First (User Story 1 Only)
 
-1. Complete Phase 1: Setup (T001-T011)
-2. Complete Phase 2: Foundational (T012-T017) - CRITICAL, blocks all stories
-3. Complete Phase 3: User Story 1 (T018-T032)
-4. **STOP and VALIDATE**: Test initial 30-day load <5s target
-5. Deploy/demo MVP (fast initial dashboard load)
+1. Complete Phase 1: Setup (install dependencies)
+2. Complete Phase 2: Foundational (domain + infrastructure layers) - **CRITICAL**
+3. Complete Phase 3: User Story 1 (initial 30-day load with cache)
+4. **STOP and VALIDATE**: Test User Story 1 independently
+   - Open dashboard → see skeleton → data loads in <5s
+   - Check cache → verify data stored in IndexedDB
+   - Reopen dashboard → verify instant load from cache
+5. Deploy/demo if ready
 
-**Estimated Timeline**: 5-7 days for MVP (Phases 1-3)
+**MVP Scope**: ~68 tasks (T001-T034 + essential config tasks)
+**Estimated Delivery**: 7-10 days
 
 ### Incremental Delivery
 
-1. MVP: Setup + Foundational + US1 → Initial 30-day load <5s ✅
-2. US2: Add background historical loading → Full year of data without blocking UI ✅
-3. US3: Add custom date range selection → Flexible time period analysis ✅
-4. US4: Add advanced caching → 80% API reduction, instant subsequent visits ✅
-5. Polish: E2E tests, docs, optimization → Production-ready ✅
+1. **Foundation** (Phases 1-2): Setup + all domain/infrastructure layers → Foundation ready
+2. **MVP** (Phase 3): User Story 1 → Test independently → Deploy/Demo (fast 30-day load!)
+3. **Enhancement 1** (Phase 4): User Story 2 → Test independently → Deploy/Demo (add background loading)
+4. **Enhancement 2** (Phase 5): User Story 3 → Test independently → Deploy/Demo (add date range selection)
+5. **Optimization** (Phase 6): User Story 4 → Test independently → Deploy/Demo (advanced caching)
+6. **Polish** (Phase 7): Cross-cutting improvements → Final validation → Production ready
 
-**Total Estimated Timeline**: 10-12 days for full feature
+Each story adds value without breaking previous stories.
 
 ### Parallel Team Strategy
 
-With 2-3 developers:
+With multiple developers:
 
-1. **Team completes Setup + Foundational together** (Days 1-2)
-2. **Developer A: User Story 1** (Days 3-5) - MVP delivery
-3. **Once US1 complete, parallel development:**
-   - Developer A: User Story 2 (background loading)
-   - Developer B: User Story 3 (date range picker)
-4. **Developer A or B: User Story 4** (caching enhancements)
-5. **All developers: Polish phase** (E2E tests, docs)
+1. **Week 1**: Team completes Setup + Foundational together (Phases 1-2)
+2. **Week 2** (once Foundational is done):
+   - Developer A: User Story 1 (Phase 3)
+   - Developer B: User Story 2 (Phase 4) - starts with use case planning
+   - Developer C: User Story 3 (Phase 5) - starts with UI component design
+3. **Week 3**:
+   - Developer A: User Story 4 (Phase 6)
+   - Developer B: Polish error handling (Phase 7)
+   - Developer C: Polish performance optimization (Phase 7)
 
-**Parallel Timeline**: 8-10 days with 2-3 developers
+Stories complete and integrate independently.
+
+---
+
+## Key Architectural Decisions
+
+### No Global State Management
+
+- **Decision**: Use URL params (date range) + component-level useState/useTransition
+- **Rationale**: Eliminates Zustand dependency, enables shareable URLs, simpler architecture
+- **Implementation**: Server Components read URL params, pass to Client Components as props
+
+### Server/Client Component Boundary
+
+- **Decision**: Server Components for initial 30-day fetch, Client Components for background loading
+- **Rationale**: Optimal for Next.js 15 App Router, enables fast first paint with streaming
+- **Implementation**:
+  - `page.tsx`: Server Component fetches initial data
+  - `PRAnalysisClient.tsx`: Client Component receives props, manages background loading with useTransition
+
+### Independent Component Loading
+
+- **Decision**: Each metric component (PRs, deployments) independently manages its own background loading
+- **Rationale**: No coordination overhead, components can load at different speeds, simpler state management
+- **Implementation**: Each client component has its own useTransition hook for background data
+
+### Hybrid Waterfall Loading
+
+- **Decision**: Parallel initial load (30 days) + chunked background load (90-day batches)
+- **Rationale**: Meets 5-second target, prevents rate limit exhaustion, progressive enhancement
+- **Implementation**:
+  - Phase 1: `Promise.all([fetchPRs, fetchDeployments, fetchCommits])` for 30 days
+  - Phase 2: Loop through 90-day chunks with rate limit checks
+
+### Cache-First with Stale-While-Revalidate
+
+- **Decision**: Serve cached data immediately, refresh in background if stale
+- **Rationale**: Best UX (instant display), reduced API usage, graceful degradation
+- **Implementation**: IndexedDB primary, in-memory fallback for Safari private mode
+
+---
+
+## Performance Targets
+
+| Metric                          | Target | Validation Method                                    |
+| ------------------------------- | ------ | ---------------------------------------------------- |
+| Initial 30-day load             | <5s    | Network tab timing + `performance.mark()`            |
+| Cached data load                | <1s    | IndexedDB get time measurement                       |
+| Date range change (cached)      | <500ms | React DevTools Profiler                              |
+| Background historical load      | <30s   | Progress tracking in LoadHistoricalData use case     |
+| UI interaction during loading   | <200ms | React DevTools Profiler + useTransition verification |
+| Skeleton UI display             | <500ms | Suspense fallback render time                        |
+| Cache hit rate (repeat visits)  | >70%   | Cache statistics tracking                            |
+| API request reduction (caching) | >80%   | Network tab comparison (fresh vs cached)             |
 
 ---
 
 ## Notes
 
-- **[P] markers**: Tasks marked [P] touch different files with no dependencies, safe to run in parallel
-- **[Story] labels**: Map each task to specific user story (US1-US4) for traceability and independent testing
-- **Tests are optional**: Tests included for quality but can be deferred to Phase 7 if faster delivery needed
-- **MVP focus**: User Story 1 (Phase 3) is the minimum viable product - delivers core value proposition
-- **Constitutional compliance**: All tasks follow clean architecture (domain → application → infrastructure → presentation), string literal enum pattern, tests in `__tests__/` directories
-- **Commit strategy**: Commit after each task or logical group of parallel tasks
-- **Validation checkpoints**: Stop after each user story phase to independently test that story
-- **Performance targets**: Initial load <5s (US1), cache retrieval <1s (US4), date range change <500ms (US3), background load <30s (US2)
+- **[P] tasks** = different files, no dependencies, can run in parallel
+- **[Story] label** = maps task to specific user story for traceability
+- Each user story should be **independently completable and testable**
+- **No test tasks included** - tests not requested in feature specification
+- Commit after each task or logical group
+- Stop at any checkpoint to validate story independently
+- **Avoid**: vague tasks, same file conflicts, cross-story dependencies that break independence
+- **Total tasks**: 68 tasks
+  - Setup: 4 tasks
+  - Foundational: 20 tasks (blocks all stories)
+  - US1 (MVP): 10 tasks
+  - US2: 7 tasks
+  - US3: 8 tasks
+  - US4: 9 tasks
+  - Polish: 10 tasks
 
 ---
 
-## Success Metrics
+## Summary
 
-**User Story 1 (MVP)**:
+**Total Tasks**: 68 tasks across 7 phases
+**MVP Scope**: Phases 1-3 (34 tasks) = User Story 1 only
+**Task Distribution by User Story**:
 
-- ✅ Initial 30-day dashboard load completes within 5 seconds (500 PRs)
-- ✅ Loading indicator shows during initial load
-- ✅ All charts render correctly with 30-day data
+- User Story 1 (P1): 10 tasks (T025-T034) - Fast initial 30-day load
+- User Story 2 (P2): 7 tasks (T035-T041) - Background historical loading
+- User Story 3 (P2): 8 tasks (T042-T049) - Custom date range selection
+- User Story 4 (P3): 9 tasks (T050-T058) - Advanced caching with stale-while-revalidate
 
-**User Story 2**:
+**Parallel Opportunities Identified**:
 
-- ✅ Historical data loads in background without blocking UI
-- ✅ Background loading completes within 30 seconds (2000 PRs/year)
-- ✅ UI remains responsive (<200ms interactions) during background load
-- ✅ Charts auto-update when new historical batches arrive
+- Foundational phase: 15 parallel tasks possible
+- User Story 1: 5 parallel tasks possible
+- User Story 2: 2 parallel tasks possible
+- User Story 4: 3 parallel tasks possible
+- Polish phase: 8 parallel tasks possible
 
-**User Story 3**:
+**Suggested MVP Scope**: Complete Phases 1-3 only (User Story 1)
 
-- ✅ Date range selector shows 6 preset options + custom
-- ✅ Cached date range changes complete within 500ms
-- ✅ Uncached date range changes show loading indicator and fetch from API
+- Delivers core value: fast initial load with caching
+- 34 tasks total for MVP
+- Remaining 34 tasks add progressive enhancements
 
-**User Story 4**:
-
-- ✅ Subsequent visits display cached data within 1 second
-- ✅ Cache hit rate exceeds 70% for repeat users
-- ✅ Stale data indicators show for data older than 1 hour
-- ✅ Manual refresh updates cache with fresh data
-- ✅ GitHub API request count reduces by 80% for repeat users
-
-**Overall Feature**:
-
-- ✅ All E2E tests pass (initial load, background load, cache retrieval)
-- ✅ Domain layer test coverage >80%
-- ✅ TypeScript strict mode with no errors
-- ✅ ESLint passes with no violations
-- ✅ Performance targets met for all user stories
+**Format Validation**: ✅ ALL tasks follow checklist format with checkboxes, IDs, labels, and file paths

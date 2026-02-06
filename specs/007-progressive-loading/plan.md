@@ -7,132 +7,105 @@
 
 ## Summary
 
-Transform Team Insights from full-data loading to progressive loading architecture. Initial view displays recent 30-day metrics within 5 seconds, while historical data loads in background. Client-side caching (IndexedDB) enables instant subsequent visits and date range changes. GitHub GraphQL pagination fetches data in batches to optimize API usage and perceived performance.
+Transform Team Insights from full-load architecture to progressive loading with initial 30-day display within 5 seconds, followed by automatic background historical data loading. Uses Next.js 15 Server Components for initial fetch, Client Components with useTransition for background loading, React Suspense for skeleton UI, and IndexedDB for client-side caching. Eliminates global state management (Zustand removed) by storing date range in URL params and using component-level state with useState/useTransition. Each metric component independently manages its own background loading without blocking other components.
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5.3, Next.js 15 (App Router)
-**Primary Dependencies**: @octokit/graphql 9.0.3, React 18.3, Recharts 3.5.0, next-themes 0.4.6, IndexedDB wrapper (NEEDS CLARIFICATION: idb vs Dexie.js vs native)
-**Storage**: IndexedDB for client-side caching (repository data, PRs, deployments, commits with date ranges and timestamps)
-**Testing**: Vitest (unit tests for domain/application), Playwright (E2E tests for critical loading paths)
-**Target Platform**: Web (Next.js App Router, server components + client components for interactive features)
-**Project Type**: Web application (existing Next.js structure in src/)
-**Performance Goals**: Initial 30-day load <5s (500 PRs), cached data display <1s, date range change <500ms, background historical load <30s (2000 PRs/year)
-**Constraints**: Must handle concurrent background loading for multiple metrics (PRs, deployments, commits) without race conditions, UI must remain responsive (<200ms interactions) during background loading, cache hit rate >70% for repeat users
-**Scale/Scope**: Large GitHub repositories (500+ PRs in 30 days, 2000+ PRs over 1 year), multiple concurrent data streams (PRs + deployments + commits)
-
-**Additional Clarifications Needed**:
-
-- Date range picker component strategy (NEEDS CLARIFICATION: custom component vs library like react-datepicker)
-- Loading state management approach (NEEDS CLARIFICATION: React Context vs Zustand vs useReducer)
-- Cache invalidation strategy details (NEEDS CLARIFICATION: time-based vs manual vs hybrid)
-- GraphQL query batching strategy (NEEDS CLARIFICATION: parallel queries vs sequential with cancellation)
-- Background worker implementation (NEEDS CLARIFICATION: Web Workers vs async/await in main thread)
+**Language/Version**: TypeScript 5.3 with strict mode enabled
+**Primary Dependencies**: Next.js 15 (App Router), React 18.3, @octokit/graphql 9.0.3, Recharts 3.5.0, next-themes 0.4.6
+**Storage**: IndexedDB (client-side caching with LRU eviction), no server-side database
+**Testing**: Vitest 2.1.8 (unit tests with coverage), Playwright 1.49.1 (E2E tests for critical paths)
+**Target Platform**: Web (Next.js App Router with Server/Client Component boundary, Vercel deployment)
+**Project Type**: Web application (Next.js 15 App Router with clean architecture)
+**Performance Goals**: Initial 30-day display <5s (up to 500 PRs), cached loads <1s, background historical loading <30s (up to 2000 PRs), UI interactions <200ms during background loading
+**Constraints**: GitHub API rate limits (5000 req/hr authenticated), IndexedDB storage limits (varies by browser, typically 50-100MB), Vercel 60-second timeout for Server Components, useTransition must not block user interactions
+**Scale/Scope**: Repositories with up to 2000 PRs over 1 year, 500 PRs in 30-day window, support for 3 metric types (PRs, deployments, commits), 6 date range presets + custom range
 
 ## Constitution Check
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-### I. Pragmatic Clean Architecture ✅
+### I. Pragmatic Clean Architecture ✅ PASS
 
-**Compliance**: PASS
+- **Directory Structure**: Feature will follow existing clean architecture
+  - `src/domain/`: New value objects (CachedDataEntry, DateRangeSelection)
+  - `src/application/`: New use cases for cache management and background loading
+  - `src/infrastructure/`: IndexedDB adapter implementing cache interfaces
+  - `src/presentation/`: Loading indicators, date range selector UI components
+  - `src/app/`: Server Components for initial fetch, Client Components for background loading
+- **Dependency Rules**: Domain remains pure (no external dependencies), application depends only on domain, infrastructure implements domain interfaces
+- **Next.js Conventions**: Server/Client Component boundary follows Next.js 15 best practices (Server for initial data, Client for interactivity)
 
-- Domain layer: `CachedDataEntry`, `LoadingState`, `DateRangeSelection` value objects
-- Application layer: `LoadInitialData`, `LoadHistoricalData`, `GetCachedData` use cases
-- Infrastructure layer: `IndexedDBAdapter`, `GraphQLBatchLoader` implementations
-- Presentation layer: Date range picker, loading indicators, chart updates
-- Follows existing Next.js App Router structure in `src/`
+### II. Practical SOLID Principles ✅ PASS
 
-### II. Practical SOLID Principles ✅
+- **SRP**: Separate responsibilities - cache storage (IndexedDB adapter), cache coordination (use case), UI loading states (presentation components)
+- **ISP**: Focused interfaces - ICacheRepository (get/set/evict), IBackgroundLoader (fetchHistorical), IDateRangeSelector (onChange)
+- **DIP**: Cache abstraction allows easy mocking for tests, can swap IndexedDB for in-memory fallback
 
-**Compliance**: PASS
+### III. Test Strategy ✅ PASS
 
-- **Single Responsibility**: Cache adapter only handles storage, loader only handles API calls, use cases orchestrate workflows
-- **Interface Segregation**: `ICacheRepository` (get/set/evict), `IDataLoader` (fetchByDateRange), `ILoadingStateManager` (track progress)
-- **Dependency Inversion**: Domain defines interfaces, infrastructure implements them
+- **Domain Tests (MANDATORY)**: 80%+ coverage for CachedDataEntry, DateRangeSelection value objects, cache eviction logic
+- **Test File Organization**: All tests in `__tests__` directories within same directory as code
+- **Application Tests (RECOMMENDED)**: Use case tests for background loading orchestration, cache miss/hit scenarios
+- **E2E Tests (CRITICAL PATHS)**:
+  1. Happy path: Initial 30-day load + background historical loading
+  2. Cache hit path: Instant display from IndexedDB
+  3. Error path: API rate limit → graceful degradation
+  4. Edge case: IndexedDB unavailable → fallback to in-memory cache
 
-### III. Test Strategy ✅
+### IV. Performance & Scalability ✅ PASS
 
-**Compliance**: PASS
+- **Large Repository Handling**: GitHub GraphQL queries limited to 30-day window initially, paginated batch fetching for historical data
+- **Async Processing**: useTransition for non-blocking background loading, React Suspense for initial skeleton UI
+- **Caching Strategy**: IndexedDB with LRU eviction, 1-hour staleness threshold with automatic background refresh
+- **Progress Indicators**: Structural skeleton UI (Suspense fallback), "Loading more data..." text (useTransition isPending)
 
-- Domain tests (MANDATORY): Value objects, date range calculations, cache key generation
-- Application tests (RECOMMENDED): Use cases with mocked dependencies
-- E2E tests (CRITICAL PATHS): Initial 30-day load, background loading, cache retrieval
-- Test files in `__tests__/` directories per constitution
+### V. Type Safety ✅ PASS
 
-### IV. Performance & Scalability ⚠️
+- **TypeScript Strict Mode**: Already enabled (`strict: true`, `noUncheckedIndexedAccess: true`)
+- **Runtime Validation**: Zod schemas for IndexedDB data validation, cache entry deserialization
+- **No `any` Types**: Use `unknown` for IndexedDB deserialization, proper type guards
 
-**Compliance**: PASS (with justification required)
+### VI. Security First ✅ PASS (No New Concerns)
 
-- ✅ Large repository handling: GraphQL pagination with date-based filtering
-- ✅ Async processing: Background loading without UI blocking
-- ⚠️ **DEVIATION**: Constitution states caching is "DEFERRED", but this feature REQUIRES IndexedDB caching as core functionality
+- **Token Protection**: Already handled by existing NextAuth infrastructure (server-side only)
+- **No New Security Surface**: IndexedDB contains only public GitHub data (PR metrics, deployments), no sensitive tokens
 
-**Justification**: Progressive loading cannot function without caching. The feature spec explicitly requires:
+### VII. Error Handling ✅ PASS
 
-1. Initial 30-day load followed by background historical load (requires cache to merge data)
-2. Instant subsequent visits (<1s) - impossible without persistent cache
-3. Date range changes <500ms - requires cached data availability
-4. Cache hit rate >70% - explicit success criterion
+- **Domain Layer**: Result types for cache operations (CacheResult<T>), DateRangeValidation result
+- **Application Layer**: Transform technical errors into user-friendly messages
+  - "GitHub API rate limit exceeded. Loading will resume in X minutes."
+  - "Browser storage unavailable. Using temporary memory cache."
+  - "Network interrupted. Retrying in background..."
+- **Presentation Layer**: Toast notifications for errors, inline "Loading failed - Retry" buttons
 
-Without caching, this feature degrades to current full-load behavior. Caching must be implemented now, not deferred.
+### VIII. Code Quality & Discipline ✅ PASS
 
-### V. Type Safety ✅
+- **Enum Pattern for String Literals**: DateRangePreset = { LAST_7_DAYS: "last_7_days", ... } as const
+- **Single Source of Truth**: No duplicate type definitions across cache, use case, and UI layers
+- **Test File Organization**: `src/domain/value-objects/__tests__/CachedDataEntry.test.ts`
+- **Build Configuration**: Existing `specs/**/contracts/**` exclusion applies
 
-**Compliance**: PASS
+### Gate Summary
 
-- TypeScript strict mode enabled
-- Zod schemas for cache validation (detect corrupted IndexedDB data)
-- Runtime validation at boundaries (cache reads/writes)
-
-### VI. Security First ✅
-
-**Compliance**: PASS
-
-- No changes to token handling (remains server-side in NextAuth)
-- No temporary file storage (IndexedDB is browser-managed)
-- No new security surface area introduced
-
-### VII. Error Handling ✅
-
-**Compliance**: PASS
-
-- Result types for cache operations (Success/Failure with error details)
-- User-friendly messages: "Loading recent data...", "Cache unavailable, using in-memory storage"
-- Graceful degradation: Falls back to in-memory cache if IndexedDB fails
-
-### VIII. Code Quality & Discipline ✅
-
-**Compliance**: PASS
-
-- No `any` types (use `unknown` for IndexedDB raw data)
-- String literal enum pattern for `LoadingStateType`, `CacheStatusType`, `DateRangePresetType`
-- Single source of truth: Define types once in domain layer, import elsewhere
-- ESLint + Prettier configured
-- Pre-commit hooks run tests
-
-### Gate Evaluation
-
-**RESULT**: ✅ PASS (with justified deviation)
-
-All constitutional principles satisfied. The caching deviation is justified because:
-
-1. Progressive loading is architecturally impossible without caching
-2. User requirements explicitly demand instant subsequent loads and offline capability
-3. This feature validates caching as valuable (previously deferred due to uncertainty)
-4. Implementation follows all other architectural principles (clean layers, SOLID, testing)
+**Status**: ✅ ALL GATES PASS - No constitutional violations
+**Complexity Justification**: Not required - feature aligns with all constitutional principles
+**Proceed to Phase 0**: YES
 
 ## Project Structure
 
 ### Documentation (this feature)
 
 ```text
-specs/[###-feature]/
+specs/007-progressive-loading/
 ├── plan.md              # This file (/speckit.plan command output)
 ├── research.md          # Phase 0 output (/speckit.plan command)
 ├── data-model.md        # Phase 1 output (/speckit.plan command)
 ├── quickstart.md        # Phase 1 output (/speckit.plan command)
 ├── contracts/           # Phase 1 output (/speckit.plan command)
+│   ├── cache-api.ts     # IndexedDB cache interface contracts
+│   └── loading-api.ts   # Background loading interface contracts
 └── tasks.md             # Phase 2 output (/speckit.tasks command - NOT created by /speckit.plan)
 ```
 
@@ -140,135 +113,89 @@ specs/[###-feature]/
 
 ```text
 src/
-├── domain/
+├── domain/                                  # Business logic (no external dependencies)
 │   ├── entities/
-│   │   ├── CachedDataEntry.ts          # Cache entry with metadata
-│   │   ├── LoadingState.ts             # Loading progress tracking
-│   │   └── DateRangeSelection.ts       # User's selected date range
-│   ├── value-objects/
-│   │   ├── CacheKey.ts                 # Repository + type + date range identifier
-│   │   ├── DateRange.ts                # Start/end date with validation
-│   │   └── LoadingProgress.ts          # Percentage, status, ETA
-│   └── repositories/
-│       ├── ICacheRepository.ts         # Interface for cache operations
-│       └── IDataLoader.ts              # Interface for data fetching
+│   │   └── __tests__/
+│   ├── interfaces/
+│   │   ├── ICacheRepository.ts             # NEW: Cache storage abstraction
+│   │   └── IBackgroundLoader.ts            # NEW: Background loading abstraction
+│   ├── services/
+│   │   ├── __tests__/
+│   │   └── CacheEvictionService.ts         # NEW: LRU eviction logic
+│   └── value-objects/
+│       ├── __tests__/
+│       │   ├── CachedDataEntry.test.ts     # NEW: Cache entry tests
+│       │   └── DateRangeSelection.test.ts  # NEW: Date range tests
+│       ├── CachedDataEntry.ts              # NEW: Cached data with metadata
+│       └── DateRangeSelection.ts           # NEW: Date range selection value object
 │
-├── application/
-│   ├── use-cases/
-│   │   ├── LoadInitialData.ts          # Load recent 30-day data
-│   │   ├── LoadHistoricalData.ts       # Background load beyond 30 days
-│   │   ├── GetCachedData.ts            # Retrieve from cache if available
-│   │   ├── RefreshData.ts              # Manual refresh bypassing cache
-│   │   └── ChangeDataRange.ts          # Handle user date range selection
-│   └── services/
-│       └── LoadingStateManager.ts      # Coordinate loading states
+├── application/                            # Use cases (depends only on domain)
+│   ├── dto/
+│   │   ├── CachedDataDTO.ts                # NEW: Data transfer object for cache
+│   │   └── LoadingStateDTO.ts              # NEW: Loading state DTO
+│   ├── mappers/
+│   │   └── CacheMapper.ts                  # NEW: Domain ↔ DTO mapping
+│   └── use-cases/
+│       ├── __tests__/
+│       │   ├── LoadInitialData.test.ts     # NEW: Initial load tests
+│       │   └── LoadHistoricalData.test.ts  # NEW: Background load tests
+│       ├── LoadInitialData.ts              # NEW: Server Component initial fetch
+│       └── LoadHistoricalData.ts           # NEW: Client Component background fetch
 │
-├── infrastructure/
-│   ├── cache/
-│   │   ├── IndexedDBAdapter.ts         # IndexedDB implementation
-│   │   ├── InMemoryCacheAdapter.ts     # Fallback for IndexedDB failures
-│   │   └── CacheEvictionStrategy.ts    # LRU eviction logic
-│   └── api/
-│       ├── GraphQLBatchLoader.ts       # Paginated GraphQL fetching
-│       └── DateRangeQueryBuilder.ts    # Build date-filtered queries
+├── infrastructure/                         # External dependencies
+│   ├── github/
+│   │   ├── __tests__/
+│   │   ├── graphql/
+│   │   │   ├── queries/
+│   │   │   │   └── getRangedPullRequests.ts  # NEW: Date-filtered GraphQL query
+│   │   │   └── mappers/
+│   │   └── GitHubGraphQLAdapter.ts         # MODIFIED: Add date range filtering
+│   └── storage/
+│       ├── __tests__/
+│       │   ├── IndexedDBAdapter.test.ts    # NEW: IndexedDB adapter tests
+│       │   └── InMemoryCacheAdapter.test.ts # NEW: Fallback cache tests
+│       ├── IndexedDBAdapter.ts             # NEW: IndexedDB implementation
+│       └── InMemoryCacheAdapter.ts         # NEW: Fallback in-memory cache
 │
-└── presentation/
-    ├── components/
-    │   ├── DateRangePicker.tsx         # Date range selector UI
-    │   ├── LoadingIndicator.tsx        # Initial/background/custom loading states
-    │   └── CacheStatusBadge.tsx        # Stale data indicator
-    └── hooks/
-        ├── useProgressiveLoading.ts    # Main hook orchestrating loading
-        ├── useCachedData.ts            # Cache retrieval hook
-        └── useBackgroundLoader.ts      # Background loading hook
+├── presentation/                           # UI components
+│   ├── components/
+│   │   ├── analysis/
+│   │   │   ├── PRAnalysisClient.tsx        # MODIFIED: Add background loading
+│   │   │   ├── DeploymentFrequencyClient.tsx # MODIFIED: Add background loading
+│   │   │   └── SkeletonChart.tsx           # NEW: Structural skeleton UI
+│   │   ├── shared/
+│   │   │   ├── DateRangeSelector.tsx       # NEW: Date range picker UI
+│   │   │   ├── LoadingIndicator.tsx        # NEW: "Loading more data..." indicator
+│   │   │   └── StaleDataBanner.tsx         # NEW: Staleness indicator
+│   │   └── layout/
+│   │       └── DashboardSkeleton.tsx       # NEW: Full dashboard skeleton
+│   └── hooks/
+│       ├── __tests__/
+│       │   ├── useBackgroundLoader.test.ts # NEW: Background loader hook tests
+│       │   └── useCache.test.ts            # NEW: Cache hook tests
+│       ├── useBackgroundLoader.ts          # NEW: useTransition + background fetch
+│       └── useCache.ts                     # NEW: IndexedDB cache hook
+│
+└── app/                                    # Next.js App Router
+    ├── [locale]/
+    │   └── dashboard/
+    │       ├── page.tsx                    # MODIFIED: Server Component with date params
+    │       └── loading.tsx                 # NEW: Suspense fallback skeleton
+    └── api/
+        └── cache/
+            └── invalidate/
+                └── route.ts                # NEW: Manual cache invalidation endpoint
+
+tests/
+└── e2e/
+    ├── progressive-loading.spec.ts         # NEW: E2E tests for progressive loading
+    └── cache-behavior.spec.ts              # NEW: E2E tests for cache hit/miss
 ```
 
-**Structure Decision**: Using existing Next.js Web application structure. This feature extends the current architecture with progressive loading capabilities. All new code follows the pragmatic clean architecture pattern already established in the codebase (domain/application/infrastructure/presentation layers).
+**Structure Decision**: Web application using Next.js 15 App Router with clean architecture. Server Components handle initial 30-day data fetch (passing props to Client Components), Client Components manage background historical data loading with useTransition. No global state management library (date range in URL params, component state with useState/useTransition). IndexedDB adapter in infrastructure layer implements domain cache interface, enabling easy testing and fallback to in-memory cache.
 
 ## Complexity Tracking
 
 > **Fill ONLY if Constitution Check has violations that must be justified**
 
-| Violation                           | Why Needed                                                                                                                                              | Simpler Alternative Rejected Because                                                                                                                                                                                                                                                            |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Implementing caching (was deferred) | Progressive loading requires persistent cache to merge initial + background data, enable instant subsequent visits, and support fast date range changes | In-memory only: Data lost on page refresh, negating user story benefits. Full reload on each visit: Defeats purpose of progressive loading (would remain at current 15s+ load time). Session storage: Insufficient capacity for large repositories (5-10MB limit vs IndexedDB's 50MB+ capacity) |
-
----
-
-## Post-Design Constitution Re-Evaluation
-
-**Date**: 2026-02-06
-**Status**: ✅ PASS (All principles maintained)
-
-After completing Phase 1 design (data model, contracts, quickstart), all constitutional principles remain satisfied:
-
-### Design Validation
-
-**I. Pragmatic Clean Architecture** ✅
-
-- Domain layer: Pure TypeScript value objects and entities (CacheKey, DateRange, LoadingProgress, CachedDataEntry, LoadingState)
-- Application layer: Use cases (LoadInitialData, LoadHistoricalData, GetCachedData) orchestrate workflows
-- Infrastructure layer: Adapters (IndexedDBAdapter, GraphQLBatchLoader, ZustandLoadingStore) implement domain interfaces
-- Presentation layer: React hooks (useProgressiveLoading) and components (DateRangePicker, LoadingIndicator)
-- **No violations**: Design follows existing `src/domain/`, `src/application/`, `src/infrastructure/`, `src/presentation/` structure
-
-**II. Practical SOLID Principles** ✅
-
-- **Single Responsibility**: Each entity/value object has one concern (CacheKey = identification, DateRange = temporal validity)
-- **Interface Segregation**: Three focused interfaces (ICacheRepository, IDataLoader, ILoadingStateManager) instead of one monolithic interface
-- **Dependency Inversion**: Domain defines interfaces, infrastructure implements them (IndexedDBAdapter implements ICacheRepository)
-
-**III. Test Strategy** ✅
-
-- Domain tests MANDATORY: All value objects (CacheKey, DateRange, LoadingProgress) and entities (CachedDataEntry, LoadingState) have `__tests__/` directories specified
-- Application tests RECOMMENDED: Use cases will use mocked dependencies
-- E2E tests for critical paths: Initial load, background loading, cache retrieval defined in quickstart.md
-- **Follows constitution requirement**: Tests in `__tests__/` directories alongside implementation files
-
-**IV. Performance & Scalability** ✅
-
-- Large repository handling: GraphQL pagination with date-based filtering (documented in research.md)
-- Async processing: Background loading with React 18 `startTransition` (non-blocking UI)
-- Caching deviation STILL JUSTIFIED: Design confirms caching is architecturally required for progressive loading
-
-**V. Type Safety** ✅
-
-- TypeScript strict mode: All contracts use strict types (readonly properties, discriminated unions)
-- Runtime validation: Zod schemas defined in data-model.md for CachedDataEntry validation
-- No `any` types: Contracts use `unknown` for serialized data with Zod validation
-
-**VI. Security First** ✅
-
-- Token handling: No changes (remains server-side in NextAuth)
-- No temporary directories: IndexedDB is browser-managed
-- No new security surface: Client-side caching doesn't expose GitHub tokens
-
-**VII. Error Handling** ✅
-
-- Result types: All use cases return `Result<T>` for failure handling
-- User-friendly messages: LoadingIndicator component shows contextual error messages
-- Graceful degradation: Cache failures fall back to API fetching (documented in quickstart.md)
-
-**VIII. Code Quality & Discipline** ✅
-
-- String literal enum pattern: All enums follow mandatory pattern (DataType, StreamType, LoadingStatus, LoadingType, CacheStatus, DateRangePreset)
-- Single source of truth: Types defined once in domain layer, imported elsewhere
-- No `any` types: Contracts use `unknown` for dynamic data with validation
-- ESLint + Prettier: Existing configuration applies
-
-### New Dependencies Validation
-
-**Added**: `idb` (1.19 KB), `zustand` (1 KB)
-**Total Bundle Impact**: ~2.2 KB gzipped
-**Justification**: Both dependencies are minimal, well-maintained, and solve specific problems:
-
-- `idb`: Simplifies IndexedDB API (20x smaller than Dexie.js alternative)
-- `zustand`: Provides fine-grained reactivity for concurrent loading states (smaller than TanStack Query alternative)
-
-### Conclusion
-
-**GATE STATUS**: ✅ PASS
-
-All constitutional principles satisfied after Phase 1 design. The caching deviation remains justified and is confirmed as architecturally necessary. No new violations introduced. Implementation may proceed to Phase 2 (Tasks generation via `/speckit.tasks`).
-
-**Next Command**: `/speckit.tasks` to generate tasks.md from plan.md and data-model.md
+No constitutional violations identified. All design decisions align with established principles.

@@ -10,11 +10,12 @@ This document defines all domain entities, value objects, and their relationship
 
 ## Domain Layer Overview
 
-The progressive loading feature introduces three primary domain concepts:
+The progressive loading feature introduces two primary domain concepts:
 
 1. **Caching Layer**: Persistent storage of GitHub data with TTL and metadata
-2. **Loading Orchestration**: Multi-stream concurrent loading with progress tracking
-3. **Date Range Management**: User-selected time periods with preset support
+2. **Date Range Management**: User-selected time periods with preset support
+
+**Note**: Loading state is managed at component-level using React useState/useTransition (no global state management library).
 
 ---
 
@@ -63,56 +64,6 @@ static create(
 ): Result<CachedDataEntry>
 
 static fromIndexedDB(raw: unknown): Result<CachedDataEntry>
-```
-
----
-
-### LoadingState
-
-**Purpose**: Tracks loading progress for a single data stream (PRs, deployments, or commits) during initial or background loading.
-
-**Properties**:
-
-| Property    | Type              | Validation | Description                                        |
-| ----------- | ----------------- | ---------- | -------------------------------------------------- |
-| streamType  | `StreamType`      | Required   | Data stream identifier (prs, deployments, commits) |
-| status      | `LoadingStatus`   | Required   | Current state (idle, loading, complete, error)     |
-| loadingType | `LoadingType`     | Required   | Loading phase (initial, background, custom)        |
-| progress    | `LoadingProgress` | Required   | Percentage, current batch, total batches           |
-| error       | `Error`           | Optional   | Error details if status is "error"                 |
-| startedAt   | `Date`            | Optional   | When loading started                               |
-| completedAt | `Date`            | Optional   | When loading completed                             |
-
-**Validation Rules**:
-
-- `progress.percentage` must be 0-100
-- `startedAt` must be before `completedAt` (if both present)
-- `error` required when `status === "error"`
-- `completedAt` required when `status === "complete"`
-
-**Invariants**:
-
-- Status transitions: `idle → loading → (complete | error)`
-- Cannot transition from `complete` or `error` back to `loading` (must create new instance)
-- `progress` updates only when `status === "loading"`
-
-**Factory Methods**:
-
-```typescript
-static idle(streamType: StreamType): LoadingState
-
-static startInitial(streamType: StreamType): LoadingState
-
-static startBackground(streamType: StreamType): LoadingState
-
-static updateProgress(
-  current: LoadingState,
-  newProgress: LoadingProgress
-): Result<LoadingState>
-
-static complete(current: LoadingState): Result<LoadingState>
-
-static fail(current: LoadingState, error: Error): Result<LoadingState>
 ```
 
 ---
@@ -241,41 +192,6 @@ split(chunkDays: number): DateRange[]
 
 ---
 
-### LoadingProgress
-
-**Purpose**: Tracks percentage, current batch, and ETA for a loading operation.
-
-**Properties**:
-
-| Property               | Type     | Validation    | Description                      |
-| ---------------------- | -------- | ------------- | -------------------------------- |
-| percentage             | `number` | 0-100         | Completion percentage            |
-| currentBatch           | `number` | ≥ 0           | Current batch number (0-indexed) |
-| totalBatches           | `number` | > 0           | Total number of batches          |
-| estimatedTimeRemaining | `number` | Optional, ≥ 0 | Milliseconds until completion    |
-
-**Validation Rules**:
-
-- `percentage = (currentBatch / totalBatches) * 100`
-- `currentBatch` must be ≤ `totalBatches`
-- `estimatedTimeRemaining` computed from average batch time
-
-**Factory Methods**:
-
-```typescript
-static create(
-  currentBatch: number,
-  totalBatches: number
-): Result<LoadingProgress>
-
-static withETA(
-  current: LoadingProgress,
-  averageBatchTime: number
-): LoadingProgress
-```
-
----
-
 ## Enums (String Literal Type Pattern)
 
 ### DataType
@@ -289,52 +205,6 @@ export const DataType = {
   COMMITS: "commits",
 } as const;
 export type DataType = (typeof DataType)[keyof typeof DataType];
-```
-
----
-
-### StreamType
-
-**Purpose**: Identifies concurrent data streams during loading.
-
-```typescript
-export const StreamType = {
-  PRS: "prs",
-  DEPLOYMENTS: "deployments",
-  COMMITS: "commits",
-} as const;
-export type StreamType = (typeof StreamType)[keyof typeof StreamType];
-```
-
----
-
-### LoadingStatus
-
-**Purpose**: Current state of a loading operation.
-
-```typescript
-export const LoadingStatus = {
-  IDLE: "idle",
-  LOADING: "loading",
-  COMPLETE: "complete",
-  ERROR: "error",
-} as const;
-export type LoadingStatus = (typeof LoadingStatus)[keyof typeof LoadingStatus];
-```
-
----
-
-### LoadingType
-
-**Purpose**: Phase of progressive loading.
-
-```typescript
-export const LoadingType = {
-  INITIAL: "initial", // Recent 30-day data
-  BACKGROUND: "background", // Historical data (31-365 days)
-  CUSTOM: "custom", // User-selected date range
-} as const;
-export type LoadingType = (typeof LoadingType)[keyof typeof LoadingType];
 ```
 
 ---
@@ -470,53 +340,6 @@ export interface IDataLoader {
 
 ---
 
-### ILoadingStateManager
-
-**Purpose**: Abstraction for coordinating concurrent loading states (Zustand in infrastructure layer).
-
-```typescript
-export interface ILoadingStateManager {
-  /**
-   * Get current loading state for a stream
-   */
-  getState(streamType: StreamType): LoadingState;
-
-  /**
-   * Start loading for a stream
-   */
-  startLoading(streamType: StreamType, loadingType: LoadingType): void;
-
-  /**
-   * Update progress for a stream
-   */
-  updateProgress(streamType: StreamType, progress: LoadingProgress): void;
-
-  /**
-   * Mark stream as complete
-   */
-  completeLoading(streamType: StreamType): void;
-
-  /**
-   * Mark stream as failed
-   */
-  failLoading(streamType: StreamType, error: Error): void;
-
-  /**
-   * Check if any stream is loading
-   */
-  isAnyStreamLoading(): boolean;
-
-  /**
-   * Subscribe to state changes
-   */
-  subscribe(
-    callback: (states: Record<StreamType, LoadingState>) => void,
-  ): () => void;
-}
-```
-
----
-
 ## Entity Relationships
 
 ```mermaid
@@ -529,17 +352,11 @@ graph TD
     CachedDataEntry -->|covers| DateRange
     CachedDataEntry -->|stores| DataType
 
-    LoadingState -->|tracks| StreamType
-    LoadingState -->|has| LoadingStatus
-    LoadingState -->|has| LoadingType
-    LoadingState -->|has| LoadingProgress
-
     CacheKey -->|composes| DataType
     CacheKey -->|composes| DateRange
 
     ICacheRepository -.implements.-> IndexedDBAdapter
-    IDataLoader -.implements.-> GraphQLBatchLoader
-    ILoadingStateManager -.implements.-> ZustandLoadingStore
+    IDataLoader -.implements.-> GitHubGraphQLAdapter
 ```
 
 ---
@@ -569,16 +386,16 @@ Display Data to User
 ```
 Initial Load Complete
   ↓
-ILoadingStateManager.startLoading(PRS, BACKGROUND)
-  ↓
+Component calls startTransition(() => loadHistorical())
+  ↓ (Component-level state: isPending = true)
 For each chunk (31-120, 121-210, 211-365 days):
   ├─ Check abortSignal.aborted → break if true
   ├─ IDataLoader.fetchPRs(repo, chunkRange, abortSignal)
   ├─ ICacheRepository.set(CachedDataEntry.create(...))
-  ├─ ILoadingStateManager.updateProgress(...)
+  ├─ Component updates state with new data chunk
   └─ Continue to next chunk
   ↓
-ILoadingStateManager.completeLoading(PRS)
+Component state: isPending = false, data updated
 ```
 
 ### 3. Stale-While-Revalidate
@@ -588,13 +405,17 @@ User Visits Dashboard (cached data exists but stale)
   ↓
 ICacheRepository.get(key) → HIT_STALE
   ↓
-Display Cached Data (instant feedback)
+Display Cached Data (instant feedback with staleness indicator)
   ↓
+Component calls startTransition(() => revalidate())
+  ↓ (Component-level state: isPending = true)
 (Background) IDataLoader.fetchPRs(repo, dateRange, abortSignal)
   ↓
 (Background) ICacheRepository.set(updated entry)
   ↓
-(Background) Notify UI to update (via Zustand subscription)
+(Background) Component updates state with fresh data
+  ↓
+Component state: isPending = false, staleness indicator removed
 ```
 
 ---
@@ -661,8 +482,8 @@ export const CachedDataEntrySchema = z.object({
 1. **Create contracts/** directory with TypeScript interface definitions
 2. **Implement domain layer** entities and value objects in `src/domain/`
 3. **Create application layer** use cases: LoadInitialData, LoadHistoricalData, GetCachedData
-4. **Implement infrastructure layer** adapters: IndexedDBAdapter, GraphQLBatchLoader, ZustandLoadingStore
-5. **Build presentation layer** hooks: useProgressiveLoading, useCachedData, useBackgroundLoader
+4. **Implement infrastructure layer** adapters: IndexedDBAdapter, InMemoryCacheAdapter (fallback)
+5. **Build presentation layer** hooks: useProgressiveLoading (useState + useTransition), useCache
 
 **Document Status**: Complete
 **Generated**: 2026-02-06

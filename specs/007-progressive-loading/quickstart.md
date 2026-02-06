@@ -21,7 +21,7 @@ This guide provides a step-by-step implementation path for the progressive loadi
 2. **Install Dependencies**:
 
 ```bash
-pnpm add idb zustand
+pnpm add idb  # IndexedDB wrapper only (no Zustand - using URL params + component state)
 pnpm add -D @types/fake-indexeddb fake-indexeddb
 ```
 
@@ -303,73 +303,69 @@ export class IndexedDBAdapter implements ICacheRepository {
 - Mock IndexedDB environment
 - Test LRU eviction logic
 
-#### Step 2.2: Zustand Loading Store
+#### Step 2.2: In-Memory Cache Adapter (Fallback)
 
-Create `src/infrastructure/stores/useProgressiveLoadingStore.ts`:
+Create `src/infrastructure/cache/InMemoryCacheAdapter.ts`:
 
 ```typescript
-import { create } from "zustand";
-import { devtools } from "zustand/middleware";
-import type { ILoadingStateManager } from "@/domain/repositories/ILoadingStateManager";
+import type { ICacheRepository } from "@/domain/repositories/ICacheRepository";
+import { CachedDataEntry } from "@/domain/entities/CachedDataEntry";
 
-interface LoadingStore {
-  streams: Record<StreamType, LoadingState>;
-  startLoading: (streamType: StreamType, loadingType: LoadingType) => void;
-  updateProgress: (streamType: StreamType, progress: LoadingProgress) => void;
-  completeLoading: (streamType: StreamType) => void;
-  failLoading: (streamType: StreamType, error: Error) => void;
-}
+/**
+ * Fallback cache adapter when IndexedDB is unavailable
+ * (Safari private mode, storage quota exceeded, etc.)
+ */
+export class InMemoryCacheAdapter implements ICacheRepository {
+  private cache = new Map<string, CachedDataEntry>();
 
-export const useProgressiveLoadingStore = create<LoadingStore>()(
-  devtools(
-    (set) => ({
-      streams: {
-        [StreamType.PRS]: LoadingState.idle(StreamType.PRS),
-        [StreamType.DEPLOYMENTS]: LoadingState.idle(StreamType.DEPLOYMENTS),
-        [StreamType.COMMITS]: LoadingState.idle(StreamType.COMMITS),
-      },
-      startLoading: (streamType, loadingType) =>
-        set((state) => ({
-          streams: {
-            ...state.streams,
-            [streamType]: LoadingState.startLoading(streamType, loadingType),
-          },
-        })),
-      updateProgress: (streamType, progress) =>
-        set((state) => {
-          const currentState = state.streams[streamType];
-          const updatedResult = LoadingState.updateProgress(
-            currentState,
-            progress,
-          );
-          if (!updatedResult.success) return state;
+  async get(key: CacheKey): Promise<CachedDataEntry | null> {
+    const entry = this.cache.get(key.value);
+    if (!entry) return null;
 
-          return {
-            streams: {
-              ...state.streams,
-              [streamType]: updatedResult.value,
-            },
-          };
-        }),
-      // ... other actions
-    }),
-    { name: "ProgressiveLoadingStore" },
-  ),
-);
+    // TTL check
+    if (entry.isStale()) {
+      this.cache.delete(key.value);
+      return null;
+    }
 
-// Adapter to implement ILoadingStateManager
-export class ZustandLoadingManager implements ILoadingStateManager {
-  getState(streamType: StreamType): LoadingState {
-    return useProgressiveLoadingStore.getState().streams[streamType];
+    // Touch for LRU
+    const touched = entry.touch();
+    this.cache.set(key.value, touched);
+
+    return touched;
   }
 
-  startLoading(streamType: StreamType, loadingType: LoadingType): void {
-    useProgressiveLoadingStore.getState().startLoading(streamType, loadingType);
+  async set(entry: CachedDataEntry): Promise<void> {
+    this.cache.set(entry.key.value, entry);
+
+    // Check memory size and evict if needed
+    await this.evictIfNeeded();
+  }
+
+  private async evictIfNeeded(): Promise<void> {
+    const MAX_SIZE_MB = 50;
+    const allEntries = Array.from(this.cache.values());
+    const totalSize = allEntries.reduce((sum, e) => sum + e.size, 0);
+
+    if (totalSize > MAX_SIZE_MB * 1024 * 1024) {
+      // Sort by lastAccessedAt (LRU)
+      const sorted = allEntries.sort(
+        (a, b) => a.lastAccessedAt.getTime() - b.lastAccessedAt.getTime(),
+      );
+
+      // Remove oldest 20%
+      const toRemove = Math.ceil(allEntries.length * 0.2);
+      for (let i = 0; i < toRemove; i++) {
+        this.cache.delete(sorted[i].key.value);
+      }
+    }
   }
 
   // ... other methods
 }
 ```
+
+**Note**: Loading state is managed at component level using React useState/useTransition (no global state library per spec clarifications)
 
 #### Step 2.3: GraphQL Batch Loader
 
@@ -428,15 +424,14 @@ export class LoadInitialData {
   constructor(
     private cache: ICacheRepository,
     private loader: IDataLoader,
-    private loadingManager: ILoadingStateManager,
   ) {}
 
   async execute(
     repositoryId: string,
+    dateRange: DateRange,
     abortSignal?: AbortSignal,
   ): Promise<Result<InitialData>> {
     // 1. Check cache
-    const dateRange = DateRange.last30Days();
     const cacheKey = CacheKey.create(repositoryId, DataType.PRS, dateRange);
 
     if (!cacheKey.success) {
@@ -448,11 +443,8 @@ export class LoadInitialData {
       return Result.ok({ prs: cached.data as PullRequest[], fromCache: true });
     }
 
-    // 2. Start loading
-    this.loadingManager.startLoading(StreamType.PRS, LoadingType.INITIAL);
-
     try {
-      // 3. Fetch from API (parallel for all 3 streams)
+      // 2. Fetch from API (parallel for all 3 streams)
       const [prsResult, deploymentsResult, commitsResult] = await Promise.all([
         this.loader.fetchPRs(repositoryId, dateRange, abortSignal),
         this.loader.fetchDeployments(repositoryId, dateRange, abortSignal),
@@ -460,14 +452,10 @@ export class LoadInitialData {
       ]);
 
       if (!prsResult.success) {
-        this.loadingManager.failLoading(
-          StreamType.PRS,
-          new Error(prsResult.error),
-        );
         return Result.fail(prsResult.error);
       }
 
-      // 4. Cache the results
+      // 3. Cache the results
       const entryResult = CachedDataEntry.create(
         repositoryId,
         DataType.PRS,
@@ -480,9 +468,6 @@ export class LoadInitialData {
         await this.cache.set(entryResult.value);
       }
 
-      // 5. Complete loading
-      this.loadingManager.completeLoading(StreamType.PRS);
-
       return Result.ok({
         prs: prsResult.value,
         deployments: deploymentsResult.success ? deploymentsResult.value : [],
@@ -490,7 +475,6 @@ export class LoadInitialData {
         fromCache: false,
       });
     } catch (error) {
-      this.loadingManager.failLoading(StreamType.PRS, error as Error);
       return Result.fail(error.message);
     }
   }
@@ -529,63 +513,67 @@ import { useEffect, useState, useRef, useTransition } from "react";
 import { LoadInitialData } from "@/application/use-cases/LoadInitialData";
 import { LoadHistoricalData } from "@/application/use-cases/LoadHistoricalData";
 
-export function useProgressiveLoading(repositoryId: string) {
-  const [initialData, setInitialData] = useState<InitialData | null>(null);
-  const [historicalData, setHistoricalData] = useState<HistoricalData[]>([]);
+export function useProgressiveLoading(
+  repositoryId: string,
+  initialData: InitialData,
+  dateRange: DateRange,
+) {
+  const [data, setData] = useState(initialData);
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef(new AbortController());
-
-  // Subscribe to loading states (from Zustand)
-  const loadingStates = useProgressiveLoadingStore((state) => state.streams);
 
   useEffect(() => {
     const abortController = abortControllerRef.current;
 
-    async function loadData() {
-      // Phase 1: Load initial 30 days
-      const loadInitial = new LoadInitialData(cache, loader, loadingManager);
-      const initialResult = await loadInitial.execute(
-        repositoryId,
-        abortController.signal,
-      );
-
-      if (initialResult.success) {
-        setInitialData(initialResult.value);
-
-        // Phase 2: Start background historical load
-        const loadHistorical = new LoadHistoricalData(
-          cache,
-          loader,
-          loadingManager,
-        );
+    // Background historical load (component-level state management)
+    startTransition(async () => {
+      try {
+        const loadHistorical = new LoadHistoricalData(cache, loader);
         await loadHistorical.execute(
           repositoryId,
+          dateRange,
           (batch) => {
             // Non-blocking update with startTransition
-            startTransition(() => {
-              setHistoricalData((prev) => [...prev, batch]);
-            });
+            setData((prev) => mergeBatchData(prev, batch));
           },
           abortController.signal,
         );
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          setError(err.message);
+        }
       }
-    }
-
-    loadData();
+    });
 
     return () => abortController.abort();
-  }, [repositoryId]);
+  }, [repositoryId, dateRange]);
 
   return {
-    initialData,
-    historicalData,
-    loadingStates,
-    isPending,
-    isBackgroundLoading:
-      loadingStates[StreamType.PRS].status === LoadingStatus.LOADING,
+    data,
+    isPending, // useTransition's isPending flag
+    error,
+  };
+}
+
+function mergeBatchData(
+  prev: InitialData,
+  batch: HistoricalBatch,
+): InitialData {
+  return {
+    prs: [...prev.prs, ...batch.prs],
+    deployments: [...prev.deployments, ...batch.deployments],
+    commits: [...prev.commits, ...batch.commits],
   };
 }
 ```
+
+**Key Differences from Global State**:
+
+- No Zustand - component-level useState/useTransition
+- No loading state manager - useTransition's isPending flag
+- Each component independently manages its own background loading
+- Date range passed as prop from URL params (Server Component reads them)
 
 #### Step 4.2: DateRangePicker Component
 
@@ -707,7 +695,7 @@ describe("DateRange", () => {
 
 ## Configuration Checklist
 
-- [ ] Add `idb` and `zustand` to dependencies
+- [ ] Add `idb` to dependencies (no Zustand - using URL params + component state)
 - [ ] Configure `specs/**/contracts/**` exclusion in `tsconfig.json`
 - [ ] Configure `specs/**/contracts/**` exclusion in `eslint.config.mjs`
 - [ ] Verify strict TypeScript mode enabled
@@ -720,9 +708,9 @@ describe("DateRange", () => {
 
 1. **IndexedDB in SSR**: Always initialize in client components with `"use client"` directive
 2. **AbortController reuse**: Create new instance for each operation (single-use only)
-3. **Zustand re-renders**: Use selectors to prevent unnecessary re-renders
+3. **Component re-renders**: Use React.memo and careful dependency arrays in useEffect to prevent unnecessary re-renders
 4. **Date serialization**: Store dates as ISO strings in IndexedDB, deserialize on read
-5. **Race conditions**: Use `isRevalidating` flag to prevent duplicate background fetches
+5. **Race conditions**: Check abortSignal.aborted before setState to prevent updates after unmount
 
 ---
 
