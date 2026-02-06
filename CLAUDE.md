@@ -4,6 +4,8 @@ Auto-generated from all feature plans. Last updated: 2026-02-06
 
 ## Active Technologies
 
+- IndexedDB for client-side caching (repository data, PRs, deployments, commits with date ranges and timestamps) (007-progressive-loading)
+
 - TypeScript 5.3, Next.js 15 (App Router) + @octokit/graphql 9.0.3
 - React 18.3, Recharts 3.5.0
 - NextAuth v5 beta.30 (session data in encrypted JWT, no database)
@@ -126,6 +128,8 @@ if (insight.type === "optimal") { ... } // Don't do this
 
 ## Recent Changes
 
+- 007-progressive-loading: Added TypeScript 5.3, Next.js 15 (App Router)
+
 - 2026-02-06: Added DORA Metrics - Deployment Frequency feature (006-dora-deployment-frequency)
   - First DORA metric implementation: Deployment Frequency dashboard with weekly/monthly aggregations
   - Retrieves deployment events from GitHub Releases, Deployments, and Tags via GraphQL API
@@ -148,7 +152,6 @@ if (insight.type === "optimal") { ... } // Don't do this
   - New domain value objects: WeeklyAggregate, ChangeTrend, OutlierWeek
   - Reuses existing GraphQL PR data (no additional API calls)
   - Performance: Tab switching <100ms, supports up to 52 weeks of data
-- 2026-01-04: Completed migration from @octokit/rest to @octokit/graphql
   - Replaced all REST API calls with GraphQL queries (validateAccess, getRateLimitStatus, user authentication)
   - Simplified authentication with direct `graphql()` function usage (no Octokit class instantiation)
   - Removed @octokit/rest dependency from package.json
