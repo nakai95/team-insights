@@ -35,31 +35,31 @@
 
 ### Domain Layer - Value Objects
 
-- [ ] T005 [P] Create DataType enum using string literal pattern in src/domain/types/DataType.ts
-- [ ] T006 [P] Create CacheStatus enum in src/domain/types/CacheStatus.ts
-- [ ] T007 [P] Create DateRangePreset enum in src/domain/types/DateRangePreset.ts
-- [ ] T008 [P] Create DateRange value object with factory methods (last7Days, last30Days, etc.) in src/domain/value-objects/DateRange.ts
-- [ ] T009 [P] Create CacheKey value object with parsing and validation in src/domain/value-objects/CacheKey.ts
+- [x] T005 [P] Create DataType enum using string literal pattern in src/domain/types/DataType.ts
+- [x] T006 [P] Create CacheStatus enum in src/domain/types/CacheStatus.ts
+- [x] T007 [P] Create DateRangePreset enum in src/domain/types/DateRangePreset.ts
+- [x] T008 [P] Create DateRange value object with factory methods (last7Days, last30Days, etc.) in src/domain/value-objects/DateRange.ts
+- [x] T009 [P] Create CacheKey value object with parsing and validation in src/domain/value-objects/CacheKey.ts
 
 ### Domain Layer - Entities
 
-- [ ] T010 Create CachedDataEntry entity with staleness detection and touch() method in src/domain/entities/CachedDataEntry.ts
-- [ ] T011 [P] Create DateRangeSelection entity with cache status tracking in src/domain/entities/DateRangeSelection.ts
+- [x] T010 Create CachedDataEntry entity with staleness detection and touch() method in src/domain/entities/CachedDataEntry.ts
+- [x] T011 [P] Create DateRangeSelection entity with cache status tracking in src/domain/entities/DateRangeSelection.ts
 
 ### Domain Layer - Interfaces
 
-- [ ] T012 [P] Create ICacheRepository interface in src/domain/interfaces/ICacheRepository.ts
-- [ ] T013 [P] Create IDataLoader interface with date range filtering in src/domain/interfaces/IDataLoader.ts
+- [x] T012 [P] Create ICacheRepository interface in src/domain/interfaces/ICacheRepository.ts
+- [x] T013 [P] Create IDataLoader interface with date range filtering in src/domain/interfaces/IDataLoader.ts
 
 ### Domain Layer - Services
 
-- [ ] T014 Create CacheEvictionService for LRU eviction logic in src/domain/services/CacheEvictionService.ts
+- [x] T014 Create CacheEvictionService for LRU eviction logic in src/domain/services/CacheEvictionService.ts
 
 ### Infrastructure Layer - Cache Adapters
 
-- [ ] T015 Create IndexedDBAdapter implementing ICacheRepository with idb library in src/infrastructure/storage/IndexedDBAdapter.ts
-- [ ] T016 [P] Create InMemoryCacheAdapter fallback implementation in src/infrastructure/storage/InMemoryCacheAdapter.ts
-- [ ] T017 Create cache initialization function with fallback detection in src/infrastructure/storage/initializeCache.ts
+- [x] T015 Create IndexedDBAdapter implementing ICacheRepository with idb library in src/infrastructure/storage/IndexedDBAdapter.ts
+- [x] T016 [P] Create InMemoryCacheAdapter fallback implementation in src/infrastructure/storage/InMemoryCacheAdapter.ts
+- [x] T017 Create cache initialization function with fallback detection in src/infrastructure/storage/initializeCache.ts
 
 ### Infrastructure Layer - GitHub API
 
