@@ -6,8 +6,10 @@ import { FetchGitData, FetchGitDataInput } from "./FetchGitData";
 import { CalculateMetrics, CalculateMetricsInput } from "./CalculateMetrics";
 import { CalculateThroughputMetrics } from "./CalculateThroughputMetrics";
 import { CalculateChangesTimeseries } from "./CalculateChangesTimeseries";
+import { CalculateDeploymentFrequency } from "./CalculateDeploymentFrequency";
 import { ThroughputResult } from "@/application/dto/ThroughputResult";
 import { TimeseriesResult } from "@/application/dto/TimeseriesResult";
+import { DeploymentFrequencyResult } from "@/application/dto/DeploymentFrequencyResult";
 import { logger } from "@/lib/utils/logger";
 import { getErrorMessage } from "@/lib/utils/errorUtils";
 import { v4 as uuidv4 } from "uuid";
@@ -30,6 +32,7 @@ export interface AnalyzeRepositoryOutput {
   analysisTimeMs: number;
   throughput?: ThroughputResult; // Optional PR throughput analysis
   timeseries?: TimeseriesResult; // Optional PR changes timeseries analysis
+  deploymentFrequency?: DeploymentFrequencyResult; // Optional deployment frequency analysis
 }
 
 /**
@@ -42,6 +45,7 @@ export class AnalyzeRepository {
     private readonly calculateMetrics: CalculateMetrics,
     private readonly calculateThroughputMetrics: CalculateThroughputMetrics,
     private readonly calculateChangesTimeseries: CalculateChangesTimeseries,
+    private readonly calculateDeploymentFrequency: CalculateDeploymentFrequency,
   ) {}
 
   async execute(
@@ -159,6 +163,28 @@ export class AnalyzeRepository {
         });
       }
 
+      // Step 7.6: Calculate deployment frequency
+      let deploymentFrequency: DeploymentFrequencyResult | undefined;
+      const deploymentFrequencyResult =
+        await this.calculateDeploymentFrequency.execute(
+          urlResult.value.owner,
+          urlResult.value.repo,
+          dateRange.start,
+        );
+
+      if (deploymentFrequencyResult.ok) {
+        deploymentFrequency = deploymentFrequencyResult.value;
+        logger.info("Deployment frequency calculated successfully", {
+          totalDeployments: deploymentFrequency.totalDeployments,
+          doraLevel: deploymentFrequency.doraLevel.level,
+        });
+      } else {
+        // Log the error but don't fail the entire analysis
+        logger.warn("Failed to calculate deployment frequency", {
+          error: deploymentFrequencyResult.error.message,
+        });
+      }
+
       // Step 8: Complete analysis
       const completeResult = analysis.complete(contributors);
       if (!completeResult.ok) {
@@ -181,6 +207,7 @@ export class AnalyzeRepository {
         analysisTimeMs,
         throughput,
         timeseries,
+        deploymentFrequency,
       });
     } catch (error) {
       logger.error("AnalyzeRepository use case failed", {

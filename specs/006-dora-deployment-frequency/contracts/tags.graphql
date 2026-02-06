@@ -1,0 +1,150 @@
+# Git Tags GraphQL Query Contract
+# Purpose: Fetch git tags for deployment frequency analysis
+# Source: https://docs.github.com/en/graphql/reference/objects#ref
+
+query GetTags($owner: String!, $repo: String!, $first: Int!, $after: String) {
+  repository(owner: $owner, name: $repo) {
+    refs(
+      refPrefix: "refs/tags/"
+      first: $first
+      after: $after
+      orderBy: { field: TAG_COMMIT_DATE, direction: DESC }
+    ) {
+      nodes {
+        # Tag name (without "refs/tags/" prefix, e.g., "v1.0.0")
+        name
+
+        # The Git object the tag points to (Tag or Commit)
+        target {
+          # Annotated tag (created with `git tag -a`)
+          ... on Tag {
+            name
+            tagger {
+              name
+              email
+              # When the tag was created (ISO 8601 timestamp)
+              # PRIMARY TIMESTAMP for annotated tags
+              date
+            }
+            target {
+              ... on Commit {
+                oid
+                committedDate
+                message
+              }
+            }
+          }
+
+          # Lightweight tag (created with `git tag`)
+          ... on Commit {
+            oid
+            # When the commit was made (ISO 8601 timestamp)
+            # PRIMARY TIMESTAMP for lightweight tags
+            committedDate
+            message
+          }
+        }
+      }
+
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+
+      totalCount
+    }
+  }
+
+  # Rate limit information for tracking API usage
+  rateLimit {
+    limit
+    cost
+    remaining
+    resetAt
+  }
+}
+
+# Expected Response Structure (Annotated Tag)
+# {
+#   "repository": {
+#     "refs": {
+#       "nodes": [
+#         {
+#           "name": "v1.0.0",
+#           "target": {
+#             "__typename": "Tag",
+#             "name": "v1.0.0",
+#             "tagger": {
+#               "name": "Jane Developer",
+#               "email": "jane@example.com",
+#               "date": "2024-01-15T10:00:00Z"
+#             },
+#             "target": {
+#               "oid": "abc123def456",
+#               "committedDate": "2024-01-15T09:00:00Z",
+#               "message": "Release v1.0.0"
+#             }
+#           }
+#         }
+#       ],
+#       "pageInfo": {
+#         "hasNextPage": true,
+#         "endCursor": "Y3Vyc29yOnYyOpK5MjAyNC0wMS0xNVQxMDowMDowMC0wODowMM4AXyZo"
+#       },
+#       "totalCount": 89
+#     }
+#   },
+#   "rateLimit": {
+#     "limit": 5000,
+#     "cost": 2,
+#     "remaining": 4998,
+#     "resetAt": "2024-01-15T11:00:00Z"
+#   }
+# }
+
+# Expected Response Structure (Lightweight Tag)
+# {
+#   "repository": {
+#     "refs": {
+#       "nodes": [
+#         {
+#           "name": "v1.0.1",
+#           "target": {
+#             "__typename": "Commit",
+#             "oid": "def456abc789",
+#             "committedDate": "2024-01-16T14:30:00Z",
+#             "message": "Hotfix for issue #123"
+#           }
+#         }
+#       ],
+#       "pageInfo": {
+#         "hasNextPage": false,
+#         "endCursor": null
+#       },
+#       "totalCount": 89
+#     }
+#   },
+#   "rateLimit": {
+#     "limit": 5000,
+#     "cost": 2,
+#     "remaining": 4996,
+#     "resetAt": "2024-01-15T11:00:00Z"
+#   }
+# }
+
+# Usage Notes:
+# - Handle both annotated and lightweight tags by checking __typename
+# - For annotated tags: Use tagger.date (when tag was created)
+# - For lightweight tags: Use target.committedDate (when commit was made)
+# - Filter tags by semantic versioning pattern: /^v?\d+\.\d+\.\d+(-.*)?$/
+# - Exclude pre-release tags (alpha, beta, rc, dev, test)
+# - Use name field for deduplication with releases/deployments
+# - Fetch 100 tags per page (maximum allowed)
+# - Rate cost: ~1-2 GraphQL points per query
+# - Ordering by TAG_COMMIT_DATE ensures chronological order
+
+# Semantic Versioning Examples (INCLUDE):
+# - v1.0.0, 1.0.0, v2.1.3, release-1.0.0
+
+# Pre-release Tags (OPTIONALLY EXCLUDE):
+# - v1.0.0-alpha, v1.0.0-beta, v1.0.0-rc1, v1.0.0-dev

@@ -51,6 +51,46 @@ export interface RateLimitInfo {
 }
 
 /**
+ * GitHub Release data structure
+ */
+export interface Release {
+  name: string | null;
+  tagName: string;
+  createdAt: string;
+  publishedAt: string | null;
+  isPrerelease: boolean;
+  isDraft: boolean;
+}
+
+/**
+ * GitHub Deployment data structure
+ */
+export interface Deployment {
+  id: string;
+  createdAt: string;
+  environment: string | null;
+  state: string;
+  ref: string | null;
+  latestStatus: {
+    state: string;
+    createdAt: string;
+  } | null;
+}
+
+/**
+ * Git Tag data structure
+ */
+export interface Tag {
+  name: string;
+  target: {
+    committedDate?: string;
+    tagger?: {
+      date: string;
+    } | null;
+  };
+}
+
+/**
  * Unified GitHub repository interface
  *
  * This interface provides all operations needed to analyze a GitHub repository:
@@ -116,4 +156,43 @@ export interface IGitHubRepository {
    * @returns Result with rate limit information
    */
   getRateLimitStatus(): Promise<Result<RateLimitInfo>>;
+
+  /**
+   * Get releases from repository
+   * @param owner Repository owner
+   * @param repo Repository name
+   * @param sinceDate Optional date filter
+   * @returns Result with array of releases
+   */
+  getReleases(
+    owner: string,
+    repo: string,
+    sinceDate?: Date,
+  ): Promise<Result<Release[]>>;
+
+  /**
+   * Get deployments from repository
+   * @param owner Repository owner
+   * @param repo Repository name
+   * @param sinceDate Optional date filter
+   * @returns Result with array of deployments
+   */
+  getDeployments(
+    owner: string,
+    repo: string,
+    sinceDate?: Date,
+  ): Promise<Result<Deployment[]>>;
+
+  /**
+   * Get tags from repository
+   * @param owner Repository owner
+   * @param repo Repository name
+   * @param sinceDate Optional date filter
+   * @returns Result with array of tags
+   */
+  getTags(
+    owner: string,
+    repo: string,
+    sinceDate?: Date,
+  ): Promise<Result<Tag[]>>;
 }

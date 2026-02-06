@@ -1,0 +1,87 @@
+# GitHub Releases GraphQL Query Contract
+# Purpose: Fetch GitHub Releases for deployment frequency analysis
+# Source: https://docs.github.com/en/graphql/reference/objects#release
+
+query GetReleases($owner: String!, $repo: String!, $first: Int!, $after: String) {
+  repository(owner: $owner, name: $repo) {
+    releases(
+      first: $first
+      after: $after
+      orderBy: { field: CREATED_AT, direction: DESC }
+    ) {
+      nodes {
+        # Human-readable release name (e.g., "v1.0.0 - Major Update")
+        name
+
+        # Associated git tag (e.g., "v1.0.0") - used for deduplication
+        tagName
+
+        # When release object was created (ISO 8601 timestamp)
+        createdAt
+
+        # When release was published to users (ISO 8601 timestamp, null if draft)
+        # PRIMARY TIMESTAMP for deployment frequency
+        publishedAt
+
+        # Whether this is a pre-release (alpha, beta, RC)
+        isPrerelease
+
+        # Whether this is a draft (not visible to users)
+        isDraft
+      }
+
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+
+      totalCount
+    }
+  }
+
+  # Rate limit information for tracking API usage
+  rateLimit {
+    limit
+    cost
+    remaining
+    resetAt
+  }
+}
+
+# Expected Response Structure
+# {
+#   "repository": {
+#     "releases": {
+#       "nodes": [
+#         {
+#           "name": "v1.0.0 - Major Release",
+#           "tagName": "v1.0.0",
+#           "createdAt": "2024-01-15T10:00:00Z",
+#           "publishedAt": "2024-01-15T10:30:00Z",
+#           "isPrerelease": false,
+#           "isDraft": false
+#         }
+#       ],
+#       "pageInfo": {
+#         "hasNextPage": true,
+#         "endCursor": "Y3Vyc29yOnYyOpK5MjAyNC0wMS0xNVQxMDowMDowMC0wODowMM4AXyZo"
+#       },
+#       "totalCount": 42
+#     }
+#   },
+#   "rateLimit": {
+#     "limit": 5000,
+#     "cost": 1,
+#     "remaining": 4999,
+#     "resetAt": "2024-01-15T11:00:00Z"
+#   }
+# }
+
+# Usage Notes:
+# - Use publishedAt as primary deployment timestamp (represents when released to users)
+# - Fallback to createdAt if publishedAt is null
+# - Filter out isDraft: true (drafts are not visible to users)
+# - Optionally filter out isPrerelease: true (depends on whether pre-releases count as deployments)
+# - Use tagName for deduplication with git tags
+# - Fetch 100 releases per page (maximum allowed)
+# - Rate cost: ~1 GraphQL point per query

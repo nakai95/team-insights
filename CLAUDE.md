@@ -4,6 +4,9 @@ Auto-generated from all feature plans. Last updated: 2026-01-23
 
 ## Active Technologies
 
+- TypeScript 5.3 with Next.js 15 (App Router) + @octokit/graphql 9.0.3, Recharts 3.5.0, React 18.3, Zod 4.1.13 (006-dora-deployment-frequency)
+- N/A (stateless analysis, no persistence required) (006-dora-deployment-frequency)
+
 - TypeScript 5.3, Next.js 15 (App Router) + @octokit/graphql 9.0.3
 - React 18.3, Recharts 3.5.0
 - NextAuth v5 beta.30 (session data in encrypted JWT, no database)
@@ -126,6 +129,8 @@ if (insight.type === "optimal") { ... } // Don't do this
 
 ## Recent Changes
 
+- 006-dora-deployment-frequency: Added TypeScript 5.3 with Next.js 15 (App Router) + @octokit/graphql 9.0.3, Recharts 3.5.0, React 18.3, Zod 4.1.13
+
 - 2026-01-23: Added PR Changes Timeseries Analysis feature (005-pr-changes-timeseries)
   - Weekly visualization of PR code changes (additions/deletions/changedFiles) with Recharts
   - Statistical outlier detection (2 standard deviations threshold) for identifying large refactoring weeks
@@ -141,12 +146,9 @@ if (insight.type === "optimal") { ... } // Don't do this
   - Performance: All API operations now use GraphQL for consistency
   - Infrastructure-only change: `OctokitAdapter.ts` and `EnvTokenAdapter.ts` implementation updated
   - No breaking changes: All interfaces and tests remain unchanged
-- 2026-01-02: Migrated GitHub API from REST to GraphQL (004-github-api-graphql)
   - Replaced sequential REST API calls with single GraphQL queries
   - Performance improvement: 15 seconds → <1 second for large repositories
   - API efficiency: 90%+ reduction in API requests (100+ REST calls → 1-2 GraphQL queries)
-- 2025-12-30: Added light/dark mode toggle with next-themes integration
-- 2025-12-25: Added PR Throughput Analysis feature (003-pr-throughput-analysis)
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

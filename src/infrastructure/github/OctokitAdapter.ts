@@ -5,6 +5,9 @@ import {
   PullRequest,
   ReviewComment,
   RateLimitInfo,
+  Release,
+  Deployment,
+  Tag,
 } from "@/domain/interfaces/IGitHubRepository";
 import { ISessionProvider } from "@/domain/interfaces/ISessionProvider";
 import { Result, ok, err } from "@/lib/result";
@@ -27,6 +30,15 @@ import {
   REVIEW_COMMENTS_QUERY,
   GitHubGraphQLReviewCommentsResponse,
 } from "./graphql/reviewComments";
+import {
+  RELEASES_QUERY,
+  GitHubGraphQLReleasesResponse,
+} from "./graphql/releases";
+import {
+  DEPLOYMENTS_QUERY,
+  GitHubGraphQLDeploymentsResponse,
+} from "./graphql/deployments";
+import { TAGS_QUERY, GitHubGraphQLTagsResponse } from "./graphql/tags";
 
 // Data mappers
 import {
@@ -35,6 +47,9 @@ import {
   isMergeCommit,
   mapReviewComment,
   mapRateLimit,
+  mapRelease,
+  mapDeployment,
+  mapTag,
 } from "./mappers/graphqlMappers";
 
 // Utilities
@@ -537,6 +552,220 @@ export class OctokitAdapter implements IGitHubRepository {
       });
 
       return handleGraphQLError(error, "fetching commits");
+    }
+  }
+
+  /**
+   * Get releases from repository with pagination (GraphQL)
+   */
+  async getReleases(
+    owner: string,
+    repo: string,
+    sinceDate?: Date,
+  ): Promise<Result<Release[]>> {
+    try {
+      const graphqlWithAuth = await this.getGraphqlWithAuth();
+      logger.debug("Fetching releases via GraphQL", {
+        owner,
+        repo,
+        sinceDate: sinceDate?.toISOString(),
+      });
+
+      const allReleases: Release[] = [];
+      let hasNextPage = true;
+      let cursor: string | null = null;
+
+      while (hasNextPage) {
+        // Wait if rate limit is low
+        await this.rateLimiter.waitIfNeeded();
+
+        // Execute GraphQL query
+        const response: GitHubGraphQLReleasesResponse =
+          await graphqlWithAuth<GitHubGraphQLReleasesResponse>(RELEASES_QUERY, {
+            owner,
+            repo,
+            first: 100,
+            after: cursor,
+          });
+
+        // Transform GraphQL response to domain entities using mapper
+        const releases = response.repository.releases.nodes.map(mapRelease);
+
+        // Filter by date if provided (early termination)
+        const filteredReleases = sinceDate
+          ? releases.filter((release: Release) => {
+              const releaseDate = new Date(
+                release.publishedAt ?? release.createdAt,
+              );
+              return releaseDate >= sinceDate;
+            })
+          : releases;
+
+        allReleases.push(...filteredReleases);
+
+        // Early termination: Stop if we've reached releases older than sinceDate
+        if (sinceDate && filteredReleases.length < releases.length) {
+          logger.info(
+            "Reached releases older than sinceDate, stopping pagination",
+          );
+          break;
+        }
+
+        // Check if more pages exist
+        hasNextPage = response.repository.releases.pageInfo.hasNextPage;
+        cursor = response.repository.releases.pageInfo.endCursor;
+
+        // Update rate limit info from GraphQL response
+        this.rateLimiter.updateRateLimit(mapRateLimit(response.rateLimit));
+      }
+
+      logger.info(`Fetched ${allReleases.length} releases via GraphQL`);
+      return ok(allReleases);
+    } catch (error: unknown) {
+      return handleGraphQLError(error, "fetching releases");
+    }
+  }
+
+  /**
+   * Get deployments from repository with pagination (GraphQL)
+   */
+  async getDeployments(
+    owner: string,
+    repo: string,
+    sinceDate?: Date,
+  ): Promise<Result<Deployment[]>> {
+    try {
+      const graphqlWithAuth = await this.getGraphqlWithAuth();
+      logger.debug("Fetching deployments via GraphQL", {
+        owner,
+        repo,
+        sinceDate: sinceDate?.toISOString(),
+      });
+
+      const allDeployments: Deployment[] = [];
+      let hasNextPage = true;
+      let cursor: string | null = null;
+
+      while (hasNextPage) {
+        // Wait if rate limit is low
+        await this.rateLimiter.waitIfNeeded();
+
+        // Execute GraphQL query
+        const response: GitHubGraphQLDeploymentsResponse =
+          await graphqlWithAuth<GitHubGraphQLDeploymentsResponse>(
+            DEPLOYMENTS_QUERY,
+            {
+              owner,
+              repo,
+              first: 100,
+              after: cursor,
+            },
+          );
+
+        // Transform GraphQL response to domain entities using mapper
+        const deployments =
+          response.repository.deployments.nodes.map(mapDeployment);
+
+        // Filter by date if provided (early termination)
+        const filteredDeployments = sinceDate
+          ? deployments.filter((deployment: Deployment) => {
+              const deploymentDate = new Date(deployment.createdAt);
+              return deploymentDate >= sinceDate;
+            })
+          : deployments;
+
+        allDeployments.push(...filteredDeployments);
+
+        // Early termination: Stop if we've reached deployments older than sinceDate
+        if (sinceDate && filteredDeployments.length < deployments.length) {
+          logger.info(
+            "Reached deployments older than sinceDate, stopping pagination",
+          );
+          break;
+        }
+
+        // Check if more pages exist
+        hasNextPage = response.repository.deployments.pageInfo.hasNextPage;
+        cursor = response.repository.deployments.pageInfo.endCursor;
+
+        // Update rate limit info from GraphQL response
+        this.rateLimiter.updateRateLimit(mapRateLimit(response.rateLimit));
+      }
+
+      logger.info(`Fetched ${allDeployments.length} deployments via GraphQL`);
+      return ok(allDeployments);
+    } catch (error: unknown) {
+      return handleGraphQLError(error, "fetching deployments");
+    }
+  }
+
+  /**
+   * Get tags from repository with pagination (GraphQL)
+   */
+  async getTags(
+    owner: string,
+    repo: string,
+    sinceDate?: Date,
+  ): Promise<Result<Tag[]>> {
+    try {
+      const graphqlWithAuth = await this.getGraphqlWithAuth();
+      logger.debug("Fetching tags via GraphQL", {
+        owner,
+        repo,
+        sinceDate: sinceDate?.toISOString(),
+      });
+
+      const allTags: Tag[] = [];
+      let hasNextPage = true;
+      let cursor: string | null = null;
+
+      while (hasNextPage) {
+        // Wait if rate limit is low
+        await this.rateLimiter.waitIfNeeded();
+
+        // Execute GraphQL query
+        const response: GitHubGraphQLTagsResponse =
+          await graphqlWithAuth<GitHubGraphQLTagsResponse>(TAGS_QUERY, {
+            owner,
+            repo,
+            first: 100,
+            after: cursor,
+          });
+
+        // Transform GraphQL response to domain entities using mapper
+        const tags = response.repository.refs.nodes.map(mapTag);
+
+        // Filter by date if provided (early termination)
+        const filteredTags = sinceDate
+          ? tags.filter((tag: Tag) => {
+              // Get date from either annotated tag or lightweight tag (commit)
+              const tagDate = new Date(
+                tag.target.tagger?.date ?? tag.target.committedDate ?? "",
+              );
+              return tagDate >= sinceDate;
+            })
+          : tags;
+
+        allTags.push(...filteredTags);
+
+        // Early termination: Stop if we've reached tags older than sinceDate
+        if (sinceDate && filteredTags.length < tags.length) {
+          logger.info("Reached tags older than sinceDate, stopping pagination");
+          break;
+        }
+
+        // Check if more pages exist
+        hasNextPage = response.repository.refs.pageInfo.hasNextPage;
+        cursor = response.repository.refs.pageInfo.endCursor;
+
+        // Update rate limit info from GraphQL response
+        this.rateLimiter.updateRateLimit(mapRateLimit(response.rateLimit));
+      }
+
+      logger.info(`Fetched ${allTags.length} tags via GraphQL`);
+      return ok(allTags);
+    } catch (error: unknown) {
+      return handleGraphQLError(error, "fetching tags");
     }
   }
 }

@@ -1,0 +1,256 @@
+# Internal API Contract: Deployment Frequency Analysis
+# Purpose: Define data flow between application and presentation layers
+# Format: OpenAPI-style YAML for documentation purposes (not executable)
+
+# Use Case Input
+CalculateDeploymentFrequencyInput:
+  type: object
+  required:
+    - owner
+    - repo
+  properties:
+    owner:
+      type: string
+      description: GitHub repository owner
+      example: "facebook"
+    repo:
+      type: string
+      description: GitHub repository name
+      example: "react"
+    sinceDate:
+      type: string
+      format: date-time
+      description: Optional start date for analysis (ISO 8601)
+      example: "2023-01-01T00:00:00Z"
+      nullable: true
+
+# Use Case Output (DTO)
+DeploymentFrequencyResult:
+  type: object
+  required:
+    - doraLevel
+    - totalDeployments
+    - deploymentsPerYear
+    - averagePerWeek
+    - averagePerMonth
+    - periodDays
+    - weeklyData
+    - monthlyData
+    - recentDeployments
+  properties:
+    doraLevel:
+      $ref: "#/DORAPerformanceLevel"
+    totalDeployments:
+      type: integer
+      description: Total number of deployments in the period
+      example: 120
+    deploymentsPerYear:
+      type: number
+      description: Annualized deployment frequency (projected to 365 days)
+      example: 156.8
+    averagePerWeek:
+      type: number
+      description: Average deployments per week
+      example: 3.01
+    averagePerMonth:
+      type: number
+      description: Average deployments per month
+      example: 13.07
+    periodDays:
+      type: integer
+      description: Number of days covered by the analysis
+      example: 183
+    weeklyData:
+      type: array
+      description: Weekly deployment counts (sorted chronologically)
+      items:
+        $ref: "#/WeeklyDeploymentData"
+    monthlyData:
+      type: array
+      description: Monthly deployment counts (sorted chronologically)
+      items:
+        $ref: "#/MonthlyDeploymentData"
+    recentDeployments:
+      type: array
+      description: Most recent 10 deployments
+      maxItems: 10
+      items:
+        $ref: "#/DeploymentEventSummary"
+
+# DORA Performance Level
+DORAPerformanceLevel:
+  type: object
+  required:
+    - level
+    - deploymentsPerYear
+    - description
+    - benchmarkRange
+    - displayColor
+    - improvementSuggestions
+  properties:
+    level:
+      type: string
+      enum: [elite, high, medium, low, insufficient_data]
+      description: DORA performance classification
+      example: "high"
+    deploymentsPerYear:
+      type: number
+      description: Deployment frequency used for classification
+      example: 156.8
+    description:
+      type: string
+      description: Human-readable description of the level
+      example: "High performance! Deploying 157 times per year."
+    benchmarkRange:
+      type: string
+      description: Frequency range for this level
+      example: "52-729 deployments per year (1/week to <2/day)"
+    displayColor:
+      type: string
+      description: Color code for UI display (hex or CSS color)
+      example: "#22C55E"
+    improvementSuggestions:
+      type: array
+      description: Suggestions for reaching next level (empty if elite)
+      items:
+        type: string
+      example:
+        - "Increase deployment frequency to reach elite level (2+ per day)"
+        - "Consider implementing continuous deployment practices"
+
+# Weekly Deployment Data
+WeeklyDeploymentData:
+  type: object
+  required:
+    - weekKey
+    - weekStartDate
+    - deploymentCount
+  properties:
+    weekKey:
+      type: string
+      description: ISO 8601 week identifier
+      pattern: "^\\d{4}-W\\d{2}$"
+      example: "2024-W03"
+    weekStartDate:
+      type: string
+      format: date
+      description: Monday of the week (ISO 8601 date)
+      example: "2024-01-15"
+    deploymentCount:
+      type: integer
+      minimum: 0
+      description: Number of deployments in this week
+      example: 5
+
+# Monthly Deployment Data
+MonthlyDeploymentData:
+  type: object
+  required:
+    - monthKey
+    - monthName
+    - deploymentCount
+  properties:
+    monthKey:
+      type: string
+      description: ISO 8601 month identifier
+      pattern: "^\\d{4}-\\d{2}$"
+      example: "2024-01"
+    monthName:
+      type: string
+      description: Human-readable month name
+      example: "January 2024"
+    deploymentCount:
+      type: integer
+      minimum: 0
+      description: Number of deployments in this month
+      example: 18
+
+# Deployment Event Summary (for display)
+DeploymentEventSummary:
+  type: object
+  required:
+    - displayName
+    - timestamp
+    - source
+  properties:
+    displayName:
+      type: string
+      description: Human-readable deployment name
+      example: "v1.0.0"
+    timestamp:
+      type: string
+      format: date-time
+      description: When deployment occurred (ISO 8601)
+      example: "2024-01-15T10:30:00Z"
+    source:
+      type: string
+      enum: [release, deployment, tag]
+      description: Source type for provenance
+      example: "release"
+    environment:
+      type: string
+      description: Environment name (only for deployment source)
+      example: "production"
+      nullable: true
+
+# Error Response
+ErrorResponse:
+  type: object
+  required:
+    - error
+    - message
+  properties:
+    error:
+      type: string
+      description: Error type identifier
+      example: "INSUFFICIENT_DATA"
+    message:
+      type: string
+      description: User-friendly error message
+      example: "No deployment data found for this repository. Consider creating GitHub Releases or tagging your commits."
+    suggestions:
+      type: array
+      description: Actionable suggestions for the user
+      items:
+        type: string
+      example:
+        - "Create GitHub Releases for your versions"
+        - "Tag your commits with semantic versioning (v1.0.0)"
+        - "Set up GitHub Actions to create Deployment events"
+
+# Example Request/Response Flow:
+#
+# Request:
+# {
+#   "owner": "facebook",
+#   "repo": "react",
+#   "sinceDate": "2023-01-01T00:00:00Z"
+# }
+#
+# Response:
+# {
+#   "doraLevel": {
+#     "level": "elite",
+#     "deploymentsPerYear": 832,
+#     "description": "Elite performance! Your team deploys 832 times per year (2.3 per day).",
+#     "benchmarkRange": "730+ deployments per year (2+ per day)",
+#     "displayColor": "#FFD700",
+#     "improvementSuggestions": []
+#   },
+#   "totalDeployments": 416,
+#   "deploymentsPerYear": 832,
+#   "averagePerWeek": 16.0,
+#   "averagePerMonth": 69.3,
+#   "periodDays": 183,
+#   "weeklyData": [
+#     { "weekKey": "2024-W01", "weekStartDate": "2024-01-01", "deploymentCount": 12 },
+#     { "weekKey": "2024-W02", "weekStartDate": "2024-01-08", "deploymentCount": 18 }
+#   ],
+#   "monthlyData": [
+#     { "monthKey": "2024-01", "monthName": "January 2024", "deploymentCount": 72 },
+#     { "monthKey": "2024-02", "monthName": "February 2024", "deploymentCount": 65 }
+#   ],
+#   "recentDeployments": [
+#     { "displayName": "v18.3.0", "timestamp": "2024-06-30T10:00:00Z", "source": "release", "environment": null }
+#   ]
+# }

@@ -9,8 +9,13 @@ import { ContributorDto } from "@/application/dto/ContributorDto";
 import { OverviewTab } from "../../tabs/OverviewTab";
 import { ThroughputTab } from "../../tabs/ThroughputTab";
 import { ChangesTimeseriesTab } from "../../tabs/ChangesTimeseriesTab";
+import { DeploymentFrequencyTab } from "../DeploymentFrequencyTab";
 
-export type TabSelection = "overview" | "throughput" | "changes";
+export type TabSelection =
+  | "overview"
+  | "throughput"
+  | "changes"
+  | "deployment-frequency";
 
 export interface AnalysisTabsProps {
   /** Complete analysis result including all tab data */
@@ -46,7 +51,10 @@ export function AnalysisTabs({
   // Get initial tab from URL or use default
   const urlTab = searchParams.get("tab") as TabSelection | null;
   const [activeTab, setActiveTab] = useState<TabSelection>(
-    urlTab && ["overview", "throughput", "changes"].includes(urlTab)
+    urlTab &&
+      ["overview", "throughput", "changes", "deployment-frequency"].includes(
+        urlTab,
+      )
       ? urlTab
       : initialTab,
   );
@@ -56,7 +64,9 @@ export function AnalysisTabs({
     const urlTab = searchParams.get("tab") as TabSelection | null;
     if (
       urlTab &&
-      ["overview", "throughput", "changes"].includes(urlTab) &&
+      ["overview", "throughput", "changes", "deployment-frequency"].includes(
+        urlTab,
+      ) &&
       urlTab !== activeTab
     ) {
       setActiveTab(urlTab);
@@ -98,6 +108,13 @@ export function AnalysisTabs({
           >
             {t("changes")}
           </Button>
+          <Button
+            variant={activeTab === "deployment-frequency" ? "default" : "ghost"}
+            onClick={() => handleTabChange("deployment-frequency")}
+            className="rounded-b-none text-xs sm:text-sm"
+          >
+            Deployment Frequency
+          </Button>
         </div>
       </div>
 
@@ -118,6 +135,11 @@ export function AnalysisTabs({
             dateRange={analysisResult.analysis.dateRange}
           />
         )}
+
+        {activeTab === "deployment-frequency" &&
+          analysisResult.deploymentFrequency && (
+            <DeploymentFrequencyTab data={analysisResult.deploymentFrequency} />
+          )}
       </div>
     </div>
   );
