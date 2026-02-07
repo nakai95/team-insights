@@ -183,27 +183,27 @@
 
 ### Application Layer - Cache Integration
 
-- [ ] T050 [US4] Modify LoadInitialData to implement stale-while-revalidate pattern in src/application/use-cases/LoadInitialData.ts
-- [ ] T051 [US4] Add automatic background refresh when stale data detected in src/application/use-cases/LoadInitialData.ts
+- [x] T050 [US4] Modify LoadInitialData to implement stale-while-revalidate pattern in src/application/use-cases/LoadInitialData.ts
+- [x] T051 [US4] Add automatic background refresh when stale data detected in src/application/use-cases/LoadInitialData.ts
 
 ### Presentation Layer - Cache Status UI
 
-- [ ] T052 [P] [US4] Create StaleDataBanner component to indicate when cached data is stale in src/presentation/components/shared/StaleDataBanner.tsx
-- [ ] T053 [P] [US4] Create RefreshButton component for manual cache invalidation in src/presentation/components/shared/RefreshButton.tsx
+- [x] T052 [P] [US4] Create StaleDataBanner component to indicate when cached data is stale in src/presentation/components/shared/StaleDataBanner.tsx
+- [x] T053 [P] [US4] Create RefreshButton component for manual cache invalidation in src/presentation/components/shared/RefreshButton.tsx
 
 ### Presentation Layer - Cache Hooks
 
-- [ ] T054 [US4] Create useCache hook for cache operations and status tracking in src/presentation/hooks/useCache.ts
-- [ ] T055 [US4] Integrate StaleDataBanner and RefreshButton into dashboard layout in app/[locale]/dashboard/page.tsx
+- [x] T054 [US4] Create useCache hook for cache operations and status tracking in src/presentation/hooks/useCache.ts
+- [x] T055 [US4] Integrate StaleDataBanner and RefreshButton into dashboard layout in app/[locale]/dashboard/page.tsx
 
 ### Application Layer - Cache Management
 
-- [ ] T056 [US4] Implement LRU eviction in CacheEvictionService when storage exceeds 80% (40MB of 50MB) in src/domain/services/CacheEvictionService.ts
-- [ ] T057 [US4] Add cache statistics tracking (totalEntries, totalSizeBytes, oldestEntry) in IndexedDBAdapter in src/infrastructure/storage/IndexedDBAdapter.ts
+- [x] T056 [US4] Implement LRU eviction in CacheEvictionService when storage exceeds 80% (40MB of 50MB) in src/domain/services/CacheEvictionService.ts
+- [x] T057 [US4] Add cache statistics tracking (totalEntries, totalSizeBytes, oldestEntry) in IndexedDBAdapter in src/infrastructure/storage/IndexedDBAdapter.ts
 
 ### API Layer - Manual Invalidation
 
-- [ ] T058 [P] [US4] Create API route for manual cache invalidation in app/api/cache/invalidate/route.ts
+- [x] T058 [P] [US4] Create API route for manual cache invalidation in app/api/cache/invalidate/route.ts
 
 **Checkpoint**: All four user stories complete - fast initial load, background loading, custom ranges, and persistent caching with staleness handling
 

@@ -14,6 +14,7 @@ import {
   type SerializableDeployment,
 } from "@/presentation/components/analysis/DeploymentFrequencyClient";
 import { DashboardControls } from "@/presentation/components/layout/DashboardControls";
+import { DashboardCacheControls } from "@/presentation/components/layout/DashboardCacheControls";
 import type { PullRequest } from "@/domain/interfaces/IGitHubRepository";
 import type { DeploymentEvent } from "@/domain/value-objects/DeploymentEvent";
 
@@ -163,6 +164,12 @@ export async function DashboardWithInitialData({
               end: dateRange.end.toISOString(),
             }}
             repositoryUrl={repositoryUrl}
+          />
+
+          {/* Cache Controls - Refresh Button and Stale Data Banner */}
+          <DashboardCacheControls
+            repositoryUrl={repositoryUrl}
+            showStaleWarning={false}
           />
 
           <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
