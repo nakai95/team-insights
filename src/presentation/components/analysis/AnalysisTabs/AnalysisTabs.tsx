@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { AnalysisResult } from "@/application/dto/AnalysisResult";
@@ -10,6 +10,8 @@ import { OverviewTab } from "../../tabs/OverviewTab";
 import { ThroughputTab } from "../../tabs/ThroughputTab";
 import { ChangesTimeseriesTab } from "../../tabs/ChangesTimeseriesTab";
 import { DeploymentFrequencyTab } from "../DeploymentFrequencyTab";
+import { DateRangeSelector } from "../../shared/DateRangeSelector";
+import { DateRange } from "@/domain/value-objects/DateRange";
 
 export type TabSelection =
   | "overview"
@@ -59,6 +61,56 @@ export function AnalysisTabs({
       : initialTab,
   );
 
+  // Check if progressive mode is enabled
+  const isProgressiveMode = searchParams.get("mode") === "progressive";
+
+  // Parse current date range from URL or use analysis result date range
+  const currentDateRange = useMemo(() => {
+    const startParam = searchParams.get("start");
+    const endParam = searchParams.get("end");
+    const rangeParam = searchParams.get("range");
+
+    // Try to parse from URL params first
+    if (rangeParam) {
+      switch (rangeParam) {
+        case "7d":
+          return DateRange.last7Days();
+        case "30d":
+          return DateRange.last30Days();
+        case "90d":
+          return DateRange.last90Days();
+        case "6m":
+          return DateRange.last6Months();
+        case "1y":
+          return DateRange.lastYear();
+      }
+    }
+
+    if (startParam && endParam) {
+      const start = new Date(startParam);
+      const end = new Date(endParam);
+      if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+        const result = DateRange.create(start, end);
+        if (result.ok) {
+          return result.value;
+        }
+      }
+    }
+
+    // Fallback to analysis result date range
+    if (analysisResult.analysis.dateRange) {
+      const start = new Date(analysisResult.analysis.dateRange.start);
+      const end = new Date(analysisResult.analysis.dateRange.end);
+      const result = DateRange.create(start, end);
+      if (result.ok) {
+        return result.value;
+      }
+    }
+
+    // Final fallback: last 30 days
+    return DateRange.last30Days();
+  }, [searchParams, analysisResult.analysis.dateRange]);
+
   // Sync tab with URL changes (browser back/forward)
   useEffect(() => {
     const urlTab = searchParams.get("tab") as TabSelection | null;
@@ -79,11 +131,39 @@ export function AnalysisTabs({
    */
   const handleTabChange = (tab: TabSelection) => {
     setActiveTab(tab);
-    router.push(`?tab=${tab}`, { scroll: false });
+    // Preserve existing query params when changing tabs
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tab);
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
+
+  /**
+   * Handle date range change in progressive mode
+   * Updates URL params to trigger re-analysis with new date range
+   */
+  const handleDateRangeChange = (range: DateRange) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("start", range.start.toISOString().split("T")[0] as string);
+    params.set("end", range.end.toISOString().split("T")[0] as string);
+    // Keep mode=progressive and current tab
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   return (
     <div className="w-full space-y-6">
+      {/* Date Range Selector - Only show in progressive mode */}
+      {isProgressiveMode && (
+        <div className="p-4 bg-muted/50 rounded-lg border border-border">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm font-medium">Date Range</p>
+            <DateRangeSelector
+              value={currentDateRange}
+              onChange={handleDateRangeChange}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Tab Navigation - Responsive for mobile */}
       <div className="border-b border-border overflow-x-auto">
         <div className="flex space-x-1 min-w-max">

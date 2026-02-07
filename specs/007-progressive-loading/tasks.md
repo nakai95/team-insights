@@ -237,6 +237,35 @@
 
 ---
 
+## Phase 8: Integration with Existing Dashboard
+
+**Purpose**: Integrate progressive loading into existing dashboard tabs without breaking current functionality
+
+**Strategy**: Gradual migration with both legacy and progressive modes running in parallel, allowing users to opt-in to fast loading
+
+### Stage 1: Infrastructure (Foundation for Integration)
+
+- [x] T069 [P] Modify analyzeRepository Server Action to support progressive mode with initial 30-day data only in src/app/actions/analyzeRepository.ts
+- [x] T070 Add DateRangeSelector component integration to AnalysisTabs layout above tab navigation in src/presentation/components/analysis/AnalysisTabs/AnalysisTabs.tsx
+- [x] T071 Integrate IndexedDB cache into useAnalysis hook with cache-check-before-fetch and stale-while-revalidate pattern in src/app/[locale]/hooks/useAnalysis.ts
+
+### Stage 2: Tab Migration (Convert Tabs to Progressive Loading)
+
+- [ ] T072 Create ThroughputClient component that wraps ThroughputTab with useBackgroundLoader for PR data in src/presentation/components/tabs/ThroughputTab/ThroughputClient.tsx
+- [ ] T073 [P] Create DeploymentClient component that wraps DeploymentFrequencyTab with useBackgroundLoader for deployment data in src/presentation/components/analysis/DeploymentFrequencyClient.tsx
+- [ ] T074 [P] Create ChangesClient component that wraps ChangesTimeseriesTab with useBackgroundLoader for timeseries data in src/presentation/components/tabs/ChangesTimeseriesTab/ChangesClient.tsx
+- [ ] T075 Update AnalysisTabs to detect progressive mode from URL and render Client Components with background loading in src/presentation/components/analysis/AnalysisTabs/AnalysisTabs.tsx
+
+### Stage 3: Polish & User Experience
+
+- [ ] T076 [P] Add "Enable Fast Loading" toggle button to AnalysisHeader that switches URL to progressive mode in src/presentation/components/analysis/AnalysisHeader.tsx
+- [ ] T077 [P] Add LoadingIndicator and cache status badges to all tab components during background loading
+- [ ] T078 [P] Create E2E tests for progressive dashboard flow (form → analyze → enable fast loading → date range change → cache behavior) in tests/e2e/progressive-dashboard.spec.ts
+
+**Checkpoint**: At this point, existing dashboard works as before, with optional progressive mode accessible via "Enable Fast Loading" button
+
+---
+
 ## Dependencies & Execution Order
 
 ### Phase Dependencies
@@ -455,7 +484,7 @@ Stories complete and integrate independently.
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
 - **Avoid**: vague tasks, same file conflicts, cross-story dependencies that break independence
-- **Total tasks**: 68 tasks
+- **Total tasks**: 78 tasks
   - Setup: 4 tasks
   - Foundational: 20 tasks (blocks all stories)
   - US1 (MVP): 10 tasks
@@ -463,12 +492,13 @@ Stories complete and integrate independently.
   - US3: 8 tasks
   - US4: 9 tasks
   - Polish: 10 tasks
+  - Integration (Phase 8): 10 tasks (integrate with existing dashboard)
 
 ---
 
 ## Summary
 
-**Total Tasks**: 68 tasks across 7 phases
+**Total Tasks**: 78 tasks across 8 phases
 **MVP Scope**: Phases 1-3 (34 tasks) = User Story 1 only
 **Task Distribution by User Story**:
 
@@ -476,6 +506,7 @@ Stories complete and integrate independently.
 - User Story 2 (P2): 7 tasks (T035-T041) - Background historical loading
 - User Story 3 (P2): 8 tasks (T042-T049) - Custom date range selection
 - User Story 4 (P3): 9 tasks (T050-T058) - Advanced caching with stale-while-revalidate
+- Integration (Phase 8): 10 tasks (T069-T078) - Integrate with existing dashboard tabs
 
 **Parallel Opportunities Identified**:
 
@@ -484,11 +515,10 @@ Stories complete and integrate independently.
 - User Story 2: 2 parallel tasks possible
 - User Story 4: 3 parallel tasks possible
 - Polish phase: 8 parallel tasks possible
+- Integration phase: 5 parallel tasks possible (Stage 1: T069+T071, Stage 2: T072-T074)
 
-**Suggested MVP Scope**: Complete Phases 1-3 only (User Story 1)
+**Current Status**: Phases 1-7 complete (68/68 tasks), Phase 8 integration pending (0/10 tasks)
 
-- Delivers core value: fast initial load with caching
-- 34 tasks total for MVP
-- Remaining 34 tasks add progressive enhancements
+**Next Steps**: Begin Phase 8 Stage 1 (Infrastructure) to integrate progressive loading with existing dashboard
 
 **Format Validation**: ✅ ALL tasks follow checklist format with checkboxes, IDs, labels, and file paths
