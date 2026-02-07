@@ -10,6 +10,10 @@ import { OverviewTab } from "../../tabs/OverviewTab";
 import { ThroughputTab } from "../../tabs/ThroughputTab";
 import { ChangesTimeseriesTab } from "../../tabs/ChangesTimeseriesTab";
 import { DeploymentFrequencyTab } from "../DeploymentFrequencyTab";
+import { ThroughputClient } from "../../tabs/ThroughputTab";
+import { ChangesClient } from "../../tabs/ChangesTimeseriesTab/ChangesClient";
+import { DeploymentFrequencyClient } from "../DeploymentFrequencyClient";
+
 import { DateRangeSelector } from "../../shared/DateRangeSelector";
 import { DateRange } from "@/domain/value-objects/DateRange";
 
@@ -204,22 +208,55 @@ export function AnalysisTabs({
           <OverviewTab contributors={contributors} />
         )}
 
-        {activeTab === "throughput" && (
-          <ThroughputTab throughputData={analysisResult.throughput} />
-        )}
+        {activeTab === "throughput" &&
+          (isProgressiveMode ? (
+            <ThroughputClient
+              throughputData={analysisResult.throughput}
+              repositoryId={analysisResult.analysis.repositoryUrl
+                .split("/")
+                .slice(-2)
+                .join("/")}
+              dateRange={analysisResult.analysis.dateRange}
+              enableProgressiveLoading={true}
+            />
+          ) : (
+            <ThroughputTab throughputData={analysisResult.throughput} />
+          ))}
 
-        {activeTab === "changes" && (
-          <ChangesTimeseriesTab
-            timeseriesData={analysisResult.timeseries}
-            repositoryUrl={analysisResult.analysis.repositoryUrl}
-            dateRange={analysisResult.analysis.dateRange}
-          />
-        )}
+        {activeTab === "changes" &&
+          (isProgressiveMode ? (
+            <ChangesClient
+              timeseriesData={analysisResult.timeseries}
+              repositoryUrl={analysisResult.analysis.repositoryUrl}
+              dateRange={analysisResult.analysis.dateRange}
+              repositoryId={analysisResult.analysis.repositoryUrl
+                .split("/")
+                .slice(-2)
+                .join("/")}
+              enableProgressiveLoading={true}
+            />
+          ) : (
+            <ChangesTimeseriesTab
+              timeseriesData={analysisResult.timeseries}
+              repositoryUrl={analysisResult.analysis.repositoryUrl}
+              dateRange={analysisResult.analysis.dateRange}
+            />
+          ))}
 
         {activeTab === "deployment-frequency" &&
-          analysisResult.deploymentFrequency && (
+          analysisResult.deploymentFrequency &&
+          (isProgressiveMode ? (
+            <DeploymentFrequencyClient
+              initialData={[]}
+              repositoryId={analysisResult.analysis.repositoryUrl
+                .split("/")
+                .slice(-2)
+                .join("/")}
+              dateRange={analysisResult.analysis.dateRange}
+            />
+          ) : (
             <DeploymentFrequencyTab data={analysisResult.deploymentFrequency} />
-          )}
+          ))}
       </div>
     </div>
   );

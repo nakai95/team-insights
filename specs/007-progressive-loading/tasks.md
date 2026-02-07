@@ -254,7 +254,7 @@
 - [x] T072 Create ThroughputClient component that wraps ThroughputTab with useBackgroundLoader for PR data in src/presentation/components/tabs/ThroughputTab/ThroughputClient.tsx
 - [x] T073 [P] Create DeploymentClient component that wraps DeploymentFrequencyTab with useBackgroundLoader for deployment data in src/presentation/components/analysis/DeploymentFrequencyClient.tsx
 - [x] T074 [P] Create ChangesClient component that wraps ChangesTimeseriesTab with useBackgroundLoader for timeseries data in src/presentation/components/tabs/ChangesTimeseriesTab/ChangesClient.tsx
-- [ ] T075 Update AnalysisTabs to detect progressive mode from URL and render Client Components with background loading in src/presentation/components/analysis/AnalysisTabs/AnalysisTabs.tsx
+- [x] T075 Update AnalysisTabs to detect progressive mode from URL and render Client Components with background loading in src/presentation/components/analysis/AnalysisTabs/AnalysisTabs.tsx
 
 ### Stage 3: Polish & User Experience
 
