@@ -1,19 +1,15 @@
 # team-insights Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-02-06
+## Technology Stack
 
-## Active Technologies
-
-- TypeScript 5.3 with strict mode enabled + Next.js 15 (App Router), React 18.3, @octokit/graphql 9.0.3, Recharts 3.5.0, next-themes 0.4.6 (007-progressive-loading)
-- IndexedDB (client-side caching with LRU eviction), no server-side database (007-progressive-loading)
-
-- IndexedDB for client-side caching (repository data, PRs, deployments, commits with date ranges and timestamps) (007-progressive-loading)
-
-- TypeScript 5.3, Next.js 15 (App Router) + @octokit/graphql 9.0.3
-- React 18.3, Recharts 3.5.0
-- NextAuth v5 beta.30 (session data in encrypted JWT, no database)
-- next-themes 0.4.6 (theme management with SSR safety)
-- ESLint 9 with flat config (eslint.config.mjs)
+- **TypeScript 5.3** with strict mode enabled
+- **Next.js 15** (App Router) with React 18.3
+- **Authentication**: NextAuth v5 beta.30 (session data in encrypted JWT, no database)
+- **Data Storage**: IndexedDB for client-side caching (no server-side database)
+- **API**: @octokit/graphql 9.0.3 for GitHub GraphQL API
+- **UI**: Recharts 3.5.0, next-themes 0.4.6
+- **i18n**: next-intl for internationalization (ja/en locales)
+- **Linting**: ESLint 9 with flat config (eslint.config.mjs)
 
 ## Project Structure
 
@@ -121,158 +117,51 @@ if (insight.type === "optimal") { ... } // Don't do this
 - Self-documenting code
 - Cleaner syntax than class static properties
 
-## Progressive Loading Patterns
+### Internationalization (i18n) - MANDATORY
 
-### Server/Client Component Boundary
+All user-facing strings MUST be internationalized using next-intl.
 
-- **Server Components**: Handle initial data fetching (30-day window) in `page.tsx`
-- **Client Components**: Manage background loading, user interactions, and state updates
-- **Data Flow**: Server Component → props → Client Component → background loading with useTransition
+**✅ MUST translate:**
 
-**Example Structure**:
+- UI labels, buttons, headings
+- Error messages and validation messages
+- Chart titles, axis labels, tooltips
+- Form placeholders and helper text
+- Navigation items and page titles
+- Empty states and loading messages
 
-```typescript
-// app/[locale]/dashboard/page.tsx (Server Component)
-export default async function DashboardPage({ searchParams }) {
-  const dateRange = parseDateRange(searchParams);
-  const initialData = await loadInitialData(repositoryId, dateRange);
-
-  return <DashboardWithInitialData initialData={initialData} />;
-}
-
-// DashboardWithInitialData.tsx (Client Component)
-"use client";
-export function DashboardWithInitialData({ initialData }) {
-  const [isPending, startTransition] = useTransition();
-  // Background loading logic with startTransition
-}
-```
-
-### URL Parameters for Date Ranges
-
-**Convention**: Use URL query parameters to store date range selections for shareability
-
-**Supported Parameters**:
-
-- `start` - ISO date string (e.g., `2026-01-07`)
-- `end` - ISO date string (e.g., `2026-02-06`)
-- `preset` - Preset identifier (e.g., `last_7_days`, `last_30_days`, `last_90_days`)
-
-**Example URLs**:
-
-```
-/dashboard?preset=last_30_days
-/dashboard?start=2025-12-01&end=2026-01-31
-/dashboard?preset=last_90_days
-```
-
-**Implementation Pattern**:
+**❌ DO NOT hardcode strings:**
 
 ```typescript
-// Server Component: Parse URL params
-const dateRange = parseDateRange(searchParams);
+// ❌ INCORRECT
+<button>Submit</button>
+<h1>Dashboard</h1>
 
-// Client Component: Update URL on date change
-const handleDateChange = (newRange: DateRange) => {
-  const params = new URLSearchParams();
-  params.set("start", newRange.start.toISOString().split("T")[0]);
-  params.set("end", newRange.end.toISOString().split("T")[0]);
-  router.push(`/dashboard?${params.toString()}`);
-};
+// ✅ CORRECT
+import { useTranslations } from 'next-intl';
+
+const t = useTranslations('ComponentName');
+<button>{t('submit')}</button>
+<h1>{t('title')}</h1>
 ```
 
-### Cache-Aware Data Loading
+**Translation file structure** (`messages/{locale}.json`):
 
-**Pattern**: Stale-while-revalidate with background refresh
-
-1. **Check cache first**: Always attempt to serve from IndexedDB cache
-2. **Serve stale data immediately**: Display cached data even if stale (>1 hour old)
-3. **Background refresh**: Trigger background fetch if data is stale
-4. **Update UI non-blocking**: Use `startTransition` to avoid blocking interactions
-
-**Example**:
-
-```typescript
-const cachedData = await cache.get(cacheKey);
-
-if (cachedData) {
-  // Serve cached data immediately
-  setData(cachedData.data);
-
-  if (cachedData.isStale()) {
-    // Background refresh (non-blocking)
-    startTransition(async () => {
-      const fresh = await fetchFromAPI();
-      await cache.set(fresh);
-      setData(fresh);
-    });
+```json
+{
+  "ComponentName": {
+    "title": "Title text",
+    "submit": "Submit",
+    "description": "Description text"
   }
 }
 ```
 
-### Background Loading with useTransition
+**Key naming convention:**
 
-**Pattern**: Progressive data loading without blocking UI
-
-```typescript
-const [isPending, startTransition] = useTransition();
-
-useEffect(() => {
-  const abortController = new AbortController();
-
-  startTransition(async () => {
-    const result = await loadHistoricalData(
-      repositoryId,
-      historicalRange,
-      abortController.signal,
-      (progress) => {
-        // Update progress indicator
-        setLoadingProgress(progress);
-      },
-    );
-
-    if (result.ok) {
-      setHistoricalData(result.value);
-    }
-  });
-
-  return () => abortController.abort();
-}, [repositoryId]);
-```
-
-### Performance Optimization Patterns
-
-**React.memo for Charts**: Prevent re-renders during background loading
-
-```typescript
-export const MyChart = React.memo(function MyChart({ data }) {
-  // Chart implementation
-});
-```
-
-**Pre-compiled Regex**: Use static properties for repeated regex operations
-
-```typescript
-class CacheKey {
-  private static readonly KEY_REGEX = /^repo:([\w-]+\/[\w-]+):/;
-
-  getRepositoryId(): string {
-    return this._value.match(CacheKey.KEY_REGEX)?.[1] ?? "";
-  }
-}
-```
-
-**Efficient String Building**: Cache intermediate results
-
-```typescript
-// ✅ Efficient
-const startISO = dateRange.start.toISOString();
-const endISO = dateRange.end.toISOString();
-const key = `repo:${repositoryId}:type:${dataType}:range:${startISO}:${endISO}`;
-
-// ❌ Inefficient (repeated toISOString calls)
-const key = `repo:${repositoryId}:type:${dataType}:range:${dateRange.start.toISOString()}:${dateRange.end.toISOString()}`;
-```
+- Use PascalCase for component namespaces
+- Use camelCase for keys within namespaces
+- Group related translations under the same namespace
 
 ## Build Configuration
 
@@ -282,42 +171,12 @@ const key = `repo:${repositoryId}:type:${dataType}:range:${dateRange.start.toISO
 - `specs/**/contracts/**` are excluded from ESLint (eslint.config.mjs)
 - Contract files (.ts/.tsx) in specs/ are documentation only, not executable code
 
-## Recent Changes
+## Additional Documentation
 
-- 007-progressive-loading: Added TypeScript 5.3 with strict mode enabled + Next.js 15 (App Router), React 18.3, @octokit/graphql 9.0.3, Recharts 3.5.0, next-themes 0.4.6
+For detailed implementation patterns and examples, see:
 
-- 007-progressive-loading: Added TypeScript 5.3, Next.js 15 (App Router)
-
-- 2026-02-06: Added DORA Metrics - Deployment Frequency feature (006-dora-deployment-frequency)
-  - First DORA metric implementation: Deployment Frequency dashboard with weekly/monthly aggregations
-  - Retrieves deployment events from GitHub Releases, Deployments, and Tags via GraphQL API
-  - DORA performance level classification (Elite/High/Medium/Low) based on industry benchmarks
-  - Trend analysis with 4-week moving average and direction indicators (increasing/decreasing/stable)
-  - New domain value objects: DeploymentEvent, DeploymentFrequency, DORAPerformanceLevel
-  - New application use case: CalculateDeploymentFrequency with deduplication logic
-  - Extended IGitHubRepository interface with getReleases(), getDeployments(), getTags() methods
-  - New GraphQL queries and mappers for deployment data sources
-  - Tab-based UI integration: DeploymentFrequencyTab, DeploymentFrequencyChart, DeploymentBarChart
-  - Performance: Supports 500+ deployment events, <2s load time for large repositories
-  - Error handling: Empty states, loading indicators, error boundaries, React.memo optimization
-  - E2E tests for critical user paths in deployment frequency analysis
-
-  - Weekly visualization of PR code changes (additions/deletions/changedFiles) with Recharts
-  - Statistical outlier detection (2 standard deviations threshold) for identifying large refactoring weeks
-  - 4-week trend analysis (increasing/decreasing/stable) for development velocity tracking
-  - Tab-based UI architecture: AnalysisTabs component with URL synchronization
-  - New domain value objects: WeeklyAggregate, ChangeTrend, OutlierWeek
-  - Reuses existing GraphQL PR data (no additional API calls)
-  - Performance: Tab switching <100ms, supports up to 52 weeks of data
-  - Replaced all REST API calls with GraphQL queries (validateAccess, getRateLimitStatus, user authentication)
-  - Simplified authentication with direct `graphql()` function usage (no Octokit class instantiation)
-  - Removed @octokit/rest dependency from package.json
-  - Performance: All API operations now use GraphQL for consistency
-  - Infrastructure-only change: `OctokitAdapter.ts` and `EnvTokenAdapter.ts` implementation updated
-  - No breaking changes: All interfaces and tests remain unchanged
-  - Replaced sequential REST API calls with single GraphQL queries
-  - Performance improvement: 15 seconds → <1 second for large repositories
-  - API efficiency: 90%+ reduction in API requests (100+ REST calls → 1-2 GraphQL queries)
+- Progressive loading patterns: `docs/patterns/progressive-loading.md`
+- Cache management: `docs/patterns/cache-management.md`
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
