@@ -121,6 +121,159 @@ if (insight.type === "optimal") { ... } // Don't do this
 - Self-documenting code
 - Cleaner syntax than class static properties
 
+## Progressive Loading Patterns
+
+### Server/Client Component Boundary
+
+- **Server Components**: Handle initial data fetching (30-day window) in `page.tsx`
+- **Client Components**: Manage background loading, user interactions, and state updates
+- **Data Flow**: Server Component → props → Client Component → background loading with useTransition
+
+**Example Structure**:
+
+```typescript
+// app/[locale]/dashboard/page.tsx (Server Component)
+export default async function DashboardPage({ searchParams }) {
+  const dateRange = parseDateRange(searchParams);
+  const initialData = await loadInitialData(repositoryId, dateRange);
+
+  return <DashboardWithInitialData initialData={initialData} />;
+}
+
+// DashboardWithInitialData.tsx (Client Component)
+"use client";
+export function DashboardWithInitialData({ initialData }) {
+  const [isPending, startTransition] = useTransition();
+  // Background loading logic with startTransition
+}
+```
+
+### URL Parameters for Date Ranges
+
+**Convention**: Use URL query parameters to store date range selections for shareability
+
+**Supported Parameters**:
+
+- `start` - ISO date string (e.g., `2026-01-07`)
+- `end` - ISO date string (e.g., `2026-02-06`)
+- `preset` - Preset identifier (e.g., `last_7_days`, `last_30_days`, `last_90_days`)
+
+**Example URLs**:
+
+```
+/dashboard?preset=last_30_days
+/dashboard?start=2025-12-01&end=2026-01-31
+/dashboard?preset=last_90_days
+```
+
+**Implementation Pattern**:
+
+```typescript
+// Server Component: Parse URL params
+const dateRange = parseDateRange(searchParams);
+
+// Client Component: Update URL on date change
+const handleDateChange = (newRange: DateRange) => {
+  const params = new URLSearchParams();
+  params.set("start", newRange.start.toISOString().split("T")[0]);
+  params.set("end", newRange.end.toISOString().split("T")[0]);
+  router.push(`/dashboard?${params.toString()}`);
+};
+```
+
+### Cache-Aware Data Loading
+
+**Pattern**: Stale-while-revalidate with background refresh
+
+1. **Check cache first**: Always attempt to serve from IndexedDB cache
+2. **Serve stale data immediately**: Display cached data even if stale (>1 hour old)
+3. **Background refresh**: Trigger background fetch if data is stale
+4. **Update UI non-blocking**: Use `startTransition` to avoid blocking interactions
+
+**Example**:
+
+```typescript
+const cachedData = await cache.get(cacheKey);
+
+if (cachedData) {
+  // Serve cached data immediately
+  setData(cachedData.data);
+
+  if (cachedData.isStale()) {
+    // Background refresh (non-blocking)
+    startTransition(async () => {
+      const fresh = await fetchFromAPI();
+      await cache.set(fresh);
+      setData(fresh);
+    });
+  }
+}
+```
+
+### Background Loading with useTransition
+
+**Pattern**: Progressive data loading without blocking UI
+
+```typescript
+const [isPending, startTransition] = useTransition();
+
+useEffect(() => {
+  const abortController = new AbortController();
+
+  startTransition(async () => {
+    const result = await loadHistoricalData(
+      repositoryId,
+      historicalRange,
+      abortController.signal,
+      (progress) => {
+        // Update progress indicator
+        setLoadingProgress(progress);
+      },
+    );
+
+    if (result.ok) {
+      setHistoricalData(result.value);
+    }
+  });
+
+  return () => abortController.abort();
+}, [repositoryId]);
+```
+
+### Performance Optimization Patterns
+
+**React.memo for Charts**: Prevent re-renders during background loading
+
+```typescript
+export const MyChart = React.memo(function MyChart({ data }) {
+  // Chart implementation
+});
+```
+
+**Pre-compiled Regex**: Use static properties for repeated regex operations
+
+```typescript
+class CacheKey {
+  private static readonly KEY_REGEX = /^repo:([\w-]+\/[\w-]+):/;
+
+  getRepositoryId(): string {
+    return this._value.match(CacheKey.KEY_REGEX)?.[1] ?? "";
+  }
+}
+```
+
+**Efficient String Building**: Cache intermediate results
+
+```typescript
+// ✅ Efficient
+const startISO = dateRange.start.toISOString();
+const endISO = dateRange.end.toISOString();
+const key = `repo:${repositoryId}:type:${dataType}:range:${startISO}:${endISO}`;
+
+// ❌ Inefficient (repeated toISOString calls)
+const key = `repo:${repositoryId}:type:${dataType}:range:${dateRange.start.toISOString()}:${dateRange.end.toISOString()}`;
+```
+
 ## Build Configuration
 
 **Contract Files Exclusion**:

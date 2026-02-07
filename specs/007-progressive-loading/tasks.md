@@ -215,25 +215,25 @@
 
 ### Error Handling
 
-- [ ] T059 [P] Add error boundary for cache initialization failures with fallback to in-memory cache in src/presentation/components/shared/CacheErrorBoundary.tsx
-- [ ] T060 [P] Add toast notifications for rate limit errors during background loading in src/presentation/components/shared/RateLimitToast.tsx
-- [ ] T061 [P] Add error handling for network interruptions with automatic retry in LoadHistoricalData use case in src/application/use-cases/LoadHistoricalData.ts
+- [x] T059 [P] Add error boundary for cache initialization failures with fallback to in-memory cache in src/presentation/components/shared/CacheErrorBoundary.tsx
+- [x] T060 [P] Add toast notifications for rate limit errors during background loading in src/presentation/components/shared/RateLimitToast.tsx
+- [x] T061 [P] Add error handling for network interruptions with automatic retry in LoadHistoricalData use case in src/application/use-cases/LoadHistoricalData.ts
 
 ### Performance Optimization
 
-- [ ] T062 [P] Add React.memo to chart components to prevent re-renders during background loading in src/presentation/components/analysis/PRSizeDistributionChart.tsx
-- [ ] T063 [P] Add React.memo to DeploymentBarChart component in src/presentation/components/analysis/DeploymentBarChart.tsx
-- [ ] T064 Optimize cache key generation to avoid unnecessary string concatenation in CacheKey value object in src/domain/value-objects/CacheKey.ts
+- [x] T062 [P] Add React.memo to chart components to prevent re-renders during background loading in src/presentation/components/analysis/PRSizeDistributionChart.tsx
+- [x] T063 [P] Add React.memo to DeploymentBarChart component in src/presentation/components/analysis/DeploymentBarChart.tsx
+- [x] T064 Optimize cache key generation to avoid unnecessary string concatenation in CacheKey value object in src/domain/value-objects/CacheKey.ts
 
 ### Documentation
 
-- [ ] T065 [P] Update CLAUDE.md with progressive loading patterns and URL param conventions in CLAUDE.md
-- [ ] T066 [P] Add JSDoc comments to all public interfaces in src/domain/interfaces/
+- [x] T065 [P] Update CLAUDE.md with progressive loading patterns and URL param conventions in CLAUDE.md
+- [x] T066 [P] Add JSDoc comments to all public interfaces in src/domain/interfaces/
 
 ### Configuration
 
-- [ ] T067 Create CacheConfig constants file with TTL and size limits in src/domain/config/CacheConfig.ts
-- [ ] T068 [P] Create LoadingConfig constants file with chunk size and timeout settings in src/domain/config/LoadingConfig.ts
+- [x] T067 Create CacheConfig constants file with TTL and size limits in src/domain/config/CacheConfig.ts
+- [x] T068 [P] Create LoadingConfig constants file with chunk size and timeout settings in src/domain/config/LoadingConfig.ts
 
 ---
 

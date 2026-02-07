@@ -95,6 +95,8 @@ export class LoadHistoricalData {
   private static readonly CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
   private static readonly RATE_LIMIT_THRESHOLD = 0.1; // Pause when <10% remaining
   private static readonly RATE_LIMIT_CHECK_INTERVAL = 2; // Check every 2 chunks
+  private static readonly MAX_RETRY_ATTEMPTS = 3;
+  private static readonly INITIAL_RETRY_DELAY_MS = 1000; // 1 second
 
   constructor(
     private dataLoader: IDataLoader,
@@ -209,8 +211,8 @@ export class LoadHistoricalData {
             cacheStatus: cachedData.status,
           });
         } else {
-          // Step 5: Fetch from API
-          const fetchResult = await this.fetchChunk(
+          // Step 5: Fetch from API with retry logic
+          const fetchResult = await this.fetchChunkWithRetry(
             repositoryId,
             dataType,
             chunk,
@@ -218,11 +220,15 @@ export class LoadHistoricalData {
           );
 
           if (!fetchResult.ok) {
-            logger.warn("LoadHistoricalData", "Failed to fetch chunk", {
-              chunk: i + 1,
-              totalChunks: chunks.length,
-              error: fetchResult.error.message,
-            });
+            logger.warn(
+              "LoadHistoricalData",
+              "Failed to fetch chunk after retries",
+              {
+                chunk: i + 1,
+                totalChunks: chunks.length,
+                error: fetchResult.error.message,
+              },
+            );
 
             // Continue with next chunk instead of failing entire operation
             chunkItems = [];
@@ -380,6 +386,150 @@ export class LoadHistoricalData {
       default:
         return err(new Error(`Unknown data type: ${dataType}`));
     }
+  }
+
+  /**
+   * Fetch a chunk with automatic retry on network interruptions
+   * Uses exponential backoff: 1s, 2s, 4s
+   */
+  private async fetchChunkWithRetry(
+    repositoryId: string,
+    dataType: DataType,
+    chunk: DateRange,
+    signal?: AbortSignal,
+  ): Promise<Result<(PullRequest | DeploymentEvent | Commit)[]>> {
+    let lastError: Error | null = null;
+
+    for (
+      let attempt = 1;
+      attempt <= LoadHistoricalData.MAX_RETRY_ATTEMPTS;
+      attempt++
+    ) {
+      // Check for cancellation before retry
+      if (signal?.aborted) {
+        return err(new Error("Operation was aborted"));
+      }
+
+      const fetchResult = await this.fetchChunk(
+        repositoryId,
+        dataType,
+        chunk,
+        signal,
+      );
+
+      if (fetchResult.ok) {
+        if (attempt > 1) {
+          logger.info("LoadHistoricalData", "Fetch succeeded after retry", {
+            attempt,
+            dataType,
+          });
+        }
+        return fetchResult;
+      }
+
+      lastError = fetchResult.error;
+
+      // Check if error is retryable (network interruption)
+      const isRetryable = this.isRetryableError(fetchResult.error);
+
+      if (!isRetryable) {
+        logger.debug(
+          "LoadHistoricalData",
+          "Non-retryable error, stopping retries",
+          {
+            error: fetchResult.error.message,
+            attempt,
+          },
+        );
+        return fetchResult; // Return immediately for non-retryable errors
+      }
+
+      // Don't retry on last attempt
+      if (attempt === LoadHistoricalData.MAX_RETRY_ATTEMPTS) {
+        logger.warn("LoadHistoricalData", "Max retry attempts reached", {
+          maxAttempts: LoadHistoricalData.MAX_RETRY_ATTEMPTS,
+          dataType,
+        });
+        break;
+      }
+
+      // Calculate exponential backoff delay
+      const delayMs =
+        LoadHistoricalData.INITIAL_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+
+      logger.info("LoadHistoricalData", "Retrying after network error", {
+        attempt,
+        maxAttempts: LoadHistoricalData.MAX_RETRY_ATTEMPTS,
+        delayMs,
+        error: fetchResult.error.message,
+      });
+
+      // Wait before retry (with cancellation support)
+      await this.delay(delayMs, signal);
+    }
+
+    return err(
+      new Error(
+        `Failed to fetch chunk after ${LoadHistoricalData.MAX_RETRY_ATTEMPTS} attempts: ${lastError?.message ?? "Unknown error"}`,
+      ),
+    );
+  }
+
+  /**
+   * Determine if an error is retryable (network interruption)
+   * Non-retryable errors: rate limit, authentication, not found
+   */
+  private isRetryableError(error: Error): boolean {
+    const message = error.message.toLowerCase();
+
+    // Non-retryable errors
+    if (
+      message.includes("rate limit") ||
+      message.includes("authentication") ||
+      message.includes("not found") ||
+      message.includes("forbidden") ||
+      message.includes("unauthorized")
+    ) {
+      return false;
+    }
+
+    // Retryable network errors
+    if (
+      message.includes("network") ||
+      message.includes("timeout") ||
+      message.includes("econnreset") ||
+      message.includes("enotfound") ||
+      message.includes("econnrefused") ||
+      message.includes("fetch failed") ||
+      message.includes("socket hang up")
+    ) {
+      return true;
+    }
+
+    // Default: treat unknown errors as retryable
+    return true;
+  }
+
+  /**
+   * Delay with cancellation support
+   */
+  private async delay(ms: number, signal?: AbortSignal): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (signal?.aborted) {
+        reject(new Error("Operation was aborted"));
+        return;
+      }
+
+      const timeout = setTimeout(() => {
+        resolve();
+      }, ms);
+
+      // Cancel delay if aborted
+      signal?.addEventListener("abort", () => {
+        clearTimeout(timeout);
+        reject(new Error("Operation was aborted"));
+      });
+    });
   }
 
   /**

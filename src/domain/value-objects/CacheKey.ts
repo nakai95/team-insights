@@ -10,8 +10,23 @@ import { type DateRange } from "./DateRange";
  * Format: "repo:{owner}/{name}:type:{dataType}:range:{startISO}:{endISO}"
  *
  * Example: "repo:facebook/react:type:pull_requests:range:2026-01-01T00:00:00.000Z:2026-01-31T23:59:59.999Z"
+ *
+ * Performance optimizations:
+ * - Pre-compiled regex patterns as static properties (avoid repeated compilation)
+ * - Efficient string concatenation using template literals
+ * - Immutable design prevents redundant key regeneration
  */
 export class CacheKey {
+  // Pre-compiled regex patterns for validation and parsing (performance optimization)
+  private static readonly REPO_ID_VALIDATION_REGEX = /^[\w-]+\/[\w-]+$/;
+  private static readonly CACHE_KEY_PARSE_REGEX =
+    /^repo:([\w-]+\/[\w-]+):type:(pull_requests|deployments|commits):range:(\d{4}-\d{2}-\d{2}T[\d:.]+Z):(\d{4}-\d{2}-\d{2}T[\d:.]+Z)$/;
+  private static readonly REPO_ID_EXTRACT_REGEX = /^repo:([\w-]+\/[\w-]+):/;
+  private static readonly DATA_TYPE_EXTRACT_REGEX =
+    /:type:(pull_requests|deployments|commits):/;
+  private static readonly DATE_RANGE_EXTRACT_REGEX =
+    /:range:(\d{4}-\d{2}-\d{2}T[\d:.]+Z):(\d{4}-\d{2}-\d{2}T[\d:.]+Z)$/;
+
   private constructor(private readonly _value: string) {}
 
   /**
@@ -38,15 +53,16 @@ export class CacheKey {
     }
 
     // Validate repository ID contains only valid characters
-    const validRepoRegex = /^[\w-]+\/[\w-]+$/;
-    if (!validRepoRegex.test(repositoryId)) {
+    if (!CacheKey.REPO_ID_VALIDATION_REGEX.test(repositoryId)) {
       return err(
         "Repository ID can only contain alphanumeric characters, hyphens, and underscores",
       );
     }
 
-    // Construct key value
-    const value = `repo:${repositoryId}:type:${dataType}:range:${dateRange.start.toISOString()}:${dateRange.end.toISOString()}`;
+    // Construct key value efficiently
+    const startISO = dateRange.start.toISOString();
+    const endISO = dateRange.end.toISOString();
+    const value = `repo:${repositoryId}:type:${dataType}:range:${startISO}:${endISO}`;
 
     return ok(new CacheKey(value)) as Result<CacheKey, string>;
   }
@@ -58,11 +74,8 @@ export class CacheKey {
    * @returns Result with CacheKey or error message
    */
   static parse(value: string): Result<CacheKey, string> {
-    // Validate format with regex
-    const regex =
-      /^repo:([\w-]+\/[\w-]+):type:(pull_requests|deployments|commits):range:(\d{4}-\d{2}-\d{2}T[\d:.]+Z):(\d{4}-\d{2}-\d{2}T[\d:.]+Z)$/;
-
-    const match = value.match(regex);
+    // Validate format with pre-compiled regex
+    const match = value.match(CacheKey.CACHE_KEY_PARSE_REGEX);
     if (!match || !match[3] || !match[4]) {
       return err(
         "Invalid cache key format. Expected: repo:{owner}/{name}:type:{dataType}:range:{startISO}:{endISO}",
@@ -110,7 +123,7 @@ export class CacheKey {
    * @returns Repository ID (format: "owner/name")
    */
   getRepositoryId(): string {
-    const match = this._value.match(/^repo:([\w-]+\/[\w-]+):/);
+    const match = this._value.match(CacheKey.REPO_ID_EXTRACT_REGEX);
     return match && match[1] ? match[1] : "";
   }
 
@@ -120,9 +133,7 @@ export class CacheKey {
    * @returns Data type string
    */
   getDataType(): string {
-    const match = this._value.match(
-      /:type:(pull_requests|deployments|commits):/,
-    );
+    const match = this._value.match(CacheKey.DATA_TYPE_EXTRACT_REGEX);
     return match && match[1] ? match[1] : "";
   }
 
@@ -132,9 +143,7 @@ export class CacheKey {
    * @returns Object with start and end dates
    */
   getDateRange(): { start: Date; end: Date } {
-    const match = this._value.match(
-      /:range:(\d{4}-\d{2}-\d{2}T[\d:.]+Z):(\d{4}-\d{2}-\d{2}T[\d:.]+Z)$/,
-    );
+    const match = this._value.match(CacheKey.DATE_RANGE_EXTRACT_REGEX);
 
     if (!match || !match[1] || !match[2]) {
       throw new Error("Invalid cache key format");
