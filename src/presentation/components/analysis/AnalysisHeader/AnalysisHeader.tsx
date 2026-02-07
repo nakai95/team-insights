@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ContributorDto } from "@/application/dto/ContributorDto";
 import { IdentityMerger } from "../IdentityMerger";
@@ -36,6 +37,16 @@ export function AnalysisHeader({
   onReset,
 }: AnalysisHeaderProps) {
   const t = useTranslations("dashboard");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const isProgressiveMode = searchParams.get("mode") === "progressive";
+
+  const handleEnableFastLoading = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("mode", "progressive");
+    router.push(`?${params.toString()}`, { scroll: false });
+  };
 
   return (
     <div className="flex items-start justify-between gap-4">
@@ -50,6 +61,11 @@ export function AnalysisHeader({
         </p>
       </div>
       <div className="flex items-center gap-2">
+        {!isProgressiveMode && (
+          <Button variant="default" onClick={handleEnableFastLoading}>
+            ⚡ Enable Fast Loading
+          </Button>
+        )}
         {onReset && (
           <Button variant="outline" onClick={onReset}>
             {t("analyzeAnother")}

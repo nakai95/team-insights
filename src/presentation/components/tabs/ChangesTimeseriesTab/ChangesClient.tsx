@@ -90,11 +90,21 @@ export function ChangesClient({
 
   return (
     <div className="space-y-4">
+      {/* Progressive Mode Active Badge */}
+      <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+        <p className="text-sm text-green-900 dark:text-green-100">
+          <strong>✓ Progressive Loading Active</strong>
+        </p>
+      </div>
+
+      {/* Loading Indicator */}
       {state.isLoading && (
         <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
           <LoadingIndicator progress={state.progress} showProgress={true} />
         </div>
       )}
+
+      {/* Error Display */}
       {state.error && (
         <div className="p-4 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
           <p className="text-sm text-red-900 dark:text-red-100">
@@ -102,13 +112,21 @@ export function ChangesClient({
           </p>
         </div>
       )}
+
+      {/* Success Indicator */}
       {state.isComplete && (
         <div className="p-4 bg-emerald-50 dark:bg-emerald-950 rounded-lg border border-emerald-200 dark:border-emerald-800">
           <p className="text-sm text-emerald-900 dark:text-emerald-100">
-            <strong>✓ Loaded {prs.length} PRs</strong>
+            <strong>✓ Loaded {prs.length} pull requests</strong>
+            {prs.length > 0 && (
+              <span className="ml-2">
+                ({prs.length} historical PRs loaded from cache/API)
+              </span>
+            )}
           </p>
         </div>
       )}
+
       <ChangesTimeseriesTab
         timeseriesData={timeseriesData}
         repositoryUrl={repositoryUrl}
