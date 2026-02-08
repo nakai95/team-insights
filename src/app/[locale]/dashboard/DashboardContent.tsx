@@ -15,6 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContributorDto } from "@/application/dto/ContributorDto";
+import { DateRange } from "@/domain/value-objects/DateRange";
 
 /**
  * Dashboard content component that uses search params
@@ -68,6 +69,23 @@ export default function DashboardContent() {
       // Add the merged contributor at the beginning
       return [mergedContributor, ...remaining];
     });
+  };
+
+  /**
+   * Handle date range change in progressive mode
+   * Re-analyzes the repository with the new date range
+   */
+  const handleDateRangeChange = (range: DateRange) => {
+    if (state.status === "success") {
+      analyze({
+        repositoryUrl: state.data.analysis.repositoryUrl,
+        dateRange: {
+          start: range.start.toISOString().split("T")[0] as string,
+          end: range.end.toISOString().split("T")[0] as string,
+        },
+        mode: "progressive",
+      });
+    }
   };
 
   return (
@@ -151,6 +169,7 @@ export default function DashboardContent() {
             <AnalysisTabs
               analysisResult={state.data}
               contributors={contributors}
+              onDateRangeChange={handleDateRangeChange}
             />
           </div>
         )}

@@ -10,9 +10,6 @@ import { OverviewTab } from "../../tabs/OverviewTab";
 import { ThroughputTab } from "../../tabs/ThroughputTab";
 import { ChangesTimeseriesTab } from "../../tabs/ChangesTimeseriesTab";
 import { DeploymentFrequencyTab } from "../DeploymentFrequencyTab";
-import { ThroughputClient } from "../../tabs/ThroughputTab";
-import { ChangesClient } from "../../tabs/ChangesTimeseriesTab/ChangesClient";
-import { DeploymentFrequencyClient } from "../DeploymentFrequencyClient";
 
 import { DateRangeSelector } from "../../shared/DateRangeSelector";
 import { DateRange } from "@/domain/value-objects/DateRange";
@@ -30,6 +27,8 @@ export interface AnalysisTabsProps {
   contributors: ContributorDto[];
   /** Initial tab selection (defaults to 'overview' if not specified) */
   initialTab?: TabSelection;
+  /** Callback when date range changes in progressive mode (for re-analysis) */
+  onDateRangeChange?: (range: DateRange) => void;
 }
 
 /**
@@ -49,6 +48,7 @@ export function AnalysisTabs({
   analysisResult,
   contributors,
   initialTab = "overview",
+  onDateRangeChange,
 }: AnalysisTabsProps) {
   const t = useTranslations("dashboard.tabs");
   const searchParams = useSearchParams();
@@ -143,14 +143,13 @@ export function AnalysisTabs({
 
   /**
    * Handle date range change in progressive mode
-   * Updates URL params to trigger re-analysis with new date range
+   * Triggers re-analysis with new date range
    */
   const handleDateRangeChange = (range: DateRange) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("start", range.start.toISOString().split("T")[0] as string);
-    params.set("end", range.end.toISOString().split("T")[0] as string);
-    // Keep mode=progressive and current tab
-    router.push(`?${params.toString()}`, { scroll: false });
+    if (onDateRangeChange) {
+      // Call parent callback to trigger re-analysis
+      onDateRangeChange(range);
+    }
   };
 
   return (
@@ -208,55 +207,22 @@ export function AnalysisTabs({
           <OverviewTab contributors={contributors} />
         )}
 
-        {activeTab === "throughput" &&
-          (isProgressiveMode ? (
-            <ThroughputClient
-              throughputData={analysisResult.throughput}
-              repositoryId={analysisResult.analysis.repositoryUrl
-                .split("/")
-                .slice(-2)
-                .join("/")}
-              dateRange={analysisResult.analysis.dateRange}
-              enableProgressiveLoading={true}
-            />
-          ) : (
-            <ThroughputTab throughputData={analysisResult.throughput} />
-          ))}
+        {activeTab === "throughput" && (
+          <ThroughputTab throughputData={analysisResult.throughput} />
+        )}
 
-        {activeTab === "changes" &&
-          (isProgressiveMode ? (
-            <ChangesClient
-              timeseriesData={analysisResult.timeseries}
-              repositoryUrl={analysisResult.analysis.repositoryUrl}
-              dateRange={analysisResult.analysis.dateRange}
-              repositoryId={analysisResult.analysis.repositoryUrl
-                .split("/")
-                .slice(-2)
-                .join("/")}
-              enableProgressiveLoading={true}
-            />
-          ) : (
-            <ChangesTimeseriesTab
-              timeseriesData={analysisResult.timeseries}
-              repositoryUrl={analysisResult.analysis.repositoryUrl}
-              dateRange={analysisResult.analysis.dateRange}
-            />
-          ))}
+        {activeTab === "changes" && (
+          <ChangesTimeseriesTab
+            timeseriesData={analysisResult.timeseries}
+            repositoryUrl={analysisResult.analysis.repositoryUrl}
+            dateRange={analysisResult.analysis.dateRange}
+          />
+        )}
 
         {activeTab === "deployment-frequency" &&
-          analysisResult.deploymentFrequency &&
-          (isProgressiveMode ? (
-            <DeploymentFrequencyClient
-              initialData={[]}
-              repositoryId={analysisResult.analysis.repositoryUrl
-                .split("/")
-                .slice(-2)
-                .join("/")}
-              dateRange={analysisResult.analysis.dateRange}
-            />
-          ) : (
+          analysisResult.deploymentFrequency && (
             <DeploymentFrequencyTab data={analysisResult.deploymentFrequency} />
-          ))}
+          )}
       </div>
     </div>
   );
