@@ -1,5 +1,25 @@
 # Tasks: Progressive Data Loading
 
+> **⚠️ ARCHIVED - NOT IMPLEMENTED ⚠️**
+>
+> **Status**: This task list represents the **original complex plan** that was **NOT implemented**.
+>
+> **What Actually Happened**: A much simpler solution was built instead using pure React Server Components and Suspense, requiring only ~9 files (~500 lines) instead of the planned 78 tasks.
+>
+> **Why Archived**: The original plan over-engineered the solution with IndexedDB caching, Client Component hooks (useTransition, useBackgroundLoader), background loading coordination, and complex state management. Real-world implementation proved that React Server Components + Suspense provides excellent progressive loading UX without this complexity.
+>
+> **See Instead**:
+>
+> - [spec.md](./spec.md) - Updated to reflect actual implementation
+> - [plan.md](./plan.md) - Updated with "Original Plan vs. Actual Implementation" comparison
+> - Actual implementation: `src/app/[locale]/analytics/` and `src/presentation/components/analytics/`
+>
+> **Kept for Historical Reference**: This file is preserved to document the planning process and why a simpler approach was chosen. Future features should learn from this: start simple, add complexity only when proven necessary.
+
+---
+
+# Original Task List (For Historical Reference Only)
+
 **Feature**: 007-progressive-loading
 **Input**: Design documents from `/specs/007-progressive-loading/`
 **Prerequisites**: plan.md, spec.md, research.md, data-model.md, contracts/
