@@ -34,7 +34,8 @@ The implemented solution takes a **radically simpler approach** than the origina
 - **Pure Server Components** - No client-side state management needed
 - **Suspense-based streaming** - React 18's native progressive rendering
 - **Widget independence** - Each metric loads separately without coordination
-- **No caching layer** - Direct GitHub API calls (simpler, always fresh)
+- **Request-scoped caching** - React 19 `cache()` prevents duplicate API calls within same request
+- **No persistent caching** - Always fresh data on page reload (simpler, no stale data issues)
 - **Graceful degradation** - Failed widgets don't break the page
 
 **Rationale**: The original specification over-engineered the solution. Real-world Google Analytics demonstrates that independent widget streaming with Suspense provides excellent UX without complex caching or background loading coordination.
@@ -138,6 +139,11 @@ As a developer analyzing trends, I want to select different date ranges (7 days,
 
 - **AnalyticsPage** (`/app/[locale]/analytics/page.tsx`): Main page with URL param parsing and widget layout
 - **AnalyticsHeader**: Static header showing repository and date range
+- **AnalyticsControls**: Date range selector and repository input (Client Component)
+- **data-fetchers.ts**: React 19 `cache()` wrappers ⭐
+  - `getCachedPRs()` - Used by PRCountWidget
+  - `getCachedDeployments()` - Used by DeploymentCountWidget
+  - `getCachedCommits()` - Shared by CommitCountWidget + ContributorCountWidget (prevents duplicate API calls)
 - **PRCountWidget**: Displays total PRs and merge rate
 - **DeploymentCountWidget**: Displays total deployments
 - **CommitCountWidget**: Displays total commits and active days
@@ -153,6 +159,10 @@ As a developer analyzing trends, I want to select different date ranges (7 days,
 
 - **DateRange**: Date range validation and factory methods (last7Days, last30Days, etc.)
 
+#### Infrastructure
+
+- **GitHubGraphQLAdapter**: Extended with DateRange filtering for fetchPRs, fetchDeployments, fetchCommits
+
 ### Architecture Simplifications (vs Original Spec)
 
 **Removed Complexity (Not Needed)**:
@@ -166,11 +176,18 @@ As a developer analyzing trends, I want to select different date ranges (7 days,
 - ❌ Global state management (Zustand removed from plan)
 - ❌ Complex loading state coordination (LoadingState entity)
 
+**What We DID Implement (Smart Optimizations)**:
+
+- ✅ React 19 `cache()` for request-scoped memoization (prevents duplicate API calls)
+- ✅ Shared data fetchers: CommitCountWidget + ContributorCountWidget both use `getCachedCommits()`
+- ✅ Zero complexity: Native React feature, no custom caching logic
+
 **Why Simpler is Better**:
 
 - React Server Components + Suspense handle progressive rendering natively
+- React 19 `cache()` eliminates duplicate API calls within requests (e.g., commits fetched once, shared by 2 widgets)
 - No client-side serialization complexity
-- Always fresh data (no stale cache issues)
+- Always fresh data on page reload (cache cleared between requests)
 - Fewer moving parts = fewer bugs
 - Easier to understand and maintain
 
@@ -219,7 +236,9 @@ As a developer analyzing trends, I want to select different date ranges (7 days,
 src/
 ├── app/[locale]/analytics/
 │   ├── page.tsx                    # Main analytics page (Server Component)
-│   └── AnalyticsHeader.tsx         # Static header (Server Component)
+│   ├── AnalyticsHeader.tsx         # Static header (Server Component)
+│   ├── AnalyticsControls.tsx       # Date range selector (Client Component)
+│   └── data-fetchers.ts            # React 19 cache() wrappers ⭐
 ├── presentation/components/analytics/
 │   ├── widgets/
 │   │   ├── PRCountWidget.tsx       # PR metrics widget (Server Component)
@@ -235,7 +254,7 @@ src/
 ### Design Decisions
 
 1. **Server Components Only**: No client-side JavaScript for widgets = faster initial load, simpler architecture
-2. **No Caching**: Always fetch fresh data = simpler code, no cache invalidation complexity
+2. **Request-Scoped Caching (React 19)**: Use `cache()` to prevent duplicate API calls within request, always fresh on reload = optimal performance without complexity
 3. **Suspense Streaming**: Native React progressive rendering = no custom loading coordination needed
 4. **Independent Widgets**: Each widget owns its data fetching = no shared state, easier debugging
 5. **URL-based Date Range**: Shareable links, no global state = better UX, simpler state management

@@ -21,7 +21,7 @@ Implemented a Google Analytics-inspired dashboard at `/analytics` with independe
 - `next-intl` for internationalization
 - `next-themes` for dark mode
 
-**Storage**: None (no caching layer)
+**Storage**: Request-scoped memoization via React 19 `cache()`, no persistent caching
 **Testing**: Vitest for component tests, Playwright for E2E
 **Target Platform**: Web (Next.js 15 Server Components)
 **Project Type**: Web application (Next.js App Router)
@@ -120,9 +120,11 @@ The original specification (spec.md v1, tasks.md) called for:
 
 What was actually built:
 
-1. **Pure Server Components**:
+1. **Pure Server Components with Request-Scoped Caching**:
    - Each widget is an async Server Component
-   - Direct GitHub API calls (no caching layer)
+   - GitHub API calls via React 19 `cache()` (request-scoped memoization)
+   - Prevents duplicate API calls within same request (e.g., commits fetched once, shared by 2 widgets)
+   - No persistent caching (always fresh on reload)
    - No client-side state management
    - No client-side JavaScript for data fetching
 
@@ -146,7 +148,7 @@ What was actually built:
 | **Complexity**       | 78 tasks, 8 phases, domain entities, use cases | 4 widgets + 2 UI components              | ✅ Actual |
 | **Dependencies**     | `idb`, custom hooks, cache layer               | Native React Server Components           | ✅ Actual |
 | **Code Lines**       | ~3000+ lines (estimated)                       | ~500 lines                               | ✅ Actual |
-| **Caching**          | Complex IndexedDB with eviction                | None (always fresh data)                 | ✅ Actual |
+| **Caching**          | Complex IndexedDB with eviction                | React 19 cache() (request-scoped only)   | ✅ Actual |
 | **State Management** | Client-side state + URL params                 | URL params only                          | ✅ Actual |
 | **Loading UX**       | Custom coordination logic                      | Native Suspense streaming                | ✅ Actual |
 | **Error Handling**   | Complex retry + fallback logic                 | Simple error component                   | ✅ Actual |
@@ -163,7 +165,7 @@ The original plan would have introduced unnecessary complexity:
 
 | Potential Violation                                         | Why Not Needed                                             | Simpler Alternative Used                        |
 | ----------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------- |
-| IndexedDB caching layer                                     | Adds complexity, stale data issues, cache invalidation     | Direct API calls (always fresh data)            |
+| IndexedDB caching layer                                     | Adds complexity, stale data issues, cache invalidation     | React 19 cache() for request-scoped memoization |
 | Client Component hooks (useTransition, useBackgroundLoader) | Complex coordination, client-side state                    | Server Components + Suspense (native streaming) |
 | Background historical data loading                          | Complex chunking, rate limit tracking, progress management | Single date range fetch per widget              |
 | Domain entities for caching (CachedDataEntry, etc.)         | Over-abstraction for simple use case                       | Reuse existing DateRange value object           |
@@ -219,25 +221,34 @@ The original plan would have introduced unnecessary complexity:
 
 ---
 
-### Decision 3: No Caching Layer
+### Decision 3: Request-Scoped Caching (React 19 cache)
 
-**Chosen**: Direct GitHub API calls on every page load
+**Chosen**: Use React 19's `cache()` for request-scoped memoization, no persistent caching
 
 **Rationale**:
 
-- Always fresh data (no stale cache issues)
-- Simpler code (no cache invalidation logic)
-- GitHub API is fast enough (<2 seconds per widget)
+- React 19's `cache()` prevents duplicate API calls within the same request
+- Multiple widgets needing the same data (e.g., CommitCountWidget + ContributorCountWidget both need commits) only trigger one API call
+- Always fresh data on page reload (cache cleared between requests)
+- Zero complexity (built into React 19)
+
+**Implementation**:
+
+- `data-fetchers.ts` exports cached functions: `getCachedPRs`, `getCachedDeployments`, `getCachedCommits`
+- Each cached function wraps GitHub API call with `cache()`
+- Widgets call cached functions instead of direct API calls
 
 **Alternatives Considered**:
 
-- ❌ IndexedDB caching (original plan): Complex, adds ~2000 lines of code
+- ❌ IndexedDB caching (original plan): Complex, adds ~2000 lines of code, stale data issues
 - ❌ Server-side caching (Redis, etc.): Overkill for MVP, requires infrastructure
+- ❌ No caching at all: Would cause duplicate API calls for shared data (e.g., commits used by 2 widgets)
 
 **Trade-offs**:
 
-- ✅ Pros: Simple, always fresh, no cache bugs
-- ⚠️ Cons: Higher API usage (mitigated by GitHub rate limits being generous)
+- ✅ Pros: Eliminates duplicate API calls within request, simple, always fresh data between requests
+- ✅ Pros: Native React 19 feature (no dependencies)
+- ⚠️ Cons: Cache doesn't persist between page reloads (acceptable tradeoff for simplicity)
 
 ---
 
@@ -369,6 +380,8 @@ The original plan would have introduced unnecessary complexity:
 
 - `src/app/[locale]/analytics/page.tsx`
 - `src/app/[locale]/analytics/AnalyticsHeader.tsx`
+- `src/app/[locale]/analytics/AnalyticsControls.tsx`
+- `src/app/[locale]/analytics/data-fetchers.ts` ⭐ **React 19 cache wrappers**
 - `src/presentation/components/analytics/widgets/PRCountWidget.tsx`
 - `src/presentation/components/analytics/widgets/DeploymentCountWidget.tsx`
 - `src/presentation/components/analytics/widgets/CommitCountWidget.tsx`
