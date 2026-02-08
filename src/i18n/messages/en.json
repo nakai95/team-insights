@@ -612,5 +612,94 @@
         "content": "If you have any questions about these Terms of Service, please contact us through"
       }
     }
+  },
+  "analytics": {
+    "title": "Repository Analytics",
+    "description": "GitHub repository metrics and insights",
+    "emptyState": {
+      "title": "No Repository Selected",
+      "description": "Enter a repository URL to view analytics",
+      "placeholder": "https://github.com/owner/repo"
+    },
+    "header": {
+      "repository": "Repository",
+      "period": "Period",
+      "analyzedAt": "Analyzed at"
+    },
+    "widgets": {
+      "pullRequests": {
+        "title": "Pull Requests",
+        "merged": "{count} merged",
+        "mergeRate": "{rate}% merge rate"
+      },
+      "deployments": {
+        "title": "Deployments",
+        "total": "{count} total",
+        "doraLevel": "DORA: {level}"
+      },
+      "commits": {
+        "title": "Commits",
+        "total": "{count} total",
+        "activeDays": "{count} active days"
+      },
+      "contributors": {
+        "title": "Contributors",
+        "active": "{count} active"
+      },
+      "prTrends": {
+        "title": "PR Activity Trends",
+        "description": "Weekly pull request volume over time",
+        "tooltip": {
+          "week": "Week of {date}",
+          "prCount": "{count} PRs"
+        },
+        "chart": {
+          "yAxisLabel": "PR Count",
+          "prCountLabel": "PRs per Week"
+        }
+      },
+      "throughput": {
+        "title": "PR Throughput Analysis",
+        "description": "Lead time by PR size",
+        "emptyState": "No merged PRs available for throughput analysis"
+      },
+      "topContributors": {
+        "title": "Top Contributors",
+        "commits": "{count} commits",
+        "prs": "{count} PRs",
+        "emptyState": "No contributor activity found"
+      },
+      "doraMetrics": {
+        "title": "DORA Metrics",
+        "deploymentFrequency": "Deployment Frequency",
+        "level": "Level: {level}",
+        "totalDeployments": "{count} deployments",
+        "frequency": "{frequency} per day",
+        "emptyState": "No deployment data available"
+      },
+      "deploymentFrequency": {
+        "title": "Deployment Frequency",
+        "description": "Deployment timeline and trends",
+        "tooltip": {
+          "deploymentCount": "{count} deployments"
+        },
+        "chart": {
+          "yAxisLabel": "Deployments",
+          "deploymentCountLabel": "Deployment Count"
+        }
+      }
+    },
+    "errors": {
+      "failedToLoad": "Failed to load"
+    },
+    "repositorySelector": {
+      "searchPlaceholder": "Search repositories...",
+      "loading": "Loading repositories...",
+      "error": "Error",
+      "noRepositoryFound": "No repository found",
+      "recent": "Recent",
+      "yourRepositories": "Your Repositories",
+      "private": "Private"
+    }
   }
 }

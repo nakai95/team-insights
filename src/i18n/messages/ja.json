@@ -612,5 +612,94 @@
         "content": "これらの利用規約についてご質問がある場合は、以下を通じてお問い合わせください："
       }
     }
+  },
+  "analytics": {
+    "title": "リポジトリ分析",
+    "description": "GitHubリポジトリのメトリクスとインサイト",
+    "emptyState": {
+      "title": "リポジトリが選択されていません",
+      "description": "分析を表示するにはリポジトリURLを入力してください",
+      "placeholder": "https://github.com/owner/repo"
+    },
+    "header": {
+      "repository": "リポジトリ",
+      "period": "期間",
+      "analyzedAt": "分析日時"
+    },
+    "widgets": {
+      "pullRequests": {
+        "title": "プルリクエスト",
+        "merged": "{count}件マージ済み",
+        "mergeRate": "マージ率{rate}%"
+      },
+      "deployments": {
+        "title": "デプロイメント",
+        "total": "合計{count}件",
+        "doraLevel": "DORA: {level}"
+      },
+      "commits": {
+        "title": "コミット",
+        "total": "合計{count}件",
+        "activeDays": "{count}日間活動"
+      },
+      "contributors": {
+        "title": "Contributor",
+        "active": "{count}人活動中"
+      },
+      "prTrends": {
+        "title": "PR活動トレンド",
+        "description": "週次プルリクエストの推移",
+        "tooltip": {
+          "week": "{date}の週",
+          "prCount": "{count}件のPR"
+        },
+        "chart": {
+          "yAxisLabel": "PR数",
+          "prCountLabel": "週次PR数"
+        }
+      },
+      "throughput": {
+        "title": "PRスループット分析",
+        "description": "PRサイズ別のリードタイム",
+        "emptyState": "スループット分析に利用できるマージ済みPRがありません"
+      },
+      "topContributors": {
+        "title": "上位Contributor",
+        "commits": "{count}コミット",
+        "prs": "{count}件のPR",
+        "emptyState": "Contributorのアクティビティが見つかりません"
+      },
+      "doraMetrics": {
+        "title": "DORAメトリクス",
+        "deploymentFrequency": "デプロイ頻度",
+        "level": "レベル: {level}",
+        "totalDeployments": "{count}件のデプロイ",
+        "frequency": "1日あたり{frequency}件",
+        "emptyState": "デプロイデータがありません"
+      },
+      "deploymentFrequency": {
+        "title": "デプロイ頻度",
+        "description": "デプロイタイムラインとトレンド",
+        "tooltip": {
+          "deploymentCount": "{count}件のデプロイ"
+        },
+        "chart": {
+          "yAxisLabel": "デプロイ数",
+          "deploymentCountLabel": "デプロイ数"
+        }
+      }
+    },
+    "errors": {
+      "failedToLoad": "読み込みに失敗しました"
+    },
+    "repositorySelector": {
+      "searchPlaceholder": "リポジトリを検索...",
+      "loading": "リポジトリを読み込み中...",
+      "error": "エラー",
+      "noRepositoryFound": "リポジトリが見つかりません",
+      "recent": "最近",
+      "yourRepositories": "あなたのリポジトリ",
+      "private": "プライベート"
+    }
   }
 }
