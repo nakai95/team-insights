@@ -44,8 +44,15 @@ export function AnalyticsRedirect() {
       const mostRecent = recentRepos[0];
       if (!mostRecent) return;
 
+      // Validate URL before redirecting
+      const url = mostRecent.url;
+      if (!url || typeof url !== "string" || url.trim() === "") {
+        console.warn("Invalid repository URL in recent repositories:", url);
+        return;
+      }
+
       // Redirect to analytics with the repository
-      const redirectUrl = `/analytics?repo=${encodeURIComponent(mostRecent.url)}&range=30d`;
+      const redirectUrl = `/analytics?repo=${encodeURIComponent(url)}&range=30d`;
       router.replace(redirectUrl);
     } catch (error) {
       console.error("Failed to auto-redirect to recent repository:", error);

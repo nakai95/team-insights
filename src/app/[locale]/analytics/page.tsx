@@ -62,7 +62,9 @@ export default async function AnalyticsPage({
   if (
     !repoUrl ||
     typeof repoUrl !== "string" ||
-    repoUrl.trim() === ""
+    repoUrl.trim() === "" ||
+    repoUrl === "undefined" || // Catch string "undefined" from bad redirects
+    repoUrl === "null" // Catch string "null" from bad redirects
   ) {
     return (
       <AppLayout>
@@ -84,21 +86,25 @@ export default async function AnalyticsPage({
     <AppLayout>
       <div className="p-8">
         <div className="max-w-7xl mx-auto space-y-6">
-        {/* Hero Metrics - Only on Overview Tab */}
-        {params.tab !== "team" && (
-          <Suspense fallback={<HeroMetricsSkeleton />}>
-            <HeroMetrics repositoryId={repositoryId} dateRange={dateRange} />
-          </Suspense>
-        )}
+          {/* Hero Metrics - Only on Overview Tab */}
+          {params.tab !== "team" && (
+            <Suspense fallback={<HeroMetricsSkeleton />}>
+              <HeroMetrics repositoryId={repositoryId} dateRange={dateRange} />
+            </Suspense>
+          )}
 
-        {/* Content - Switched by sidebar navigation */}
-        {params.tab === "team" ? (
-          <Suspense fallback={<div className="text-center py-12">Loading team data...</div>}>
-            <TeamTab repositoryId={repositoryId} dateRange={dateRange} />
-          </Suspense>
-        ) : (
-          <OverviewTab repositoryId={repositoryId} dateRange={dateRange} />
-        )}
+          {/* Content - Switched by sidebar navigation */}
+          {params.tab === "team" ? (
+            <Suspense
+              fallback={
+                <div className="text-center py-12">Loading team data...</div>
+              }
+            >
+              <TeamTab repositoryId={repositoryId} dateRange={dateRange} />
+            </Suspense>
+          ) : (
+            <OverviewTab repositoryId={repositoryId} dateRange={dateRange} />
+          )}
         </div>
       </div>
       <AppFooter />
@@ -162,7 +168,13 @@ function parseDateRangeFromParams(params: {
  */
 function parseRepositoryUrl(url: string): { owner: string; repo: string } {
   // Validate input
-  if (!url || typeof url !== "string" || url.trim() === "") {
+  if (
+    !url ||
+    typeof url !== "string" ||
+    url.trim() === "" ||
+    url === "undefined" ||
+    url === "null"
+  ) {
     throw new Error(`Invalid repository URL: ${url}`);
   }
 
@@ -175,7 +187,9 @@ function parseRepositoryUrl(url: string): { owner: string; repo: string } {
   // Extract owner and repo
   const parts = cleanUrl.split("/").filter((part) => part.length > 0);
   if (parts.length < 2) {
-    throw new Error(`Invalid repository URL: ${url}`);
+    throw new Error(
+      `Invalid repository URL format: ${url}. Expected format: owner/repo or https://github.com/owner/repo`,
+    );
   }
 
   return {
