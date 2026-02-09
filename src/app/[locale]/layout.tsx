@@ -2,7 +2,6 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { locales } from "@/i18n/config";
-import { Header, Footer } from "@/presentation/components/layout";
 import { routing } from "@/i18n/routing";
 
 export function generateStaticParams() {
@@ -26,11 +25,7 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <div className="flex flex-col min-h-screen">
-        <Header />
-        <div className="flex-1">{children}</div>
-        <Footer />
-      </div>
+      {children}
     </NextIntlClientProvider>
   );
 }
