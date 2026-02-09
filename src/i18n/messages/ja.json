@@ -740,5 +740,15 @@
       "presets": "プリセット",
       "customRange": "カスタム範囲"
     }
+  },
+  "settings": {
+    "title": "設定",
+    "description": "アプリケーションの設定を管理",
+    "language": {
+      "title": "言語",
+      "description": "インターフェースの表示言語を選択",
+      "label": "表示言語",
+      "hint": "言語を変更するとインターフェースが再読み込みされます"
+    }
   }
 }

@@ -4,7 +4,6 @@ import { useTranslations } from "next-intl";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "../shared/ThemeToggle";
-import { LocaleSwitcher } from "../shared/LocaleSwitcher";
 import { UserProfile } from "../auth/UserProfile";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { MobileSidebar } from "./MobileSidebar";
@@ -19,11 +18,11 @@ import { DateRangePicker } from "./DateRangePicker";
  * Features:
  * - Repository switcher (left side)
  * - Date range picker
- * - User controls (theme, locale, profile) (right side)
+ * - User controls (theme, profile) (right side)
  * - Mobile: Hamburger menu for sidebar
  *
  * Layout:
- * Desktop: [Repo Switcher] [Date Range] ......... [Theme] [Locale] [User]
+ * Desktop: [Repo Switcher] [Date Range] ......... [Theme] [User]
  * Mobile:  [☰ Menu] [Repo Switcher] ......... [User]
  *
  * Usage:
@@ -88,9 +87,6 @@ export function AppHeader() {
         {/* Right side: Controls */}
         <div className="flex items-center gap-2 md:gap-4">
           <ThemeToggle />
-          <div className="hidden md:block">
-            <LocaleSwitcher />
-          </div>
           <UserProfile />
         </div>
       </div>

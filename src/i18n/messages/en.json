@@ -740,5 +740,15 @@
       "presets": "Presets",
       "customRange": "Custom Range"
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your application preferences",
+    "language": {
+      "title": "Language",
+      "description": "Choose your preferred language for the interface",
+      "label": "Display Language",
+      "hint": "The interface will reload when you change the language"
+    }
   }
 }

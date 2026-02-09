@@ -78,8 +78,8 @@ export function AppSidebar() {
       id: "settings",
       label: t("settings"),
       icon: Settings,
-      href: "#",
-      tab: undefined, // Not implemented yet
+      href: "/settings",
+      tab: undefined,
     },
   ];
 
@@ -87,6 +87,10 @@ export function AppSidebar() {
   const isActive = (item: NavigationItem) => {
     if (item.tab) {
       return currentTab === item.tab;
+    }
+    // For settings page, check if pathname includes /settings
+    if (item.id === "settings") {
+      return pathname.includes("/settings");
     }
     return pathname === item.href;
   };
@@ -107,14 +111,8 @@ export function AppSidebar() {
                 active
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                item.id === "settings" && "opacity-50 cursor-not-allowed",
               )}
               aria-current={active ? "page" : undefined}
-              onClick={
-                item.id === "settings"
-                  ? (e) => e.preventDefault()
-                  : undefined
-              }
             >
               <Icon className="h-5 w-5" />
               <span>{item.label}</span>

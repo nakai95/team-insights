@@ -74,7 +74,7 @@ export function MobileSidebar() {
       id: "settings",
       label: t("settings"),
       icon: Settings,
-      href: "#",
+      href: "/settings",
       tab: undefined,
     },
   ];
@@ -83,13 +83,17 @@ export function MobileSidebar() {
     if (item.tab) {
       return currentTab === item.tab;
     }
+    // For settings page, check if pathname includes /settings
+    if (item.id === "settings") {
+      return pathname.includes("/settings");
+    }
     return pathname === item.href;
   };
 
   return (
     <div className="flex flex-col h-full">
       <div className="p-6 border-b">
-        <h2 className="text-lg font-semibold">{t("title")}</h2>
+        <h2 className="text-lg font-semibold">Team Insights</h2>
       </div>
 
       <nav className="flex-1 p-3 space-y-1">
@@ -106,14 +110,8 @@ export function MobileSidebar() {
                 active
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                item.id === "settings" && "opacity-50 cursor-not-allowed",
               )}
               aria-current={active ? "page" : undefined}
-              onClick={
-                item.id === "settings"
-                  ? (e) => e.preventDefault()
-                  : undefined
-              }
             >
               <Icon className="h-5 w-5" />
               <span>{item.label}</span>
@@ -121,10 +119,6 @@ export function MobileSidebar() {
           );
         })}
       </nav>
-
-      <div className="p-4 border-t">
-        <p className="text-xs text-muted-foreground">{t("footer")}</p>
-      </div>
     </div>
   );
 }
