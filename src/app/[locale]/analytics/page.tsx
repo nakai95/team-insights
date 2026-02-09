@@ -4,17 +4,9 @@ import { DateRange } from "@/domain/value-objects/DateRange";
 import { AppLayout } from "@/presentation/components/layout";
 import { HeroMetrics } from "@/presentation/components/analytics/HeroMetrics";
 import { HeroMetricsSkeleton } from "@/presentation/components/analytics/skeletons/HeroMetricsSkeleton";
-import { MetricCardSkeleton } from "@/presentation/components/analytics/skeletons/MetricCardSkeleton";
-import { SkeletonChart } from "@/presentation/components/shared/SkeletonChart";
-import { PRCountWidget } from "@/presentation/components/analytics/widgets/PRCountWidget";
-import { DeploymentCountWidget } from "@/presentation/components/analytics/widgets/DeploymentCountWidget";
-import { CommitCountWidget } from "@/presentation/components/analytics/widgets/CommitCountWidget";
-import { ContributorCountWidget } from "@/presentation/components/analytics/widgets/ContributorCountWidget";
-import { PRTrendsWidget } from "@/presentation/components/analytics/widgets/PRTrendsWidget";
-import { ThroughputWidget } from "@/presentation/components/analytics/widgets/ThroughputWidget";
-import { TopContributorsWidget } from "@/presentation/components/analytics/widgets/TopContributorsWidget";
-import { DORAMetricsWidget } from "@/presentation/components/analytics/widgets/DORAMetricsWidget";
-import { DeploymentFrequencyWidget } from "@/presentation/components/analytics/widgets/DeploymentFrequencyWidget";
+import { AnalyticsTabs } from "@/presentation/components/analytics/AnalyticsTabs";
+import { OverviewTab } from "@/presentation/components/analytics/tabs/OverviewTab";
+import { TeamTab } from "@/presentation/components/analytics/tabs/TeamTab";
 
 /**
  * Analytics Page
@@ -45,6 +37,7 @@ interface AnalyticsPageProps {
     start?: string;
     end?: string;
     range?: string;
+    tab?: string;
   }>;
 }
 
@@ -85,78 +78,16 @@ export default async function AnalyticsPage({
           <HeroMetrics repositoryId={repositoryId} dateRange={dateRange} />
         </Suspense>
 
-        {/* Row 1: Overview Metrics (4 cards) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Suspense fallback={<MetricCardSkeleton />}>
-            <PRCountWidget repositoryId={repositoryId} dateRange={dateRange} />
-          </Suspense>
-
-          <Suspense fallback={<MetricCardSkeleton />}>
-            <DeploymentCountWidget
-              repositoryId={repositoryId}
-              dateRange={dateRange}
-            />
-          </Suspense>
-
-          <Suspense fallback={<MetricCardSkeleton />}>
-            <CommitCountWidget
-              repositoryId={repositoryId}
-              dateRange={dateRange}
-            />
-          </Suspense>
-
-          <Suspense fallback={<MetricCardSkeleton />}>
-            <ContributorCountWidget
-              repositoryId={repositoryId}
-              dateRange={dateRange}
-            />
-          </Suspense>
-        </div>
-
-        {/* Row 2: Main Analytics (2 columns) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column - 2/3 width */}
-          <div className="lg:col-span-2 space-y-6">
-            <Suspense fallback={<SkeletonChart height="h-96" />}>
-              <PRTrendsWidget
-                repositoryId={repositoryId}
-                dateRange={dateRange}
-              />
+        {/* Tab Navigation and Content */}
+        <AnalyticsTabs>
+          {params.tab === "team" ? (
+            <Suspense fallback={<div>Loading team data...</div>}>
+              <TeamTab repositoryId={repositoryId} dateRange={dateRange} />
             </Suspense>
-
-            <Suspense fallback={<SkeletonChart height="h-80" />}>
-              <ThroughputWidget
-                repositoryId={repositoryId}
-                dateRange={dateRange}
-              />
-            </Suspense>
-          </div>
-
-          {/* Right column - 1/3 width */}
-          <div className="space-y-6">
-            <Suspense fallback={<SkeletonChart height="h-64" />}>
-              <TopContributorsWidget
-                repositoryId={repositoryId}
-                dateRange={dateRange}
-              />
-            </Suspense>
-
-            <Suspense fallback={<SkeletonChart height="h-64" />}>
-              <DORAMetricsWidget
-                repositoryId={repositoryId}
-                dateRange={dateRange}
-              />
-            </Suspense>
-          </div>
-        </div>
-
-        {/* Row 3: Full Width */}
-        <Suspense fallback={<SkeletonChart height="h-96" />}>
-          <DeploymentFrequencyWidget
-            repositoryId={repositoryId}
-            dateRange={dateRange}
-          />
-        </Suspense>
+          ) : (
+            <OverviewTab repositoryId={repositoryId} dateRange={dateRange} />
+          )}
+        </AnalyticsTabs>
         </div>
       </div>
     </AppLayout>

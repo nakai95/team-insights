@@ -602,6 +602,10 @@
         "comparison": "vs previous period"
       }
     },
+    "tabs": {
+      "overview": "Overview",
+      "team": "Team"
+    },
     "widgets": {
       "pullRequests": {
         "title": "Pull Requests",
@@ -663,6 +667,14 @@
           "yAxisLabel": "Deployments",
           "deploymentCountLabel": "Deployment Count"
         }
+      }
+    },
+    "team": {
+      "title": "Team Analysis",
+      "description": "Detailed contributor metrics and activity",
+      "comingSoon": {
+        "title": "Coming Soon",
+        "description": "Detailed team analysis with contributor rankings, implementation activity, and review metrics will be available soon."
       }
     },
     "errors": {

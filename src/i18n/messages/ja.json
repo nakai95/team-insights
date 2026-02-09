@@ -602,6 +602,10 @@
         "comparison": "前期間比"
       }
     },
+    "tabs": {
+      "overview": "概要",
+      "team": "チーム"
+    },
     "widgets": {
       "pullRequests": {
         "title": "プルリクエスト",
@@ -663,6 +667,14 @@
           "yAxisLabel": "デプロイ数",
           "deploymentCountLabel": "デプロイ数"
         }
+      }
+    },
+    "team": {
+      "title": "チーム分析",
+      "description": "詳細なコントリビューターメトリクスとアクティビティ",
+      "comingSoon": {
+        "title": "近日公開",
+        "description": "コントリビューターランキング、実装アクティビティ、レビューメトリクスを含む詳細なチーム分析は近日公開予定です。"
       }
     },
     "errors": {
