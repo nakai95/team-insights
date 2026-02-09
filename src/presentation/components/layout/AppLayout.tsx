@@ -9,16 +9,16 @@ import { AppHeader } from "./AppHeader";
  * Purpose: Main application layout wrapper (Google Analytics style)
  *
  * Layout Structure:
- * ┌─────────────────────────────────────────────────────────┐
- * │ Header: [Repo Switcher] [Date Range] ... [User]        │
- * ├──────────┬──────────────────────────────────────────────┤
- * │ Sidebar  │ Main Content Area                            │
- * │          │                                               │
- * │ Overview │                                               │
- * │ Team     │                                               │
- * │ Settings │                                               │
- * │          │                                               │
- * └──────────┴──────────────────────────────────────────────┘
+ * ┌──────────────────────────────────────────────────────────┐
+ * │ Header: [Logo] [Repo] [Date] ......... [Theme] [User]   │
+ * ├──────────┬───────────────────────────────────────────────┤
+ * │ Sidebar  │ Main Content Area                             │
+ * │          │                                                │
+ * │ Overview │                                                │
+ * │ Team     │                                                │
+ * │ Settings │                                                │
+ * │          │                                                │
+ * └──────────┴───────────────────────────────────────────────┘
  *
  * Features:
  * - Fixed sidebar on desktop (Material Design style)
@@ -44,14 +44,14 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   return (
-    <div className="flex h-screen overflow-hidden">
-      {/* Fixed Sidebar (desktop only) */}
-      <AppSidebar />
+    <div className="flex flex-col h-screen overflow-hidden">
+      {/* Header - Full width at top */}
+      <AppHeader />
 
-      {/* Main area: Header + Content */}
-      <div className="flex flex-col flex-1 overflow-hidden">
-        {/* Header */}
-        <AppHeader />
+      {/* Content area: Sidebar + Main */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Fixed Sidebar (desktop only) */}
+        <AppSidebar />
 
         {/* Scrollable content area */}
         <main className="flex-1 overflow-y-auto bg-background">
