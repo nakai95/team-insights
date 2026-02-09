@@ -57,8 +57,13 @@ export default async function AnalyticsPage({
   const t = await getTranslations("analytics");
   const params = await searchParams;
 
-  // Check if repository URL is provided
-  if (!params.repo || params.repo.trim() === "") {
+  // Check if repository URL is provided and valid
+  const repoUrl = params.repo;
+  if (
+    !repoUrl ||
+    typeof repoUrl !== "string" ||
+    repoUrl.trim() === ""
+  ) {
     return (
       <AppLayout>
         <AnalyticsRedirect />
@@ -72,7 +77,7 @@ export default async function AnalyticsPage({
   const dateRange = parseDateRangeFromParams(params);
 
   // Parse repository URL to extract owner and repo
-  const { owner, repo } = parseRepositoryUrl(params.repo);
+  const { owner, repo } = parseRepositoryUrl(repoUrl);
   const repositoryId = `${owner}/${repo}`;
 
   return (
