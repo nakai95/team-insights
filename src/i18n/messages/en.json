@@ -672,9 +672,20 @@
     "team": {
       "title": "Team Analysis",
       "description": "Detailed contributor metrics and activity",
-      "comingSoon": {
-        "title": "Coming Soon",
-        "description": "Detailed team analysis with contributor rankings, implementation activity, and review metrics will be available soon."
+      "error": {
+        "title": "Failed to Load Team Data",
+        "description": "Unable to fetch contributor analysis"
+      },
+      "emptyState": {
+        "title": "No Contributors Found",
+        "description": "No contributor activity detected in the selected date range"
+      },
+      "reviewActivity": {
+        "title": "Review Activity",
+        "description": "Top reviewers by review score",
+        "prsReviewed": "PRs reviewed",
+        "comments": "comments",
+        "score": "score"
       }
     },
     "errors": {

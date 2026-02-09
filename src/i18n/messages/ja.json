@@ -672,9 +672,20 @@
     "team": {
       "title": "チーム分析",
       "description": "詳細なコントリビューターメトリクスとアクティビティ",
-      "comingSoon": {
-        "title": "近日公開",
-        "description": "コントリビューターランキング、実装アクティビティ、レビューメトリクスを含む詳細なチーム分析は近日公開予定です。"
+      "error": {
+        "title": "チームデータの読み込みに失敗",
+        "description": "コントリビューター分析の取得に失敗しました"
+      },
+      "emptyState": {
+        "title": "コントリビューターが見つかりません",
+        "description": "選択された期間にコントリビューターアクティビティが検出されませんでした"
+      },
+      "reviewActivity": {
+        "title": "レビューアクティビティ",
+        "description": "レビュースコア上位のレビュアー",
+        "prsReviewed": "件レビュー",
+        "comments": "コメント",
+        "score": "スコア"
       }
     },
     "errors": {
