@@ -570,13 +570,48 @@
     "description": "GitHubリポジトリのメトリクスとインサイト",
     "emptyState": {
       "title": "リポジトリが選択されていません",
-      "description": "分析を表示するにはリポジトリURLを入力してください",
-      "placeholder": "https://github.com/owner/repo"
+      "description": "ヘッダーからリポジトリを選択して分析とインサイトを表示します",
+      "placeholder": "https://github.com/owner/repo",
+      "howTo": {
+        "title": "始め方：",
+        "step1": "ヘッダーのリポジトリ選択をクリック",
+        "step2": "最近のリポジトリから選択するか検索",
+        "step3": "分析が自動的に読み込まれます"
+      },
+      "hint": "ヒント：最近表示したリポジトリは次回のために記憶されます"
     },
     "header": {
       "repository": "リポジトリ",
       "period": "期間",
       "analyzedAt": "分析日時"
+    },
+    "heroMetrics": {
+      "deployments": {
+        "title": "デプロイ頻度",
+        "subtitle": "週あたり",
+        "total": "合計"
+      },
+      "prThroughput": {
+        "title": "PRスループット",
+        "subtitle": "マージ済みPR",
+        "mergeRate": "マージ率"
+      },
+      "teamVelocity": {
+        "title": "チームベロシティ",
+        "subtitle": "週あたり",
+        "total": "合計アクティビティ"
+      },
+      "contributors": {
+        "title": "アクティブコントリビューター",
+        "subtitle": "ユニーク数"
+      },
+      "trend": {
+        "comparison": "前期間比"
+      }
+    },
+    "tabs": {
+      "overview": "概要",
+      "team": "チーム"
     },
     "widgets": {
       "pullRequests": {
@@ -645,6 +680,25 @@
         }
       }
     },
+    "team": {
+      "title": "チーム分析",
+      "description": "詳細なコントリビューターメトリクスとアクティビティ",
+      "error": {
+        "title": "チームデータの読み込みに失敗",
+        "description": "コントリビューター分析の取得に失敗しました"
+      },
+      "emptyState": {
+        "title": "コントリビューターが見つかりません",
+        "description": "選択された期間にコントリビューターアクティビティが検出されませんでした"
+      },
+      "reviewActivity": {
+        "title": "レビューアクティビティ",
+        "description": "レビュースコア上位のレビュアー",
+        "prsReviewed": "件レビュー",
+        "comments": "コメント",
+        "score": "スコア"
+      }
+    },
     "errors": {
       "failedToLoad": "読み込みに失敗しました"
     },
@@ -656,6 +710,49 @@
       "recent": "最近",
       "yourRepositories": "あなたのリポジトリ",
       "private": "プライベート"
+    }
+  },
+  "layout": {
+    "sidebar": {
+      "overview": "概要",
+      "team": "チーム",
+      "deployments": "デプロイメント",
+      "codeChanges": "コード変更",
+      "settings": "設定"
+    },
+    "header": {
+      "mobileMenu": "ナビゲーションメニューを開く"
+    },
+    "footer": {
+      "terms": "利用規約",
+      "privacy": "プライバシーポリシー"
+    },
+    "repositorySwitcher": {
+      "selectRepository": "リポジトリを選択",
+      "placeholder": "リポジトリを選択...",
+      "searchPlaceholder": "検索またはowner/repoを入力...",
+      "noResults": "リポジトリが見つかりません",
+      "recentRepositories": "最近",
+      "allRepositories": "あなたのリポジトリ",
+      "enterRepository": "リポジトリを入力",
+      "hint": "owner/repo形式で入力 (例: facebook/react)",
+      "loading": "リポジトリを読み込み中...",
+      "error": "エラー"
+    },
+    "dateRangePicker": {
+      "selectDateRange": "期間を選択",
+      "presets": "プリセット",
+      "customRange": "カスタム範囲"
+    }
+  },
+  "settings": {
+    "title": "設定",
+    "description": "アプリケーションの設定を管理",
+    "language": {
+      "title": "言語",
+      "description": "インターフェースの表示言語を選択",
+      "label": "表示言語",
+      "hint": "言語を変更するとインターフェースが再読み込みされます"
     }
   }
 }

@@ -54,6 +54,11 @@ export function ImplementationActivityChart({
     filesChanged: contributor.implementationActivity.filesChanged,
   }));
 
+  // Check if there's any actual data to display
+  const hasData = chartData.some(
+    (d) => d.commits > 0 || d.linesAdded > 0 || d.linesDeleted > 0,
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -63,59 +68,69 @@ export function ImplementationActivityChart({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={400}>
-          <ComposedChart
-            data={chartData}
-            margin={{
-              top: 20,
-              right: 60,
-              left: 20,
-              bottom: 80,
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="name"
-              angle={-45}
-              textAnchor="end"
-              height={100}
-              interval={0}
-            />
-            <YAxis
-              yAxisId="left"
-              label={{
-                value: t("commits"),
-                angle: -90,
-                position: "insideLeft",
+        {!hasData ? (
+          <div className="flex items-center justify-center h-[400px] text-muted-foreground">
+            <p>No implementation activity data available</p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={400}>
+            <ComposedChart
+              data={chartData}
+              margin={{
+                top: 20,
+                right: 60,
+                left: 20,
+                bottom: 80,
               }}
-            />
-            <YAxis
-              yAxisId="right"
-              orientation="right"
-              label={{ value: t("lines"), angle: 90, position: "insideRight" }}
-            />
-            <Tooltip />
-            <Legend />
-            <Bar
-              yAxisId="left"
-              dataKey="commits"
-              fill="#8884d8"
-              name={t("commits")}
-            />
-            <Bar
-              yAxisId="right"
-              dataKey="linesAdded"
-              fill="#82ca9d"
-              name={t("linesAdded")}
-            />
-            <Bar
-              yAxisId="right"
-              dataKey="linesDeleted"
-              fill="#ffc658"
-              name={t("linesDeleted")}
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="name"
+                angle={-45}
+                textAnchor="end"
+                height={100}
+                interval={0}
+              />
+              <YAxis
+                yAxisId="left"
+                label={{
+                  value: t("commits"),
+                  angle: -90,
+                  position: "insideLeft",
+                }}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                label={{
+                  value: t("lines"),
+                  angle: 90,
+                  position: "insideRight",
+                }}
+              />
+              <Tooltip />
+              <Legend />
+              <Bar
+                yAxisId="left"
+                dataKey="commits"
+                fill="#8884d8"
+                name={t("commits")}
+              />
+              <Bar
+                yAxisId="right"
+                dataKey="linesAdded"
+                fill="#82ca9d"
+                name={t("linesAdded")}
+              />
+              <Bar
+                yAxisId="right"
+                dataKey="linesDeleted"
+                fill="#ffc658"
+                name={t("linesDeleted")}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   );

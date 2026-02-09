@@ -570,13 +570,48 @@
     "description": "GitHub repository metrics and insights",
     "emptyState": {
       "title": "No Repository Selected",
-      "description": "Enter a repository URL to view analytics",
-      "placeholder": "https://github.com/owner/repo"
+      "description": "Select a repository from the header to view analytics and insights",
+      "placeholder": "https://github.com/owner/repo",
+      "howTo": {
+        "title": "How to get started:",
+        "step1": "Click the repository selector in the header",
+        "step2": "Choose from your recent repositories or search for one",
+        "step3": "Analytics will load automatically"
+      },
+      "hint": "Tip: Your most recently viewed repository will be remembered for next time"
     },
     "header": {
       "repository": "Repository",
       "period": "Period",
       "analyzedAt": "Analyzed at"
+    },
+    "heroMetrics": {
+      "deployments": {
+        "title": "Deployment Frequency",
+        "subtitle": "Per week",
+        "total": "total"
+      },
+      "prThroughput": {
+        "title": "PR Throughput",
+        "subtitle": "Merged PRs",
+        "mergeRate": "merge rate"
+      },
+      "teamVelocity": {
+        "title": "Team Velocity",
+        "subtitle": "Per week",
+        "total": "total activity"
+      },
+      "contributors": {
+        "title": "Active Contributors",
+        "subtitle": "Unique contributors"
+      },
+      "trend": {
+        "comparison": "vs previous period"
+      }
+    },
+    "tabs": {
+      "overview": "Overview",
+      "team": "Team"
     },
     "widgets": {
       "pullRequests": {
@@ -645,6 +680,25 @@
         }
       }
     },
+    "team": {
+      "title": "Team Analysis",
+      "description": "Detailed contributor metrics and activity",
+      "error": {
+        "title": "Failed to Load Team Data",
+        "description": "Unable to fetch contributor analysis"
+      },
+      "emptyState": {
+        "title": "No Contributors Found",
+        "description": "No contributor activity detected in the selected date range"
+      },
+      "reviewActivity": {
+        "title": "Review Activity",
+        "description": "Top reviewers by review score",
+        "prsReviewed": "PRs reviewed",
+        "comments": "comments",
+        "score": "score"
+      }
+    },
     "errors": {
       "failedToLoad": "Failed to load"
     },
@@ -656,6 +710,49 @@
       "recent": "Recent",
       "yourRepositories": "Your Repositories",
       "private": "Private"
+    }
+  },
+  "layout": {
+    "sidebar": {
+      "overview": "Overview",
+      "team": "Team",
+      "deployments": "Deployments",
+      "codeChanges": "Code Changes",
+      "settings": "Settings"
+    },
+    "header": {
+      "mobileMenu": "Open navigation menu"
+    },
+    "footer": {
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy"
+    },
+    "repositorySwitcher": {
+      "selectRepository": "Select repository",
+      "placeholder": "Select repository...",
+      "searchPlaceholder": "Search or enter owner/repo...",
+      "noResults": "No repositories found",
+      "recentRepositories": "Recent",
+      "allRepositories": "Your Repositories",
+      "enterRepository": "Enter Repository",
+      "hint": "Type owner/repo (e.g., facebook/react)",
+      "loading": "Loading repositories...",
+      "error": "Error"
+    },
+    "dateRangePicker": {
+      "selectDateRange": "Select date range",
+      "presets": "Presets",
+      "customRange": "Custom Range"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your application preferences",
+    "language": {
+      "title": "Language",
+      "description": "Choose your preferred language for the interface",
+      "label": "Display Language",
+      "hint": "The interface will reload when you change the language"
     }
   }
 }

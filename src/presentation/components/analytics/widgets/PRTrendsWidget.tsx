@@ -1,26 +1,37 @@
 import { getTranslations } from "next-intl/server";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
 import { MetricCardError } from "../shared/MetricCardError";
 import { getCachedPRs } from "@/app/[locale]/analytics/data-fetchers";
 import type { DateRange } from "@/domain/value-objects/DateRange";
-import { PRTrendsChart } from "./components/PRTrendsChart";
+import { CalculateChangesTimeseries } from "@/application/use-cases/CalculateChangesTimeseries";
+import {
+  TimeseriesChart,
+  EmptyState,
+} from "@/presentation/components/tabs/ChangesTimeseriesTab/components";
 
 /**
  * PRTrendsWidget Component
  *
- * Purpose: Display weekly PR volume trends in a line chart
+ * Purpose: Display weekly PR activity with code changes analysis
  *
  * Features:
  * - Async Server Component (fetches data independently)
- * - Shows weekly PR count over time
- * - Line chart visualization
+ * - Shows weekly code changes (additions/deletions) with PR count overlay
+ * - Outlier week detection (statistical anomalies)
+ * - Trend analysis visualization
  * - Error handling without breaking page
  *
  * Data Flow:
  * 1. Fetches PRs from GitHub API (cached)
- * 2. Aggregates PRs by week
- * 3. Renders immediately when data available
+ * 2. Calculates weekly timeseries with CalculateChangesTimeseries use case
+ * 3. Renders TimeseriesChart with outliers and trends
  * 4. Fails gracefully with MetricCardError
  *
  * Usage:
@@ -43,76 +54,11 @@ interface PRTrendsWidgetProps {
   dateRange: DateRange;
 }
 
-interface WeeklyData {
-  weekStart: string;
-  prCount: number;
-}
-
-/**
- * Aggregate PRs by week
- * Groups PRs by their creation week and counts them
- */
-function aggregateByWeek(
-  prs: Array<{ createdAt: Date }>,
-  dateRange: DateRange,
-): WeeklyData[] {
-  // Create a map to store PR counts per week
-  const weekMap = new Map<string, number>();
-
-  // Process each PR
-  for (const pr of prs) {
-    // Get the start of the week (Monday)
-    const weekStart = getWeekStart(pr.createdAt);
-    const weekKey = weekStart.toISOString().split("T")[0]!;
-
-    // Increment count for this week
-    weekMap.set(weekKey, (weekMap.get(weekKey) || 0) + 1);
-  }
-
-  // Convert map to sorted array
-  const weeklyData: WeeklyData[] = [];
-
-  // Generate all weeks in the date range
-  let currentWeek = getWeekStart(dateRange.start);
-  const endWeek = getWeekStart(dateRange.end);
-
-  while (currentWeek <= endWeek) {
-    const weekKey = currentWeek.toISOString().split("T")[0]!;
-    weeklyData.push({
-      weekStart: weekKey,
-      prCount: weekMap.get(weekKey) || 0,
-    });
-
-    // Move to next week (create new Date object)
-    const nextWeek = new Date(currentWeek);
-    nextWeek.setDate(currentWeek.getDate() + 7);
-    currentWeek = nextWeek;
-  }
-
-  return weeklyData;
-}
-
-/**
- * Get the start of the week (Monday) for a given date
- * Returns a new Date object set to Monday 00:00:00
- */
-function getWeekStart(date: Date): Date {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0); // Reset time to midnight
-
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day; // Monday = 1, Sunday = 0
-
-  const weekStart = new Date(d);
-  weekStart.setDate(d.getDate() + diff);
-  return weekStart;
-}
-
 export async function PRTrendsWidget({
   repositoryId,
   dateRange,
 }: PRTrendsWidgetProps) {
-  const t = await getTranslations("analytics.widgets.prTrends");
+  const t = await getTranslations("prTimeseries");
 
   try {
     // Fetch PRs from cached data fetcher (prevents duplicate API calls)
@@ -125,18 +71,13 @@ export async function PRTrendsWidget({
 
     const prs = result.value;
 
-    // Debug logging
-    console.log("[PRTrendsWidget] Total PRs fetched:", prs.length);
-    console.log("[PRTrendsWidget] Date range:", {
-      start: dateRange.start.toISOString(),
-      end: dateRange.end.toISOString(),
-    });
+    // Calculate timeseries data using the use case
+    const calculateChangesTimeseries = new CalculateChangesTimeseries();
+    const timeseriesData = calculateChangesTimeseries.execute(prs);
 
-    // Aggregate PRs by week
-    const weeklyData = aggregateByWeek(prs, dateRange);
-
-    console.log("[PRTrendsWidget] Weekly data points:", weeklyData.length);
-    console.log("[PRTrendsWidget] Weekly data:", weeklyData);
+    // Show empty state if no data
+    const showEmptyState =
+      !timeseriesData || timeseriesData.weeklyData.length === 0;
 
     return (
       <Card>
@@ -145,10 +86,30 @@ export async function PRTrendsWidget({
             <TrendingUp className="h-5 w-5" />
             {t("title")}
           </CardTitle>
-          <p className="text-sm text-muted-foreground">{t("description")}</p>
+          <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
-        <CardContent>
-          <PRTrendsChart data={weeklyData} />
+
+        <CardContent className="px-2 sm:px-6">
+          {showEmptyState ? (
+            <EmptyState
+              repositoryUrl={`https://github.com/${repositoryId}`}
+              dateRange={{
+                start: dateRange.start.toISOString(),
+                end: dateRange.end.toISOString(),
+              }}
+            />
+          ) : (
+            <div className="w-full overflow-x-auto -mx-2 sm:mx-0">
+              <div className="min-w-[600px]">
+                <TimeseriesChart
+                  weeklyData={timeseriesData.weeklyData}
+                  outlierWeeks={timeseriesData.outlierWeeks}
+                  height={400}
+                  showMovingAverage={timeseriesData.trend !== null}
+                />
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     );

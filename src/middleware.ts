@@ -24,7 +24,7 @@ const handleI18nRouting = createMiddleware(routing);
  * Route Patterns:
  * - Public: /[locale] (landing page), /[locale]/privacy, /[locale]/terms
  * - Auth pages: /[locale]/login, /[locale]/auth/error
- * - Protected: /[locale]/dashboard and all other routes
+ * - Protected: /[locale]/analytics and all other routes
  */
 export default auth((req) => {
   // Step 1: Handle i18n routing first
@@ -63,10 +63,10 @@ export default auth((req) => {
     );
   }
 
-  // Redirect authenticated users from homepage to dashboard
+  // Redirect authenticated users from homepage to analytics
   if (isAuthenticated && pathname === `/${locale}`) {
     return NextResponse.redirect(
-      new URL(`/${locale}/dashboard`, req.nextUrl.origin),
+      new URL(`/${locale}/analytics`, req.nextUrl.origin),
     );
   }
 
@@ -77,11 +77,11 @@ export default auth((req) => {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Redirect authenticated users away from auth pages to dashboard
+  // Redirect authenticated users away from auth pages to analytics
   // In env token mode, allow access to login page to show status
   if (isAuthenticated && isAuthPage && !req.auth?.error && !isEnvToken) {
     return NextResponse.redirect(
-      new URL(`/${locale}/dashboard`, req.nextUrl.origin),
+      new URL(`/${locale}/analytics`, req.nextUrl.origin),
     );
   }
 

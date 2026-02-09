@@ -1,19 +1,14 @@
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { DateRange } from "@/domain/value-objects/DateRange";
-import { AnalyticsControls } from "./AnalyticsControls";
-import { MetricCardSkeleton } from "@/presentation/components/analytics/skeletons/MetricCardSkeleton";
-import { SkeletonChart } from "@/presentation/components/shared/SkeletonChart";
-import { PRCountWidget } from "@/presentation/components/analytics/widgets/PRCountWidget";
-import { DeploymentCountWidget } from "@/presentation/components/analytics/widgets/DeploymentCountWidget";
-import { CommitCountWidget } from "@/presentation/components/analytics/widgets/CommitCountWidget";
-import { ContributorCountWidget } from "@/presentation/components/analytics/widgets/ContributorCountWidget";
-import { PRTrendsWidget } from "@/presentation/components/analytics/widgets/PRTrendsWidget";
-import { ThroughputWidget } from "@/presentation/components/analytics/widgets/ThroughputWidget";
-import { TopContributorsWidget } from "@/presentation/components/analytics/widgets/TopContributorsWidget";
-import { DORAMetricsWidget } from "@/presentation/components/analytics/widgets/DORAMetricsWidget";
-import { DeploymentFrequencyWidget } from "@/presentation/components/analytics/widgets/DeploymentFrequencyWidget";
-import { PRChangesTimeseriesWidget } from "@/presentation/components/analytics/widgets/PRChangesTimeseriesWidget";
+import { AppLayout, AppFooter } from "@/presentation/components/layout";
+import { HeroMetrics } from "@/presentation/components/analytics/HeroMetrics";
+import { HeroMetricsSkeleton } from "@/presentation/components/analytics/skeletons/HeroMetricsSkeleton";
+import { TeamTabSkeleton } from "@/presentation/components/analytics/skeletons/TeamTabSkeleton";
+import { OverviewTab } from "@/presentation/components/analytics/tabs/OverviewTab";
+import { TeamTab } from "@/presentation/components/analytics/tabs/TeamTab";
+import { AnalyticsEmptyState } from "@/presentation/components/analytics/AnalyticsEmptyState";
+import { AnalyticsRedirect } from "@/presentation/components/analytics/AnalyticsRedirect";
 
 /**
  * Analytics Page
@@ -26,16 +21,25 @@ import { PRChangesTimeseriesWidget } from "@/presentation/components/analytics/w
  * - Independent loading states via skeletons
  * - Failed widgets don't break the page
  * - No client-side serialization needed (pure Server Components)
+ * - Hero metrics always visible, content switched by sidebar navigation
  *
  * URL Parameters:
  * - repo: Repository URL (required)
  * - start: Start date ISO string (optional)
  * - end: End date ISO string (optional)
  * - range: Preset range like "7d", "30d", "90d" (optional)
+ * - tab: Section to display - "overview" (default) or "team"
+ *
+ * Navigation:
+ * - Sidebar controls tab switching (no in-page tabs)
+ * - Hero metrics shown only on Overview tab
+ * - Overview: Main analytics widgets and charts with hero metrics
+ * - Team: Detailed contributor analysis without hero metrics
  *
  * Example URLs:
- * - /analytics?repo=facebook/react&range=30d
- * - /analytics?repo=vercel/next.js&start=2024-01-01&end=2024-02-01
+ * - /analytics?repo=facebook/react&range=30d (defaults to overview)
+ * - /analytics?repo=facebook/react&range=30d&tab=overview
+ * - /analytics?repo=facebook/react&range=30d&tab=team
  */
 
 interface AnalyticsPageProps {
@@ -44,6 +48,7 @@ interface AnalyticsPageProps {
     start?: string;
     end?: string;
     range?: string;
+    tab?: string;
   }>;
 }
 
@@ -53,18 +58,25 @@ export default async function AnalyticsPage({
   const t = await getTranslations("analytics");
   const params = await searchParams;
 
-  // Check if repository URL is provided
-  if (!params.repo) {
+  // Check if repository URL is provided and valid
+  const repoUrl = params.repo;
+  if (
+    !repoUrl ||
+    typeof repoUrl !== "string" ||
+    repoUrl.trim() === "" ||
+    repoUrl === "undefined" || // Catch string "undefined" from bad redirects
+    repoUrl === "null" // Catch string "null" from bad redirects
+  ) {
     return (
-      <div className="min-h-screen p-4 sm:p-6 lg:p-8 flex items-center justify-center">
-        <div className="max-w-md text-center space-y-4">
-          <h1 className="text-2xl font-bold">{t("emptyState.title")}</h1>
-          <p className="text-muted-foreground">{t("emptyState.description")}</p>
-          <p className="text-sm text-muted-foreground">
-            {t("emptyState.placeholder")}
-          </p>
+      <AppLayout>
+        <div className="flex flex-col min-h-full">
+          <div className="flex-1">
+            <AnalyticsRedirect />
+            <AnalyticsEmptyState />
+          </div>
+          <AppFooter />
         </div>
-      </div>
+      </AppLayout>
     );
   }
 
@@ -72,102 +84,37 @@ export default async function AnalyticsPage({
   const dateRange = parseDateRangeFromParams(params);
 
   // Parse repository URL to extract owner and repo
-  const { owner, repo } = parseRepositoryUrl(params.repo);
+  const { owner, repo } = parseRepositoryUrl(repoUrl);
   const repositoryId = `${owner}/${repo}`;
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8 bg-background">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Google Analytics-style controls with title */}
-        <AnalyticsControls
-          currentRepo={params.repo}
-          currentRange={{
-            start: dateRange.start.toISOString(),
-            end: dateRange.end.toISOString(),
-          }}
-        />
+    <AppLayout>
+      <div className="flex flex-col min-h-full">
+        <div className="flex-1 p-8">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Hero Metrics - Only on Overview Tab */}
+            {params.tab !== "team" && (
+              <Suspense fallback={<HeroMetricsSkeleton />}>
+                <HeroMetrics
+                  repositoryId={repositoryId}
+                  dateRange={dateRange}
+                />
+              </Suspense>
+            )}
 
-        {/* Row 1: Overview Metrics (4 cards) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Suspense fallback={<MetricCardSkeleton />}>
-            <PRCountWidget repositoryId={repositoryId} dateRange={dateRange} />
-          </Suspense>
-
-          <Suspense fallback={<MetricCardSkeleton />}>
-            <DeploymentCountWidget
-              repositoryId={repositoryId}
-              dateRange={dateRange}
-            />
-          </Suspense>
-
-          <Suspense fallback={<MetricCardSkeleton />}>
-            <CommitCountWidget
-              repositoryId={repositoryId}
-              dateRange={dateRange}
-            />
-          </Suspense>
-
-          <Suspense fallback={<MetricCardSkeleton />}>
-            <ContributorCountWidget
-              repositoryId={repositoryId}
-              dateRange={dateRange}
-            />
-          </Suspense>
-        </div>
-
-        {/* Row 2: Main Analytics (2 columns) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left column - 2/3 width */}
-          <div className="lg:col-span-2 space-y-6">
-            <Suspense fallback={<SkeletonChart height="h-96" />}>
-              <PRTrendsWidget
-                repositoryId={repositoryId}
-                dateRange={dateRange}
-              />
-            </Suspense>
-
-            <Suspense fallback={<SkeletonChart height="h-80" />}>
-              <ThroughputWidget
-                repositoryId={repositoryId}
-                dateRange={dateRange}
-              />
-            </Suspense>
-          </div>
-
-          {/* Right column - 1/3 width */}
-          <div className="space-y-6">
-            <Suspense fallback={<SkeletonChart height="h-64" />}>
-              <TopContributorsWidget
-                repositoryId={repositoryId}
-                dateRange={dateRange}
-              />
-            </Suspense>
-
-            <Suspense fallback={<SkeletonChart height="h-64" />}>
-              <DORAMetricsWidget
-                repositoryId={repositoryId}
-                dateRange={dateRange}
-              />
-            </Suspense>
+            {/* Content - Switched by sidebar navigation */}
+            {params.tab === "team" ? (
+              <Suspense fallback={<TeamTabSkeleton />}>
+                <TeamTab repositoryId={repositoryId} dateRange={dateRange} />
+              </Suspense>
+            ) : (
+              <OverviewTab repositoryId={repositoryId} dateRange={dateRange} />
+            )}
           </div>
         </div>
-
-        {/* Row 3: Full Width */}
-        <Suspense fallback={<SkeletonChart height="h-96" />}>
-          <PRChangesTimeseriesWidget
-            repositoryId={repositoryId}
-            dateRange={dateRange}
-          />
-        </Suspense>
-
-        <Suspense fallback={<SkeletonChart height="h-96" />}>
-          <DeploymentFrequencyWidget
-            repositoryId={repositoryId}
-            dateRange={dateRange}
-          />
-        </Suspense>
+        <AppFooter />
       </div>
-    </div>
+    </AppLayout>
   );
 }
 
@@ -226,13 +173,19 @@ function parseDateRangeFromParams(params: {
  * - owner/repo
  */
 function parseRepositoryUrl(url: string): { owner: string; repo: string } {
+  // Validate input
+  if (!url || typeof url !== "string" || url.trim() === "") {
+    throw new Error(`Invalid repository URL: ${url}`);
+  }
+
   // Remove protocol and domain if present
   const cleanUrl = url
+    .trim()
     .replace(/^https?:\/\//, "")
     .replace(/^github\.com\//, "");
 
   // Extract owner and repo
-  const parts = cleanUrl.split("/");
+  const parts = cleanUrl.split("/").filter((part) => part.length > 0);
   if (parts.length < 2) {
     throw new Error(`Invalid repository URL: ${url}`);
   }
