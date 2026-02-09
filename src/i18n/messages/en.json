@@ -720,8 +720,11 @@
       "searchPlaceholder": "Search or enter owner/repo...",
       "noResults": "No repositories found",
       "recentRepositories": "Recent",
+      "allRepositories": "Your Repositories",
       "enterRepository": "Enter Repository",
-      "hint": "Type owner/repo (e.g., facebook/react)"
+      "hint": "Type owner/repo (e.g., facebook/react)",
+      "loading": "Loading repositories...",
+      "error": "Error"
     },
     "dateRangePicker": {
       "selectDateRange": "Select date range",

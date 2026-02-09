@@ -720,8 +720,11 @@
       "searchPlaceholder": "検索またはowner/repoを入力...",
       "noResults": "リポジトリが見つかりません",
       "recentRepositories": "最近",
+      "allRepositories": "あなたのリポジトリ",
       "enterRepository": "リポジトリを入力",
-      "hint": "owner/repo形式で入力 (例: facebook/react)"
+      "hint": "owner/repo形式で入力 (例: facebook/react)",
+      "loading": "リポジトリを読み込み中...",
+      "error": "エラー"
     },
     "dateRangePicker": {
       "selectDateRange": "期間を選択",
