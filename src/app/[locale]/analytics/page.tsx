@@ -58,7 +58,7 @@ export default async function AnalyticsPage({
   const params = await searchParams;
 
   // Check if repository URL is provided
-  if (!params.repo) {
+  if (!params.repo || params.repo.trim() === "") {
     return (
       <AppLayout>
         <AnalyticsRedirect />
@@ -156,13 +156,19 @@ function parseDateRangeFromParams(params: {
  * - owner/repo
  */
 function parseRepositoryUrl(url: string): { owner: string; repo: string } {
+  // Validate input
+  if (!url || typeof url !== "string" || url.trim() === "") {
+    throw new Error(`Invalid repository URL: ${url}`);
+  }
+
   // Remove protocol and domain if present
   const cleanUrl = url
+    .trim()
     .replace(/^https?:\/\//, "")
     .replace(/^github\.com\//, "");
 
   // Extract owner and repo
-  const parts = cleanUrl.split("/");
+  const parts = cleanUrl.split("/").filter((part) => part.length > 0);
   if (parts.length < 2) {
     throw new Error(`Invalid repository URL: ${url}`);
   }
