@@ -578,6 +578,30 @@
       "period": "期間",
       "analyzedAt": "分析日時"
     },
+    "heroMetrics": {
+      "deployments": {
+        "title": "デプロイ頻度",
+        "subtitle": "週あたり",
+        "total": "合計"
+      },
+      "prThroughput": {
+        "title": "PRスループット",
+        "subtitle": "マージ済みPR",
+        "mergeRate": "マージ率"
+      },
+      "teamVelocity": {
+        "title": "チームベロシティ",
+        "subtitle": "週あたり",
+        "total": "合計アクティビティ"
+      },
+      "contributors": {
+        "title": "アクティブコントリビューター",
+        "subtitle": "ユニーク数"
+      },
+      "trend": {
+        "comparison": "前期間比"
+      }
+    },
     "widgets": {
       "pullRequests": {
         "title": "プルリクエスト",

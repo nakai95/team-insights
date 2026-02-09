@@ -578,6 +578,30 @@
       "period": "Period",
       "analyzedAt": "Analyzed at"
     },
+    "heroMetrics": {
+      "deployments": {
+        "title": "Deployment Frequency",
+        "subtitle": "Per week",
+        "total": "total"
+      },
+      "prThroughput": {
+        "title": "PR Throughput",
+        "subtitle": "Merged PRs",
+        "mergeRate": "merge rate"
+      },
+      "teamVelocity": {
+        "title": "Team Velocity",
+        "subtitle": "Per week",
+        "total": "total activity"
+      },
+      "contributors": {
+        "title": "Active Contributors",
+        "subtitle": "Unique contributors"
+      },
+      "trend": {
+        "comparison": "vs previous period"
+      }
+    },
     "widgets": {
       "pullRequests": {
         "title": "Pull Requests",
