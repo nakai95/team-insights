@@ -4,6 +4,7 @@ import { DateRange } from "@/domain/value-objects/DateRange";
 import { AppLayout, AppFooter } from "@/presentation/components/layout";
 import { HeroMetrics } from "@/presentation/components/analytics/HeroMetrics";
 import { HeroMetricsSkeleton } from "@/presentation/components/analytics/skeletons/HeroMetricsSkeleton";
+import { TeamTabSkeleton } from "@/presentation/components/analytics/skeletons/TeamTabSkeleton";
 import { OverviewTab } from "@/presentation/components/analytics/tabs/OverviewTab";
 import { TeamTab } from "@/presentation/components/analytics/tabs/TeamTab";
 import { AnalyticsEmptyState } from "@/presentation/components/analytics/AnalyticsEmptyState";
@@ -91,25 +92,24 @@ export default async function AnalyticsPage({
       <div className="flex flex-col min-h-full">
         <div className="flex-1 p-8">
           <div className="max-w-7xl mx-auto space-y-6">
-          {/* Hero Metrics - Only on Overview Tab */}
-          {params.tab !== "team" && (
-            <Suspense fallback={<HeroMetricsSkeleton />}>
-              <HeroMetrics repositoryId={repositoryId} dateRange={dateRange} />
-            </Suspense>
-          )}
+            {/* Hero Metrics - Only on Overview Tab */}
+            {params.tab !== "team" && (
+              <Suspense fallback={<HeroMetricsSkeleton />}>
+                <HeroMetrics
+                  repositoryId={repositoryId}
+                  dateRange={dateRange}
+                />
+              </Suspense>
+            )}
 
-          {/* Content - Switched by sidebar navigation */}
-          {params.tab === "team" ? (
-            <Suspense
-              fallback={
-                <div className="text-center py-12">Loading team data...</div>
-              }
-            >
-              <TeamTab repositoryId={repositoryId} dateRange={dateRange} />
-            </Suspense>
-          ) : (
-            <OverviewTab repositoryId={repositoryId} dateRange={dateRange} />
-          )}
+            {/* Content - Switched by sidebar navigation */}
+            {params.tab === "team" ? (
+              <Suspense fallback={<TeamTabSkeleton />}>
+                <TeamTab repositoryId={repositoryId} dateRange={dateRange} />
+              </Suspense>
+            ) : (
+              <OverviewTab repositoryId={repositoryId} dateRange={dateRange} />
+            )}
           </div>
         </div>
         <AppFooter />

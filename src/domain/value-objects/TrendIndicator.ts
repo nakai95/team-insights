@@ -54,14 +54,10 @@ export class TrendIndicator {
     if (previous === 0) {
       if (current === 0) {
         // Both zero - stable
-        return ok(
-          new TrendIndicator(TrendDirection.STABLE, 0, comparison),
-        );
+        return ok(new TrendIndicator(TrendDirection.STABLE, 0, comparison));
       }
       // Previous zero, current non-zero - infinite increase
-      return ok(
-        new TrendIndicator(TrendDirection.INCREASING, 100, comparison),
-      );
+      return ok(new TrendIndicator(TrendDirection.INCREASING, 100, comparison));
     }
 
     // Calculate percentage change
@@ -77,9 +73,7 @@ export class TrendIndicator {
       direction = TrendDirection.DECREASING;
     }
 
-    return ok(
-      new TrendIndicator(direction, percentageChange, comparison),
-    );
+    return ok(new TrendIndicator(direction, percentageChange, comparison));
   }
 
   /**
@@ -87,7 +81,11 @@ export class TrendIndicator {
    */
   static create(props: TrendIndicatorProps): Result<TrendIndicator> {
     return ok(
-      new TrendIndicator(props.direction, props.percentageChange, props.comparison),
+      new TrendIndicator(
+        props.direction,
+        props.percentageChange,
+        props.comparison,
+      ),
     );
   }
 

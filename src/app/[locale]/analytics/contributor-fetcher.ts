@@ -52,7 +52,9 @@ export const getCachedContributors = cache(
       const calculateMetrics = new CalculateMetrics();
       const calculateThroughputMetrics = new CalculateThroughputMetrics();
       const calculateChangesTimeseries = new CalculateChangesTimeseries();
-      const calculateDeploymentFrequency = new CalculateDeploymentFrequency(githubAdapter);
+      const calculateDeploymentFrequency = new CalculateDeploymentFrequency(
+        githubAdapter,
+      );
       const analyzeRepository = new AnalyzeRepository(
         fetchGitData,
         calculateMetrics,

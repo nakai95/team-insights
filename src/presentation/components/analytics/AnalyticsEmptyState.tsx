@@ -48,9 +48,7 @@ export function AnalyticsEmptyState() {
               </ol>
             </div>
 
-            <p className="text-xs text-muted-foreground italic">
-              {t("hint")}
-            </p>
+            <p className="text-xs text-muted-foreground italic">{t("hint")}</p>
           </div>
         </CardContent>
       </Card>

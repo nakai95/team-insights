@@ -93,7 +93,7 @@ export async function TeamTab({ repositoryId, dateRange }: TeamTabProps) {
   return (
     <div className="space-y-6">
       {/* Charts Section */}
-      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-[2fr_1fr]">
         {/* Implementation Activity Chart */}
         <ImplementationActivityChart
           contributors={contributors}
@@ -111,8 +111,7 @@ export async function TeamTab({ repositoryId, dateRange }: TeamTabProps) {
               {contributors
                 .sort(
                   (a, b) =>
-                    b.reviewActivity.reviewScore -
-                    a.reviewActivity.reviewScore,
+                    b.reviewActivity.reviewScore - a.reviewActivity.reviewScore,
                 )
                 .slice(0, 10)
                 .map((contributor) => (

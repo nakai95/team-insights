@@ -40,10 +40,7 @@ export function OverviewTab({ repositoryId, dateRange }: OverviewTabProps) {
         {/* Left column - 2/3 width */}
         <div className="lg:col-span-2">
           <Suspense fallback={<SkeletonChart height="h-96" />}>
-            <PRTrendsWidget
-              repositoryId={repositoryId}
-              dateRange={dateRange}
-            />
+            <PRTrendsWidget repositoryId={repositoryId} dateRange={dateRange} />
           </Suspense>
         </div>
 

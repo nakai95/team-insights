@@ -170,8 +170,7 @@ export async function HeroMetrics({
       ]).size;
       const prevDeploymentsPerWeek =
         Math.round((previousDeployments.length / weeks) * 10) / 10;
-      const prevActivityPerWeek =
-        Math.round((prevActivity / weeks) * 10) / 10;
+      const prevActivityPerWeek = Math.round((prevActivity / weeks) * 10) / 10;
 
       // Create trends
       const deploymentTrendResult = TrendIndicator.fromValues(

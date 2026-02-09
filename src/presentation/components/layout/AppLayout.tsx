@@ -54,9 +54,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         <AppSidebar />
 
         {/* Scrollable content area */}
-        <main className="flex-1 overflow-y-auto bg-background">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto bg-background">{children}</main>
       </div>
     </div>
   );
