@@ -54,6 +54,11 @@ export function ImplementationActivityChart({
     filesChanged: contributor.implementationActivity.filesChanged,
   }));
 
+  // Check if there's any actual data to display
+  const hasData = chartData.some(
+    (d) => d.commits > 0 || d.linesAdded > 0 || d.linesDeleted > 0,
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -63,8 +68,13 @@ export function ImplementationActivityChart({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <ResponsiveContainer width="100%" height={400}>
-          <ComposedChart
+        {!hasData ? (
+          <div className="flex items-center justify-center h-[400px] text-muted-foreground">
+            <p>No implementation activity data available</p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={400}>
+            <ComposedChart
             data={chartData}
             margin={{
               top: 20,
@@ -116,6 +126,7 @@ export function ImplementationActivityChart({
             />
           </ComposedChart>
         </ResponsiveContainer>
+        )}
       </CardContent>
     </Card>
   );
