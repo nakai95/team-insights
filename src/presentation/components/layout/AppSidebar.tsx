@@ -93,11 +93,7 @@ export function AppSidebar() {
 
   return (
     <aside className="hidden lg:flex flex-col w-64 border-r bg-muted/10">
-      <div className="p-6">
-        <h2 className="text-lg font-semibold">{t("title")}</h2>
-      </div>
-
-      <nav className="flex-1 px-3 space-y-1">
+      <nav className="flex-1 px-3 pt-4 space-y-1">
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const active = isActive(item);
@@ -126,10 +122,6 @@ export function AppSidebar() {
           );
         })}
       </nav>
-
-      <div className="p-4 border-t">
-        <p className="text-xs text-muted-foreground">{t("footer")}</p>
-      </div>
     </aside>
   );
 }

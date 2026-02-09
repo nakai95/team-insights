@@ -703,16 +703,18 @@
   },
   "layout": {
     "sidebar": {
-      "title": "Analytics",
       "overview": "Overview",
       "team": "Team",
       "deployments": "Deployments",
       "codeChanges": "Code Changes",
-      "settings": "Settings",
-      "footer": "Team Insights © 2026"
+      "settings": "Settings"
     },
     "header": {
       "mobileMenu": "Open navigation menu"
+    },
+    "footer": {
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy"
     },
     "repositorySwitcher": {
       "selectRepository": "Select repository",

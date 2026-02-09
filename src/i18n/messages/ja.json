@@ -703,16 +703,18 @@
   },
   "layout": {
     "sidebar": {
-      "title": "アナリティクス",
       "overview": "概要",
       "team": "チーム",
       "deployments": "デプロイメント",
       "codeChanges": "コード変更",
-      "settings": "設定",
-      "footer": "Team Insights © 2026"
+      "settings": "設定"
     },
     "header": {
       "mobileMenu": "ナビゲーションメニューを開く"
+    },
+    "footer": {
+      "terms": "利用規約",
+      "privacy": "プライバシーポリシー"
     },
     "repositorySwitcher": {
       "selectRepository": "リポジトリを選択",

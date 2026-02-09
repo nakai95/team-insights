@@ -38,8 +38,8 @@ export function AppHeader() {
   return (
     <header className="border-b bg-background">
       <div className="flex items-center justify-between px-4 py-3 lg:px-6">
-        {/* Left side: Mobile menu + Repository Switcher + Date Range */}
-        <div className="flex items-center gap-3">
+        {/* Left side: Mobile menu + Logo + Repository Switcher + Date Range */}
+        <div className="flex items-center gap-3 lg:gap-6">
           {/* Mobile menu button */}
           <Sheet>
             <SheetTrigger asChild>
@@ -56,6 +56,25 @@ export function AppHeader() {
               <MobileSidebar />
             </SheetContent>
           </Sheet>
+
+          {/* Team Insights Logo */}
+          <div className="flex items-center gap-2 text-lg font-semibold">
+            <svg
+              className="h-6 w-6 text-primary"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 3v18h18" />
+              <path d="M18 17V9" />
+              <path d="M13 17V5" />
+              <path d="M8 17v-3" />
+            </svg>
+            <span className="hidden lg:inline">Team Insights</span>
+          </div>
 
           {/* Repository Switcher */}
           <RepositorySwitcher />

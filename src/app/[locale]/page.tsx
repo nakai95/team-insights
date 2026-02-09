@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
  * Landing Page
  *
  * Public landing page for unauthenticated users.
- * Authenticated users are automatically redirected to /dashboard.
+ * Authenticated users are automatically redirected to /analytics.
  *
  * Features:
  * - Product overview and value proposition
@@ -32,10 +32,10 @@ export default function LandingPage() {
   const router = useRouter();
   const t = useTranslations("landing");
 
-  // Redirect authenticated users to dashboard
+  // Redirect authenticated users to analytics
   useEffect(() => {
     if (status === "authenticated") {
-      router.replace("/dashboard");
+      router.replace("/analytics");
     }
   }, [status, router]);
 

@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { DateRange } from "@/domain/value-objects/DateRange";
-import { AppLayout } from "@/presentation/components/layout";
+import { AppLayout, AppFooter } from "@/presentation/components/layout";
 import { HeroMetrics } from "@/presentation/components/analytics/HeroMetrics";
 import { HeroMetricsSkeleton } from "@/presentation/components/analytics/skeletons/HeroMetricsSkeleton";
 import { OverviewTab } from "@/presentation/components/analytics/tabs/OverviewTab";
@@ -98,6 +98,7 @@ export default async function AnalyticsPage({
         )}
         </div>
       </div>
+      <AppFooter />
     </AppLayout>
   );
 }

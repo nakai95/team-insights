@@ -58,7 +58,7 @@ export default async function LoginPage({
                   {t("envToken.description")}
                 </p>
               </div>
-              <Link href="/dashboard" className="w-full">
+              <Link href="/analytics" className="w-full">
                 <Button className="w-full">
                   {t("envToken.goToDashboard")}
                 </Button>

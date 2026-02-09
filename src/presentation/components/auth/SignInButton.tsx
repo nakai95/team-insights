@@ -29,7 +29,7 @@ export function SignInButton() {
   const handleSignIn = async () => {
     try {
       await signIn("github", {
-        callbackUrl: "/dashboard",
+        callbackUrl: "/analytics",
       });
     } catch (error) {
       console.error("Sign in error:", error);
