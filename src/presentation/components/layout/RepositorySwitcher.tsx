@@ -2,8 +2,9 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { Check, ChevronsUpDown, GitBranch, Clock } from "lucide-react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -19,7 +20,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { fetchUserRepositories, type Repository } from "@/app/[locale]/analytics/actions";
+import {
+  fetchUserRepositories,
+  type Repository,
+} from "@/app/[locale]/analytics/actions";
+import { AppLayout, AppFooter } from "@/presentation/components/layout";
+import { HeroMetricsSkeleton } from "@/presentation/components/analytics/skeletons/HeroMetricsSkeleton";
+import { SkeletonChart } from "@/presentation/components/shared/SkeletonChart";
 
 /**
  * RepositorySwitcher Component
@@ -51,6 +58,7 @@ export function RepositorySwitcher() {
   const [recentRepoIds, setRecentRepoIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   const currentRepo = searchParams.get("repo");
 
@@ -136,8 +144,10 @@ export function RepositorySwitcher() {
     const params = new URLSearchParams(searchParams.toString());
     params.set("repo", repoId);
 
-    // Navigate to analytics page with new repo
-    router.push(`/analytics?${params.toString()}`);
+    // Navigate with transition to show loading state immediately
+    startTransition(() => {
+      router.push(`/analytics?${params.toString()}`);
+    });
     setOpen(false);
   };
 
@@ -147,102 +157,143 @@ export function RepositorySwitcher() {
     .filter(Boolean) as Repository[];
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          aria-label={t("selectRepository")}
-          className="justify-between min-w-[200px] max-w-[300px]"
-        >
-          {currentRepo ? (
-            <span className="flex items-center gap-2 truncate">
-              <GitBranch className="h-4 w-4 flex-shrink-0" />
-              <span className="truncate">{currentRepo}</span>
-            </span>
-          ) : (
-            <span className="text-muted-foreground">{t("placeholder")}</span>
-          )}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0" align="start">
-        <Command>
-          <CommandInput placeholder={t("searchPlaceholder")} />
-          <CommandList>
-            <CommandEmpty>
-              {loading
-                ? t("loading")
-                : error
-                  ? `${t("error")}: ${error}`
-                  : t("noResults")}
-            </CommandEmpty>
+    <>
+      {/* Loading overlay during repository switch */}
+      {isPending &&
+        typeof window !== "undefined" &&
+        createPortal(
+          <div className="fixed inset-0 z-50 bg-background">
+            <AppLayout>
+              <div className="flex flex-col min-h-full">
+                <div className="flex-1 p-8">
+                  <div className="max-w-7xl mx-auto space-y-6">
+                    {/* Hero Metrics Skeleton */}
+                    <HeroMetricsSkeleton />
 
-            {/* Recent repositories */}
-            {recentRepositories.length > 0 && (
-              <CommandGroup heading={t("recentRepositories")}>
-                {recentRepositories.map((repo) => (
-                  <CommandItem
-                    key={repo.id}
-                    value={repo.fullName}
-                    onSelect={() => handleSelect(repo.fullName)}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        currentRepo === repo.fullName
-                          ? "opacity-100"
-                          : "opacity-0",
-                      )}
-                    />
-                    <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{repo.fullName}</div>
-                      {repo.description && (
-                        <p className="text-xs text-muted-foreground truncate">
-                          {repo.description}
-                        </p>
-                      )}
+                    {/* Main Content Skeletons */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Large chart (2/3 width) */}
+                      <div className="lg:col-span-2">
+                        <SkeletonChart height="h-96" />
+                      </div>
+                      {/* Side widget (1/3 width) */}
+                      <div>
+                        <SkeletonChart height="h-64" />
+                      </div>
                     </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            )}
 
-            {/* All repositories */}
-            {repositories.length > 0 && (
-              <CommandGroup heading={t("allRepositories")}>
-                {repositories.slice(0, 20).map((repo) => (
-                  <CommandItem
-                    key={repo.id}
-                    value={repo.fullName}
-                    onSelect={() => handleSelect(repo.fullName)}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        currentRepo === repo.fullName
-                          ? "opacity-100"
-                          : "opacity-0",
-                      )}
-                    />
-                    <GitBranch className="mr-2 h-4 w-4" />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{repo.fullName}</div>
-                      {repo.description && (
-                        <p className="text-xs text-muted-foreground truncate">
-                          {repo.description}
-                        </p>
-                      )}
-                    </div>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
+                    {/* Additional full-width chart */}
+                    <SkeletonChart height="h-96" />
+                  </div>
+                </div>
+                <AppFooter />
+              </div>
+            </AppLayout>
+          </div>,
+          document.body,
+        )}
+
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            aria-label={t("selectRepository")}
+            className="justify-between min-w-[200px] max-w-[300px]"
+          >
+            {currentRepo ? (
+              <span className="flex items-center gap-2 truncate">
+                <GitBranch className="h-4 w-4 flex-shrink-0" />
+                <span className="truncate">{currentRepo}</span>
+              </span>
+            ) : (
+              <span className="text-muted-foreground">{t("placeholder")}</span>
             )}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[400px] p-0" align="start">
+          <Command>
+            <CommandInput placeholder={t("searchPlaceholder")} />
+            <CommandList>
+              <CommandEmpty>
+                {loading
+                  ? t("loading")
+                  : error
+                    ? `${t("error")}: ${error}`
+                    : t("noResults")}
+              </CommandEmpty>
+
+              {/* Recent repositories */}
+              {recentRepositories.length > 0 && (
+                <CommandGroup heading={t("recentRepositories")}>
+                  {recentRepositories.map((repo) => (
+                    <CommandItem
+                      key={repo.id}
+                      value={repo.fullName}
+                      onSelect={() => handleSelect(repo.fullName)}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          currentRepo === repo.fullName
+                            ? "opacity-100"
+                            : "opacity-0",
+                        )}
+                      />
+                      <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">
+                          {repo.fullName}
+                        </div>
+                        {repo.description && (
+                          <p className="text-xs text-muted-foreground truncate">
+                            {repo.description}
+                          </p>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+
+              {/* All repositories */}
+              {repositories.length > 0 && (
+                <CommandGroup heading={t("allRepositories")}>
+                  {repositories.slice(0, 20).map((repo) => (
+                    <CommandItem
+                      key={repo.id}
+                      value={repo.fullName}
+                      onSelect={() => handleSelect(repo.fullName)}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          currentRepo === repo.fullName
+                            ? "opacity-100"
+                            : "opacity-0",
+                        )}
+                      />
+                      <GitBranch className="mr-2 h-4 w-4" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">
+                          {repo.fullName}
+                        </div>
+                        {repo.description && (
+                          <p className="text-xs text-muted-foreground truncate">
+                            {repo.description}
+                          </p>
+                        )}
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              )}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    </>
   );
 }
