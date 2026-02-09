@@ -405,54 +405,6 @@
       "title": "Recent Deployments"
     }
   },
-  "progressiveLoading": {
-    "title": "Progressive Loading Dashboard",
-    "phase3": {
-      "complete": "Phase 3 Complete: Server Component → Client Component data flow active"
-    },
-    "phase4": {
-      "active": "Phase 4 Active: Background historical data loading with useTransition",
-      "features": {
-        "backgroundLoading": "Background historical data loading with useTransition",
-        "caching": "IndexedDB caching on client side",
-        "staleWhileRevalidate": "Stale-while-revalidate pattern",
-        "nonBlockingUpdates": "Non-blocking UI updates during background loading"
-      },
-      "loadingIndicator": {
-        "loading": "Loading historical data...",
-        "progress": "{percent}% complete"
-      },
-      "successIndicator": {
-        "loaded": "Historical data loaded: Now showing {total} {dataType} (initial: {initial})",
-        "dataType": {
-          "prs": "PRs",
-          "deployments": "deployments"
-        },
-        "additional": "+{count} historical"
-      }
-    },
-    "stats": {
-      "totalPRs": "Total PRs",
-      "mergedPRs": "Merged PRs",
-      "openPRs": "Open PRs",
-      "totalDeployments": "Total Deployments",
-      "environments": "Environments"
-    },
-    "repository": "Repository",
-    "recentPRs": "Recent PRs (First 5)",
-    "recentDeployments": "Recent Deployments (First 5)",
-    "period": "{start} - {end} ({days} days)",
-    "error": "Error",
-    "commits": {
-      "title": "Commits ({count})",
-      "notYetDisplayed": "Commit data loaded but not yet displayed"
-    },
-    "errors": {
-      "failedToLoadPRs": "Failed to load pull requests",
-      "unexpectedError": "Unexpected Error",
-      "unknownError": "Unknown error"
-    }
-  },
   "errors": {
     "AUTHENTICATION_REQUIRED": "Authentication required. Please sign in.",
     "TOKEN_EXPIRED": "Your session has expired. Please sign in again.",

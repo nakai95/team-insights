@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { GitHubGraphQLAdapter } from "@/infrastructure/github/GitHubGraphQLAdapter";
+import { OctokitAdapter } from "@/infrastructure/github/OctokitAdapter";
 import { createSessionProvider } from "@/infrastructure/auth/SessionProviderFactory";
 import type { DateRange } from "@/domain/value-objects/DateRange";
 
@@ -31,8 +31,15 @@ import type { DateRange } from "@/domain/value-objects/DateRange";
 export const getCachedPRs = cache(
   async (repositoryId: string, dateRange: DateRange) => {
     const sessionProvider = createSessionProvider();
-    const githubAdapter = new GitHubGraphQLAdapter(sessionProvider);
-    return await githubAdapter.fetchPRs(repositoryId, dateRange);
+    const githubAdapter = new OctokitAdapter(sessionProvider);
+
+    // Parse owner/repo from repositoryId
+    const [owner, repo] = repositoryId.split("/");
+    if (!owner || !repo) {
+      throw new Error(`Invalid repository ID: ${repositoryId}`);
+    }
+
+    return await githubAdapter.getPullRequests(owner, repo, dateRange.start);
   },
 );
 
@@ -43,8 +50,15 @@ export const getCachedPRs = cache(
 export const getCachedDeployments = cache(
   async (repositoryId: string, dateRange: DateRange) => {
     const sessionProvider = createSessionProvider();
-    const githubAdapter = new GitHubGraphQLAdapter(sessionProvider);
-    return await githubAdapter.fetchDeployments(repositoryId, dateRange);
+    const githubAdapter = new OctokitAdapter(sessionProvider);
+
+    // Parse owner/repo from repositoryId
+    const [owner, repo] = repositoryId.split("/");
+    if (!owner || !repo) {
+      throw new Error(`Invalid repository ID: ${repositoryId}`);
+    }
+
+    return await githubAdapter.getDeployments(owner, repo, dateRange.start);
   },
 );
 
@@ -58,7 +72,15 @@ export const getCachedDeployments = cache(
 export const getCachedCommits = cache(
   async (repositoryId: string, dateRange: DateRange) => {
     const sessionProvider = createSessionProvider();
-    const githubAdapter = new GitHubGraphQLAdapter(sessionProvider);
-    return await githubAdapter.fetchCommits(repositoryId, dateRange);
+    const githubAdapter = new OctokitAdapter(sessionProvider);
+
+    // getLog expects a GitHub URL format
+    const githubUrl = `https://github.com/${repositoryId}`;
+
+    return await githubAdapter.getLog(
+      githubUrl,
+      dateRange.start,
+      dateRange.end,
+    );
   },
 );

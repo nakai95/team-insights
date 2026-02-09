@@ -164,11 +164,16 @@ export async function DeploymentFrequencyWidget({
     // Determine aggregation level
     const aggregationLevel = getAggregationLevel(dateRange);
 
+    // Transform deployments to match expected format (timestamp: Date)
+    const deploymentsWithTimestamp = deployments.map((d) => ({
+      timestamp: new Date(d.createdAt),
+    }));
+
     // Aggregate data based on chosen level
     const aggregatedData =
       aggregationLevel === "monthly"
-        ? aggregateByMonth(deployments, dateRange)
-        : aggregateByWeek(deployments, dateRange);
+        ? aggregateByMonth(deploymentsWithTimestamp, dateRange)
+        : aggregateByWeek(deploymentsWithTimestamp, dateRange);
 
     return (
       <Card>

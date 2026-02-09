@@ -48,7 +48,7 @@ export async function CommitCountWidget({
 
     // Calculate active days (unique dates with commits)
     const uniqueDates = new Set(
-      commits.map((commit) => commit.committedAt.toDateString()),
+      commits.map((commit) => commit.date.toDateString()),
     );
     const activeDays = uniqueDates.size;
 

@@ -140,8 +140,13 @@ export async function DORAMetricsWidget({
 
     const deployments = result.value;
 
+    // Transform deployments to match expected format (timestamp: Date)
+    const deploymentsWithTimestamp = deployments.map((d) => ({
+      timestamp: new Date(d.createdAt),
+    }));
+
     // Calculate DORA metrics
-    const metrics = calculateDORAMetrics(deployments, dateRange);
+    const metrics = calculateDORAMetrics(deploymentsWithTimestamp, dateRange);
 
     return (
       <Card>

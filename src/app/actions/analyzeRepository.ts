@@ -46,25 +46,11 @@ export async function analyzeRepository(
       };
     }
 
-    // Determine effective mode (defaults to 'full' for backward compatibility)
-    const mode = request.mode ?? "full";
-
     // Parse date range if provided
     let dateRangeStart: Date | undefined;
     let dateRangeEnd: Date | undefined;
 
-    // Progressive mode: always load last 30 days only (ignore user-specified range)
-    if (mode === "progressive") {
-      const now = new Date();
-      dateRangeEnd = now;
-      dateRangeStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-      logger.info("Progressive mode: Loading last 30 days only", {
-        start: dateRangeStart.toISOString(),
-        end: dateRangeEnd.toISOString(),
-      });
-    } else if (request.dateRange) {
-      // Full mode: respect user-specified date range
+    if (request.dateRange) {
       try {
         // Only parse non-empty strings
         if (request.dateRange.start) {
