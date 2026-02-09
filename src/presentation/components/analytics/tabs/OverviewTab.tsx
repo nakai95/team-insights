@@ -5,7 +5,6 @@ import { PRTrendsWidget } from "@/presentation/components/analytics/widgets/PRTr
 import { ThroughputWidget } from "@/presentation/components/analytics/widgets/ThroughputWidget";
 import { DORAMetricsWidget } from "@/presentation/components/analytics/widgets/DORAMetricsWidget";
 import { DeploymentFrequencyWidget } from "@/presentation/components/analytics/widgets/DeploymentFrequencyWidget";
-import { ChangesTimeseriesWidget } from "@/presentation/components/analytics/widgets/ChangesTimeseriesWidget";
 
 /**
  * OverviewTab Component
@@ -13,10 +12,9 @@ import { ChangesTimeseriesWidget } from "@/presentation/components/analytics/wid
  * Purpose: Main analytics overview with key metrics and charts
  *
  * Content:
- * - Row 1: PR Trends and Throughput Analysis
+ * - Row 1: PR Activity Trends (with code changes analysis) and Throughput Analysis
  * - Row 2: DORA Metrics
  * - Row 3: Deployment Frequency (full width)
- * - Row 4: Changes Timeseries (full width)
  *
  * Architecture:
  * - Server Component
@@ -72,14 +70,6 @@ export function OverviewTab({ repositoryId, dateRange }: OverviewTabProps) {
       {/* Row 2: Deployment Frequency (full width) */}
       <Suspense fallback={<SkeletonChart height="h-96" />}>
         <DeploymentFrequencyWidget
-          repositoryId={repositoryId}
-          dateRange={dateRange}
-        />
-      </Suspense>
-
-      {/* Row 3: Changes Timeseries (full width) */}
-      <Suspense fallback={<SkeletonChart height="h-96" />}>
-        <ChangesTimeseriesWidget
           repositoryId={repositoryId}
           dateRange={dateRange}
         />
