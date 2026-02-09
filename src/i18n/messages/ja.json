@@ -645,6 +645,10 @@
           "prCountLabel": "週次PR数"
         }
       },
+      "prChangesTimeseries": {
+        "title": "PRコード変更の推移",
+        "emptyState": "コード変更を含むマージ済みPRがありません"
+      },
       "throughput": {
         "title": "PRスループット分析",
         "description": "PRサイズ別のリードタイム",

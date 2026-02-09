@@ -645,6 +645,10 @@
           "prCountLabel": "PRs per Week"
         }
       },
+      "prChangesTimeseries": {
+        "title": "PR Changes Over Time",
+        "emptyState": "No merged PRs with code changes available"
+      },
       "throughput": {
         "title": "PR Throughput Analysis",
         "description": "Lead time by PR size",

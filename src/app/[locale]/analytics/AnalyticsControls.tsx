@@ -139,61 +139,69 @@ export function AnalyticsControls({
         "Select date range";
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-muted/50 rounded-lg border">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
-        {/* Repository Selector */}
-        <div className="flex-1">
-          <RepositorySelector currentRepo={currentRepo} />
-        </div>
+    <div className="space-y-4">
+      {/* Page Title */}
+      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+        {t("title")}
+      </h1>
 
-        {/* Date Range Selector */}
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <Select value={selectedPreset} onValueChange={handlePresetChange}>
-            <SelectTrigger className="w-full sm:w-[180px]">
-              <SelectValue placeholder="Select range" />
-            </SelectTrigger>
-            <SelectContent>
-              {presetOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+      {/* Controls */}
+      <div className="flex flex-col gap-4 p-4 bg-muted/50 rounded-lg border">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-6">
+          {/* Repository Selector */}
+          <div className="flex-1">
+            <RepositorySelector currentRepo={currentRepo} />
+          </div>
 
-          {selectedPreset === "custom" && (
-            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal sm:w-[300px]",
-                    !customDateRange && "text-muted-foreground",
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {displayText}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="range"
-                  defaultMonth={customDateRange?.from}
-                  selected={customDateRange}
-                  onSelect={handleCustomDateRangeChange}
-                  numberOfMonths={2}
-                  disabled={(date) => date > new Date()}
-                />
-              </PopoverContent>
-            </Popover>
-          )}
+          {/* Date Range Selector */}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <Select value={selectedPreset} onValueChange={handlePresetChange}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Select range" />
+              </SelectTrigger>
+              <SelectContent>
+                {presetOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-          {selectedPreset !== "custom" && (
-            <div className="text-sm text-muted-foreground whitespace-nowrap">
-              {format(new Date(currentRange.start), "MMM d, yyyy")} -{" "}
-              {format(new Date(currentRange.end), "MMM d, yyyy")}
-            </div>
-          )}
+            {selectedPreset === "custom" && (
+              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal sm:w-[300px]",
+                      !customDateRange && "text-muted-foreground",
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {displayText}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="range"
+                    defaultMonth={customDateRange?.from}
+                    selected={customDateRange}
+                    onSelect={handleCustomDateRangeChange}
+                    numberOfMonths={2}
+                    disabled={(date) => date > new Date()}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+
+            {selectedPreset !== "custom" && (
+              <div className="text-sm text-muted-foreground whitespace-nowrap">
+                {format(new Date(currentRange.start), "MMM d, yyyy")} -{" "}
+                {format(new Date(currentRange.end), "MMM d, yyyy")}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
