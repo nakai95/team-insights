@@ -570,8 +570,15 @@
     "description": "GitHubリポジトリのメトリクスとインサイト",
     "emptyState": {
       "title": "リポジトリが選択されていません",
-      "description": "分析を表示するにはリポジトリURLを入力してください",
-      "placeholder": "https://github.com/owner/repo"
+      "description": "ヘッダーからリポジトリを選択して分析とインサイトを表示します",
+      "placeholder": "https://github.com/owner/repo",
+      "howTo": {
+        "title": "始め方：",
+        "step1": "ヘッダーのリポジトリ選択をクリック",
+        "step2": "最近のリポジトリから選択するか検索",
+        "step3": "分析が自動的に読み込まれます"
+      },
+      "hint": "ヒント：最近表示したリポジトリは次回のために記憶されます"
     },
     "header": {
       "repository": "リポジトリ",

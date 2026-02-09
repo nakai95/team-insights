@@ -6,6 +6,8 @@ import { HeroMetrics } from "@/presentation/components/analytics/HeroMetrics";
 import { HeroMetricsSkeleton } from "@/presentation/components/analytics/skeletons/HeroMetricsSkeleton";
 import { OverviewTab } from "@/presentation/components/analytics/tabs/OverviewTab";
 import { TeamTab } from "@/presentation/components/analytics/tabs/TeamTab";
+import { AnalyticsEmptyState } from "@/presentation/components/analytics/AnalyticsEmptyState";
+import { AnalyticsRedirect } from "@/presentation/components/analytics/AnalyticsRedirect";
 
 /**
  * Analytics Page
@@ -58,15 +60,11 @@ export default async function AnalyticsPage({
   // Check if repository URL is provided
   if (!params.repo) {
     return (
-      <div className="min-h-screen p-8 flex items-center justify-center">
-        <div className="max-w-md text-center space-y-4">
-          <h1 className="text-2xl font-bold">{t("emptyState.title")}</h1>
-          <p className="text-muted-foreground">{t("emptyState.description")}</p>
-          <p className="text-sm text-muted-foreground">
-            {t("emptyState.placeholder")}
-          </p>
-        </div>
-      </div>
+      <AppLayout>
+        <AnalyticsRedirect />
+        <AnalyticsEmptyState />
+        <AppFooter />
+      </AppLayout>
     );
   }
 

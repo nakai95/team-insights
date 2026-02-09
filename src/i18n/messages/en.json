@@ -570,8 +570,15 @@
     "description": "GitHub repository metrics and insights",
     "emptyState": {
       "title": "No Repository Selected",
-      "description": "Enter a repository URL to view analytics",
-      "placeholder": "https://github.com/owner/repo"
+      "description": "Select a repository from the header to view analytics and insights",
+      "placeholder": "https://github.com/owner/repo",
+      "howTo": {
+        "title": "How to get started:",
+        "step1": "Click the repository selector in the header",
+        "step2": "Choose from your recent repositories or search for one",
+        "step3": "Analytics will load automatically"
+      },
+      "hint": "Tip: Your most recently viewed repository will be remembered for next time"
     },
     "header": {
       "repository": "Repository",
