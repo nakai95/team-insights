@@ -4,7 +4,6 @@ import { DateRange } from "@/domain/value-objects/DateRange";
 import { AppLayout } from "@/presentation/components/layout";
 import { HeroMetrics } from "@/presentation/components/analytics/HeroMetrics";
 import { HeroMetricsSkeleton } from "@/presentation/components/analytics/skeletons/HeroMetricsSkeleton";
-import { AnalyticsTabs } from "@/presentation/components/analytics/AnalyticsTabs";
 import { OverviewTab } from "@/presentation/components/analytics/tabs/OverviewTab";
 import { TeamTab } from "@/presentation/components/analytics/tabs/TeamTab";
 
@@ -19,16 +18,25 @@ import { TeamTab } from "@/presentation/components/analytics/tabs/TeamTab";
  * - Independent loading states via skeletons
  * - Failed widgets don't break the page
  * - No client-side serialization needed (pure Server Components)
+ * - Hero metrics always visible, content switched by sidebar navigation
  *
  * URL Parameters:
  * - repo: Repository URL (required)
  * - start: Start date ISO string (optional)
  * - end: End date ISO string (optional)
  * - range: Preset range like "7d", "30d", "90d" (optional)
+ * - tab: Section to display - "overview" (default) or "team"
+ *
+ * Navigation:
+ * - Sidebar controls tab switching (no in-page tabs)
+ * - Hero metrics shown on all tabs
+ * - Overview: Main analytics widgets and charts
+ * - Team: Detailed contributor analysis (coming soon)
  *
  * Example URLs:
- * - /analytics?repo=facebook/react&range=30d
- * - /analytics?repo=vercel/next.js&start=2024-01-01&end=2024-02-01
+ * - /analytics?repo=facebook/react&range=30d (defaults to overview)
+ * - /analytics?repo=facebook/react&range=30d&tab=overview
+ * - /analytics?repo=facebook/react&range=30d&tab=team
  */
 
 interface AnalyticsPageProps {
@@ -73,21 +81,19 @@ export default async function AnalyticsPage({
     <AppLayout>
       <div className="p-8">
         <div className="max-w-7xl mx-auto space-y-6">
-        {/* Hero Metrics */}
+        {/* Hero Metrics - Always visible */}
         <Suspense fallback={<HeroMetricsSkeleton />}>
           <HeroMetrics repositoryId={repositoryId} dateRange={dateRange} />
         </Suspense>
 
-        {/* Tab Navigation and Content */}
-        <AnalyticsTabs>
-          {params.tab === "team" ? (
-            <Suspense fallback={<div>Loading team data...</div>}>
-              <TeamTab repositoryId={repositoryId} dateRange={dateRange} />
-            </Suspense>
-          ) : (
-            <OverviewTab repositoryId={repositoryId} dateRange={dateRange} />
-          )}
-        </AnalyticsTabs>
+        {/* Content - Switched by sidebar navigation */}
+        {params.tab === "team" ? (
+          <Suspense fallback={<div className="text-center py-12">Loading team data...</div>}>
+            <TeamTab repositoryId={repositoryId} dateRange={dateRange} />
+          </Suspense>
+        ) : (
+          <OverviewTab repositoryId={repositoryId} dateRange={dateRange} />
+        )}
         </div>
       </div>
     </AppLayout>
