@@ -41,7 +41,7 @@ interface TeamTabProps {
 }
 
 export async function TeamTab({ repositoryId, dateRange }: TeamTabProps) {
-  const t = await getTranslations("analytics.tabs.team");
+  const t = await getTranslations("analytics.team");
 
   // Fetch contributor data
   const result = await getCachedContributors(repositoryId, dateRange);
