@@ -29,9 +29,9 @@ import { TeamTab } from "@/presentation/components/analytics/tabs/TeamTab";
  *
  * Navigation:
  * - Sidebar controls tab switching (no in-page tabs)
- * - Hero metrics shown on all tabs
- * - Overview: Main analytics widgets and charts
- * - Team: Detailed contributor analysis (coming soon)
+ * - Hero metrics shown only on Overview tab
+ * - Overview: Main analytics widgets and charts with hero metrics
+ * - Team: Detailed contributor analysis without hero metrics
  *
  * Example URLs:
  * - /analytics?repo=facebook/react&range=30d (defaults to overview)
@@ -81,10 +81,12 @@ export default async function AnalyticsPage({
     <AppLayout>
       <div className="p-8">
         <div className="max-w-7xl mx-auto space-y-6">
-        {/* Hero Metrics - Always visible */}
-        <Suspense fallback={<HeroMetricsSkeleton />}>
-          <HeroMetrics repositoryId={repositoryId} dateRange={dateRange} />
-        </Suspense>
+        {/* Hero Metrics - Only on Overview Tab */}
+        {params.tab !== "team" && (
+          <Suspense fallback={<HeroMetricsSkeleton />}>
+            <HeroMetrics repositoryId={repositoryId} dateRange={dateRange} />
+          </Suspense>
+        )}
 
         {/* Content - Switched by sidebar navigation */}
         {params.tab === "team" ? (
