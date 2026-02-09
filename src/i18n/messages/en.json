@@ -653,5 +653,33 @@
       "yourRepositories": "Your Repositories",
       "private": "Private"
     }
+  },
+  "layout": {
+    "sidebar": {
+      "title": "Analytics",
+      "overview": "Overview",
+      "team": "Team",
+      "deployments": "Deployments",
+      "codeChanges": "Code Changes",
+      "settings": "Settings",
+      "footer": "Team Insights © 2026"
+    },
+    "header": {
+      "mobileMenu": "Open navigation menu"
+    },
+    "repositorySwitcher": {
+      "selectRepository": "Select repository",
+      "placeholder": "Select repository...",
+      "searchPlaceholder": "Search or enter owner/repo...",
+      "noResults": "No repositories found",
+      "recentRepositories": "Recent",
+      "enterRepository": "Enter Repository",
+      "hint": "Type owner/repo (e.g., facebook/react)"
+    },
+    "dateRangePicker": {
+      "selectDateRange": "Select date range",
+      "presets": "Presets",
+      "customRange": "Custom Range"
+    }
   }
 }

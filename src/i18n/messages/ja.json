@@ -653,5 +653,33 @@
       "yourRepositories": "あなたのリポジトリ",
       "private": "プライベート"
     }
+  },
+  "layout": {
+    "sidebar": {
+      "title": "アナリティクス",
+      "overview": "概要",
+      "team": "チーム",
+      "deployments": "デプロイメント",
+      "codeChanges": "コード変更",
+      "settings": "設定",
+      "footer": "Team Insights © 2026"
+    },
+    "header": {
+      "mobileMenu": "ナビゲーションメニューを開く"
+    },
+    "repositorySwitcher": {
+      "selectRepository": "リポジトリを選択",
+      "placeholder": "リポジトリを選択...",
+      "searchPlaceholder": "検索またはowner/repoを入力...",
+      "noResults": "リポジトリが見つかりません",
+      "recentRepositories": "最近",
+      "enterRepository": "リポジトリを入力",
+      "hint": "owner/repo形式で入力 (例: facebook/react)"
+    },
+    "dateRangePicker": {
+      "selectDateRange": "期間を選択",
+      "presets": "プリセット",
+      "customRange": "カスタム範囲"
+    }
   }
 }

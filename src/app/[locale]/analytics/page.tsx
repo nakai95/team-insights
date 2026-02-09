@@ -1,8 +1,7 @@
 import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { DateRange } from "@/domain/value-objects/DateRange";
-import { AnalyticsHeader } from "./AnalyticsHeader";
-import { AnalyticsControls } from "./AnalyticsControls";
+import { AppLayout } from "@/presentation/components/layout";
 import { MetricCardSkeleton } from "@/presentation/components/analytics/skeletons/MetricCardSkeleton";
 import { SkeletonChart } from "@/presentation/components/shared/SkeletonChart";
 import { PRCountWidget } from "@/presentation/components/analytics/widgets/PRCountWidget";
@@ -76,19 +75,9 @@ export default async function AnalyticsPage({
   const repositoryId = `${owner}/${repo}`;
 
   return (
-    <div className="min-h-screen p-8 bg-background">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Static header - no Suspense needed */}
-        <AnalyticsHeader repositoryId={repositoryId} dateRange={dateRange} />
-
-        {/* Google Analytics-style controls */}
-        <AnalyticsControls
-          currentRepo={params.repo}
-          currentRange={{
-            start: dateRange.start.toISOString(),
-            end: dateRange.end.toISOString(),
-          }}
-        />
+    <AppLayout>
+      <div className="p-8">
+        <div className="max-w-7xl mx-auto space-y-6">
 
         {/* Row 1: Overview Metrics (4 cards) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -162,8 +151,9 @@ export default async function AnalyticsPage({
             dateRange={dateRange}
           />
         </Suspense>
+        </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
 
