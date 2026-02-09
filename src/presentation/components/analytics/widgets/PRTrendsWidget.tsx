@@ -13,7 +13,6 @@ import type { DateRange } from "@/domain/value-objects/DateRange";
 import { CalculateChangesTimeseries } from "@/application/use-cases/CalculateChangesTimeseries";
 import {
   TimeseriesChart,
-  TimeseriesInsights,
   EmptyState,
 } from "@/presentation/components/tabs/ChangesTimeseriesTab/components";
 
@@ -26,14 +25,13 @@ import {
  * - Async Server Component (fetches data independently)
  * - Shows weekly code changes (additions/deletions) with PR count overlay
  * - Outlier week detection (statistical anomalies)
- * - Trend analysis (increasing/decreasing/stable)
- * - Summary statistics
+ * - Trend analysis visualization
  * - Error handling without breaking page
  *
  * Data Flow:
  * 1. Fetches PRs from GitHub API (cached)
  * 2. Calculates weekly timeseries with CalculateChangesTimeseries use case
- * 3. Renders TimeseriesChart with outliers and insights
+ * 3. Renders TimeseriesChart with outliers and trends
  * 4. Fails gracefully with MetricCardError
  *
  * Usage:
@@ -84,7 +82,10 @@ export async function PRTrendsWidget({
     return (
       <Card>
         <CardHeader>
-          <CardTitle id="pr-changes-timeseries-title">{t("title")}</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            {t("title")}
+          </CardTitle>
           <CardDescription>{t("description")}</CardDescription>
         </CardHeader>
 
@@ -98,25 +99,15 @@ export async function PRTrendsWidget({
               }}
             />
           ) : (
-            <div className="space-y-4 sm:space-y-6">
-              {/* Weekly code changes chart - responsive height */}
-              <div className="w-full overflow-x-auto -mx-2 sm:mx-0">
-                <div className="min-w-[600px]">
-                  <TimeseriesChart
-                    weeklyData={timeseriesData.weeklyData}
-                    outlierWeeks={timeseriesData.outlierWeeks}
-                    height={400}
-                    showMovingAverage={timeseriesData.trend !== null}
-                  />
-                </div>
+            <div className="w-full overflow-x-auto -mx-2 sm:mx-0">
+              <div className="min-w-[600px]">
+                <TimeseriesChart
+                  weeklyData={timeseriesData.weeklyData}
+                  outlierWeeks={timeseriesData.outlierWeeks}
+                  height={400}
+                  showMovingAverage={timeseriesData.trend !== null}
+                />
               </div>
-
-              {/* Insights panel: outlier weeks, trend analysis, summary statistics */}
-              <TimeseriesInsights
-                outlierWeeks={timeseriesData.outlierWeeks}
-                trend={timeseriesData.trend}
-                summary={timeseriesData.summary}
-              />
             </div>
           )}
         </CardContent>
