@@ -68,9 +68,13 @@ export default async function AnalyticsPage({
   ) {
     return (
       <AppLayout>
-        <AnalyticsRedirect />
-        <AnalyticsEmptyState />
-        <AppFooter />
+        <div className="flex flex-col min-h-full">
+          <div className="flex-1">
+            <AnalyticsRedirect />
+            <AnalyticsEmptyState />
+          </div>
+          <AppFooter />
+        </div>
       </AppLayout>
     );
   }
@@ -84,8 +88,9 @@ export default async function AnalyticsPage({
 
   return (
     <AppLayout>
-      <div className="p-8">
-        <div className="max-w-7xl mx-auto space-y-6">
+      <div className="flex flex-col min-h-full">
+        <div className="flex-1 p-8">
+          <div className="max-w-7xl mx-auto space-y-6">
           {/* Hero Metrics - Only on Overview Tab */}
           {params.tab !== "team" && (
             <Suspense fallback={<HeroMetricsSkeleton />}>
@@ -105,9 +110,10 @@ export default async function AnalyticsPage({
           ) : (
             <OverviewTab repositoryId={repositoryId} dateRange={dateRange} />
           )}
+          </div>
         </div>
+        <AppFooter />
       </div>
-      <AppFooter />
     </AppLayout>
   );
 }
@@ -168,13 +174,7 @@ function parseDateRangeFromParams(params: {
  */
 function parseRepositoryUrl(url: string): { owner: string; repo: string } {
   // Validate input
-  if (
-    !url ||
-    typeof url !== "string" ||
-    url.trim() === "" ||
-    url === "undefined" ||
-    url === "null"
-  ) {
+  if (!url || typeof url !== "string" || url.trim() === "") {
     throw new Error(`Invalid repository URL: ${url}`);
   }
 
@@ -187,9 +187,7 @@ function parseRepositoryUrl(url: string): { owner: string; repo: string } {
   // Extract owner and repo
   const parts = cleanUrl.split("/").filter((part) => part.length > 0);
   if (parts.length < 2) {
-    throw new Error(
-      `Invalid repository URL format: ${url}. Expected format: owner/repo or https://github.com/owner/repo`,
-    );
+    throw new Error(`Invalid repository URL: ${url}`);
   }
 
   return {
