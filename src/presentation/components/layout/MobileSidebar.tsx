@@ -80,12 +80,17 @@ export function MobileSidebar() {
   ];
 
   const isActive = (item: NavigationItem) => {
+    // If we're on settings page, only settings should be active
+    const isSettingsPage = pathname.includes("/settings");
+
     if (item.tab) {
+      // Don't activate analytics tabs when on settings page
+      if (isSettingsPage) return false;
       return currentTab === item.tab;
     }
     // For settings page, check if pathname includes /settings
     if (item.id === "settings") {
-      return pathname.includes("/settings");
+      return isSettingsPage;
     }
     return pathname === item.href;
   };
