@@ -13,6 +13,7 @@ import { ThroughputWidget } from "@/presentation/components/analytics/widgets/Th
 import { TopContributorsWidget } from "@/presentation/components/analytics/widgets/TopContributorsWidget";
 import { DORAMetricsWidget } from "@/presentation/components/analytics/widgets/DORAMetricsWidget";
 import { DeploymentFrequencyWidget } from "@/presentation/components/analytics/widgets/DeploymentFrequencyWidget";
+import { PRChangesTimeseriesWidget } from "@/presentation/components/analytics/widgets/PRChangesTimeseriesWidget";
 
 /**
  * Analytics Page
@@ -152,6 +153,13 @@ export default async function AnalyticsPage({
         </div>
 
         {/* Row 3: Full Width */}
+        <Suspense fallback={<SkeletonChart height="h-96" />}>
+          <PRChangesTimeseriesWidget
+            repositoryId={repositoryId}
+            dateRange={dateRange}
+          />
+        </Suspense>
+
         <Suspense fallback={<SkeletonChart height="h-96" />}>
           <DeploymentFrequencyWidget
             repositoryId={repositoryId}
