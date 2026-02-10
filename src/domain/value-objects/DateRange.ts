@@ -87,4 +87,128 @@ export class DateRange {
     const monthsDiff = this.end.getMonth() - this.start.getMonth();
     return yearsDiff * 12 + monthsDiff;
   }
+
+  /**
+   * Create DateRange for last 7 days
+   */
+  static last7Days(): DateRange {
+    const end = new Date();
+    const start = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    return new DateRange(start, end);
+  }
+
+  /**
+   * Create DateRange for last 30 days
+   */
+  static last30Days(): DateRange {
+    const end = new Date();
+    const start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    return new DateRange(start, end);
+  }
+
+  /**
+   * Create DateRange for last 90 days
+   */
+  static last90Days(): DateRange {
+    const end = new Date();
+    const start = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+    return new DateRange(start, end);
+  }
+
+  /**
+   * Create DateRange for last 6 months (~180 days)
+   */
+  static last6Months(): DateRange {
+    const end = new Date();
+    const start = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000);
+    return new DateRange(start, end);
+  }
+
+  /**
+   * Create DateRange for last 1 year (~365 days)
+   */
+  static lastYear(): DateRange {
+    const end = new Date();
+    const start = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+    return new DateRange(start, end);
+  }
+
+  /**
+   * Check if a date falls within this range (inclusive)
+   *
+   * @param date - Date to check
+   * @returns true if date is within range
+   */
+  contains(date: Date): boolean {
+    const time = date.getTime();
+    return time >= this.start.getTime() && time <= this.end.getTime();
+  }
+
+  /**
+   * Check if this range overlaps with another range
+   *
+   * @param other - Another DateRange
+   * @returns true if ranges overlap
+   */
+  overlaps(other: DateRange): boolean {
+    return this.start <= other.end && this.end >= other.start;
+  }
+
+  /**
+   * Split this date range into chunks of specified size
+   *
+   * @param chunkDays - Size of each chunk in days
+   * @returns Array of DateRange chunks
+   *
+   * @example
+   * const range = DateRange.lastYear();
+   * const chunks = range.split(90); // Split into 90-day chunks
+   * // Returns ~4 chunks covering the full year
+   */
+  split(chunkDays: number): DateRange[] {
+    if (chunkDays <= 0) {
+      throw new Error("Chunk size must be positive");
+    }
+
+    const chunks: DateRange[] = [];
+    const chunkMilliseconds = chunkDays * 24 * 60 * 60 * 1000;
+
+    let currentStart = new Date(this.start);
+    while (currentStart < this.end) {
+      const currentEnd = new Date(
+        Math.min(
+          currentStart.getTime() + chunkMilliseconds,
+          this.end.getTime(),
+        ),
+      );
+
+      chunks.push(new DateRange(currentStart, currentEnd));
+
+      currentStart = new Date(currentEnd.getTime() + 1); // Move to next millisecond
+    }
+
+    return chunks;
+  }
+
+  /**
+   * Convert to ISO string representation
+   *
+   * @returns String in format "start:end" with ISO dates
+   */
+  toISOString(): string {
+    return `${this.start.toISOString()}:${this.end.toISOString()}`;
+  }
+
+  /**
+   * Check equality with another DateRange
+   *
+   * @param other - Another DateRange
+   * @returns true if both ranges have same start and end
+   */
+  equals(other: DateRange): boolean {
+    return (
+      this.start.getTime() === other.start.getTime() &&
+      this.end.getTime() === other.end.getTime()
+    );
+  }
 }

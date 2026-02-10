@@ -55,6 +55,27 @@ export class DeploymentEvent {
   }
 
   /**
+   * Create DeploymentEvent directly (for deserialization)
+   */
+  static create(
+    id: string,
+    tagName: string | null,
+    timestamp: Date,
+    source: DeploymentSource,
+    environment?: string,
+    displayName: string = "",
+  ): DeploymentEvent {
+    return new DeploymentEvent(
+      id,
+      tagName,
+      timestamp,
+      source,
+      environment,
+      displayName,
+    );
+  }
+
+  /**
    * Create DeploymentEvent from GitHub Release
    */
   static fromRelease(release: Release): DeploymentEvent {

@@ -66,35 +66,34 @@ export class FetchGitData {
         return err(accessResult.error);
       }
 
-      // Step 2: Fetch commit log from GitHub API
-      logger.debug("Fetching commit log");
-      const logResult = await this.githubRepository.getLog(
-        input.repositoryUrl,
-        input.dateRange.start,
-        input.dateRange.end,
-      );
+      // Step 2 & 3: Fetch commit log and pull requests in parallel
+      logger.debug("Fetching commit log and pull requests in parallel");
+      const [logResult, prsResult] = await Promise.all([
+        this.githubRepository.getLog(
+          input.repositoryUrl,
+          input.dateRange.start,
+          input.dateRange.end,
+        ),
+        this.githubRepository.getPullRequests(
+          owner,
+          repo,
+          input.dateRange.start,
+        ),
+      ]);
 
       if (!logResult.ok) {
         return err(logResult.error);
       }
 
-      const commits = logResult.value;
-      logger.info(`Fetched ${commits.length} commits`);
-
-      // Step 3: Fetch pull requests
-      logger.debug("Fetching pull requests");
-      const prsResult = await this.githubRepository.getPullRequests(
-        owner,
-        repo,
-        input.dateRange.start,
-      );
-
       if (!prsResult.ok) {
         return err(prsResult.error);
       }
 
+      const commits = logResult.value;
       const pullRequests = prsResult.value;
-      logger.info(`Fetched ${pullRequests.length} pull requests`);
+      logger.info(
+        `Fetched ${commits.length} commits and ${pullRequests.length} pull requests`,
+      );
 
       // Step 4: Fetch review comments for all PRs
       logger.debug("Fetching review comments");

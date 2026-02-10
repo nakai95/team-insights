@@ -14,6 +14,7 @@ import { Contributor } from "@/domain/entities/Contributor";
 import { Result, ok } from "@/lib/result";
 import { logger } from "@/lib/utils/logger";
 import { getErrorMessage } from "@/lib/utils/errorUtils";
+import { saveMergePreference } from "@/lib/utils/mergeCookie";
 
 /**
  * Server Action for merging contributor identities
@@ -156,6 +157,25 @@ export async function mergeIdentities(
       },
       mergedContributor: mergedContributorDto,
     };
+
+    // Save merge preference to cookie for persistence across page reloads
+    // Extract repository ID from URL (owner/repo format)
+    const repositoryId = request.repositoryUrl
+      .replace(/^https?:\/\/github\.com\//, "")
+      .replace(/\.git$/, "");
+
+    try {
+      await saveMergePreference(repositoryId, {
+        primaryId: request.primaryContributorId,
+        mergedIds: request.mergedContributorIds,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      logger.warn("Failed to save merge preference to cookie", {
+        error: getErrorMessage(error),
+      });
+      // Don't fail the operation if cookie save fails
+    }
 
     const duration = Date.now() - startTime;
     logger.info("Server Action: mergeIdentities completed", {
