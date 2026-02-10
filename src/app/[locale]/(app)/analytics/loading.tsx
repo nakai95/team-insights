@@ -1,5 +1,5 @@
 import { AppFooter } from "@/presentation/components/layout";
-import { HeroMetricsSkeleton } from "@/presentation/components/analytics/skeletons/HeroMetricsSkeleton";
+import { HeroMetricsSkeleton } from "@/presentation/components/features/analytics";
 import { SkeletonChart } from "@/presentation/components/shared/SkeletonChart";
 
 /**

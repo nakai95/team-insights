@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { AppSidebar } from "./AppSidebar";
 import { AppHeader } from "./AppHeader";
 import { AppFooter } from "./AppFooter";
-import { HeroMetricsSkeleton } from "@/presentation/components/analytics/skeletons/HeroMetricsSkeleton";
+import { HeroMetricsSkeleton } from "@/presentation/components/features/analytics/skeletons/HeroMetricsSkeleton";
 import { SkeletonChart } from "@/presentation/components/shared/SkeletonChart";
 
 /**

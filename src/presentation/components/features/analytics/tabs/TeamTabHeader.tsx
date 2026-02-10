@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { ContributorDto } from "@/application/dto/ContributorDto";
-import { IdentityMerger } from "@/presentation/components/analysis/IdentityMerger";
+import { IdentityMerger } from "../components/IdentityMerger";
 import { Users } from "lucide-react";
 
 interface TeamTabHeaderProps {

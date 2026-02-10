@@ -2,13 +2,15 @@ import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { DateRange } from "@/domain/value-objects/DateRange";
 import { AppFooter } from "@/presentation/components/layout";
-import { HeroMetrics } from "@/presentation/components/analytics/HeroMetrics";
-import { HeroMetricsSkeleton } from "@/presentation/components/analytics/skeletons/HeroMetricsSkeleton";
-import { TeamTabSkeleton } from "@/presentation/components/analytics/skeletons/TeamTabSkeleton";
-import { OverviewTab } from "@/presentation/components/analytics/tabs/OverviewTab";
-import { TeamTab } from "@/presentation/components/analytics/tabs/TeamTab";
-import { AnalyticsEmptyState } from "@/presentation/components/analytics/AnalyticsEmptyState";
-import { AnalyticsRedirect } from "@/presentation/components/analytics/AnalyticsRedirect";
+import {
+  HeroMetrics,
+  HeroMetricsSkeleton,
+  TeamTabSkeleton,
+  OverviewTab,
+  TeamTab,
+  AnalyticsEmptyState,
+  AnalyticsRedirect,
+} from "@/presentation/components/features/analytics";
 
 /**
  * Analytics Page

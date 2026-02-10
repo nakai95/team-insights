@@ -15,7 +15,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { useIdentityMerge } from "@/presentation/hooks/useIdentityMerge";
+import { useIdentityMerge } from "./hooks";
 import { GitMerge, User, Mail, AlertCircle, Sparkles } from "lucide-react";
 import { detectMergeCandidates } from "@/lib/utils/mergeDetection";
 

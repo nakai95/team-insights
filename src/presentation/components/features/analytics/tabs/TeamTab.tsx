@@ -1,6 +1,6 @@
 import type { DateRange } from "@/domain/value-objects/DateRange";
 import { getTranslations } from "next-intl/server";
-import { getCachedContributors } from "@/app/[locale]/(app)/analytics/contributor-fetcher";
+import { getCachedContributors } from "@/app/[locale]/(app)/analytics/_lib/contributor-fetcher";
 import {
   ContributorList,
   ImplementationActivityChart,

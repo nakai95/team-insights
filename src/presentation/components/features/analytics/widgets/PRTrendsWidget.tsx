@@ -11,10 +11,7 @@ import { MetricCardError } from "../shared/MetricCardError";
 import { getCachedPRs } from "@/app/[locale]/(app)/analytics/_lib/data-fetchers";
 import type { DateRange } from "@/domain/value-objects/DateRange";
 import { CalculateChangesTimeseries } from "@/application/use-cases/CalculateChangesTimeseries";
-import {
-  TimeseriesChart,
-  EmptyState,
-} from "@/presentation/components/tabs/ChangesTimeseriesTab/components";
+import { TimeseriesChart, EmptyState } from "./components";
 
 /**
  * PRTrendsWidget Component

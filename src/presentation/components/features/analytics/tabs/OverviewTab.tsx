@@ -1,9 +1,9 @@
 import { Suspense } from "react";
 import type { DateRange } from "@/domain/value-objects/DateRange";
 import { SkeletonChart } from "@/presentation/components/shared/SkeletonChart";
-import { PRTrendsWidget } from "@/presentation/components/analytics/widgets/PRTrendsWidget";
-import { DORAMetricsWidget } from "@/presentation/components/analytics/widgets/DORAMetricsWidget";
-import { DeploymentFrequencyWidget } from "@/presentation/components/analytics/widgets/DeploymentFrequencyWidget";
+import { PRTrendsWidget } from "@/presentation/components/features/analytics/widgets/PRTrendsWidget";
+import { DORAMetricsWidget } from "@/presentation/components/features/analytics/widgets/DORAMetricsWidget";
+import { DeploymentFrequencyWidget } from "@/presentation/components/features/analytics/widgets/DeploymentFrequencyWidget";
 
 /**
  * OverviewTab Component

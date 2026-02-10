@@ -20,7 +20,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { fetchUserRepositories, type Repository } from "./actions";
+import { fetchUserRepositories, type Repository } from "./_lib/actions";
 import { useTranslations } from "next-intl";
 
 /**
