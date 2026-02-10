@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { DeploymentSummaryCards } from "../DeploymentSummaryCards";
-import { DeploymentFrequencyChart } from "../DeploymentFrequencyChart";
+import { DeploymentFrequencyLineChart } from "../DeploymentFrequencyLineChart";
 import { DeploymentBarChart } from "../DeploymentBarChart";
 import type { DeploymentFrequencyResult } from "@/application/dto/DeploymentFrequencyResult";
 
@@ -111,7 +111,7 @@ function DeploymentFrequencyTabContent({ data }: DeploymentFrequencyTabProps) {
           <CardTitle>{t("charts.weeklyTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <DeploymentFrequencyChart
+          <DeploymentFrequencyLineChart
             weeklyData={data.weeklyData}
             movingAverage={data.trendAnalysis?.movingAverage}
             trendDirection={data.trendAnalysis?.direction}

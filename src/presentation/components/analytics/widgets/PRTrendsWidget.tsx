@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
 import { MetricCardError } from "../shared/MetricCardError";
-import { getCachedPRs } from "@/app/[locale]/analytics/data-fetchers";
+import { getCachedPRs } from "@/app/[locale]/(app)/analytics/_lib/data-fetchers";
 import type { DateRange } from "@/domain/value-objects/DateRange";
 import { CalculateChangesTimeseries } from "@/application/use-cases/CalculateChangesTimeseries";
 import {

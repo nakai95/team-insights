@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Gauge } from "lucide-react";
 import { MetricCardError } from "../shared/MetricCardError";
-import { getCachedDeployments } from "@/app/[locale]/analytics/data-fetchers";
+import { getCachedDeployments } from "@/app/[locale]/(app)/analytics/_lib/data-fetchers";
 import type { DateRange } from "@/domain/value-objects/DateRange";
 import { Badge } from "@/components/ui/badge";
 

@@ -23,8 +23,10 @@ import { cn } from "@/lib/utils";
 import {
   fetchUserRepositories,
   type Repository,
-} from "@/app/[locale]/analytics/actions";
-import { AppLayout, AppFooter } from "@/presentation/components/layout";
+} from "@/app/[locale]/(app)/analytics/actions";
+import { AppSidebar } from "./AppSidebar";
+import { AppHeader } from "./AppHeader";
+import { AppFooter } from "./AppFooter";
 import { HeroMetricsSkeleton } from "@/presentation/components/analytics/skeletons/HeroMetricsSkeleton";
 import { SkeletonChart } from "@/presentation/components/shared/SkeletonChart";
 
@@ -163,32 +165,44 @@ export function RepositorySwitcher() {
         typeof window !== "undefined" &&
         createPortal(
           <div className="fixed inset-0 z-50 bg-background">
-            <AppLayout>
-              <div className="flex flex-col min-h-full">
-                <div className="flex-1 p-8">
-                  <div className="max-w-7xl mx-auto space-y-6">
-                    {/* Hero Metrics Skeleton */}
-                    <HeroMetricsSkeleton />
+            <div className="flex flex-col h-screen overflow-hidden">
+              {/* Header - Full width at top */}
+              <AppHeader />
 
-                    {/* Main Content Skeletons */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      {/* Large chart (2/3 width) */}
-                      <div className="lg:col-span-2">
+              {/* Content area: Sidebar + Main */}
+              <div className="flex flex-1 overflow-hidden">
+                {/* Fixed Sidebar (desktop only) */}
+                <AppSidebar />
+
+                {/* Scrollable content area */}
+                <main className="flex-1 overflow-y-auto bg-background">
+                  <div className="flex flex-col min-h-full">
+                    <div className="flex-1 p-8">
+                      <div className="max-w-7xl mx-auto space-y-6">
+                        {/* Hero Metrics Skeleton */}
+                        <HeroMetricsSkeleton />
+
+                        {/* Main Content Skeletons */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                          {/* Large chart (2/3 width) */}
+                          <div className="lg:col-span-2">
+                            <SkeletonChart height="h-96" />
+                          </div>
+                          {/* Side widget (1/3 width) */}
+                          <div>
+                            <SkeletonChart height="h-64" />
+                          </div>
+                        </div>
+
+                        {/* Additional full-width chart */}
                         <SkeletonChart height="h-96" />
                       </div>
-                      {/* Side widget (1/3 width) */}
-                      <div>
-                        <SkeletonChart height="h-64" />
-                      </div>
                     </div>
-
-                    {/* Additional full-width chart */}
-                    <SkeletonChart height="h-96" />
+                    <AppFooter />
                   </div>
-                </div>
-                <AppFooter />
+                </main>
               </div>
-            </AppLayout>
+            </div>
           </div>,
           document.body,
         )}

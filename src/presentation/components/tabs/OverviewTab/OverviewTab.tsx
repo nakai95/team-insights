@@ -9,8 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ContributorList } from "@/app/[locale]/components/ContributorList";
-import { ImplementationActivityChart } from "@/app/[locale]/components/ImplementationActivityChart";
+import {
+  ContributorList,
+  ImplementationActivityChart,
+} from "@/presentation/components/features/contributors";
 
 export interface OverviewTabProps {
   /** Contributors list for display */

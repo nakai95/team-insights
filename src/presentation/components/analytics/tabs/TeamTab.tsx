@@ -1,8 +1,10 @@
 import type { DateRange } from "@/domain/value-objects/DateRange";
 import { getTranslations } from "next-intl/server";
-import { getCachedContributors } from "@/app/[locale]/analytics/contributor-fetcher";
-import { ContributorList } from "@/app/[locale]/components/ContributorList";
-import { ImplementationActivityChart } from "@/app/[locale]/components/ImplementationActivityChart";
+import { getCachedContributors } from "@/app/[locale]/(app)/analytics/contributor-fetcher";
+import {
+  ContributorList,
+  ImplementationActivityChart,
+} from "@/presentation/components/features/contributors";
 import {
   Card,
   CardContent,

@@ -2,9 +2,9 @@ import { getTranslations } from "next-intl/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "lucide-react";
 import { MetricCardError } from "../shared/MetricCardError";
-import { getCachedDeployments } from "@/app/[locale]/analytics/data-fetchers";
+import { getCachedDeployments } from "@/app/[locale]/(app)/analytics/_lib/data-fetchers";
 import type { DateRange } from "@/domain/value-objects/DateRange";
-import { DeploymentFrequencyChart } from "./components/DeploymentFrequencyChart";
+import { DeploymentFrequencyBarChart } from "./components/DeploymentFrequencyBarChart";
 import { format, startOfWeek, startOfMonth } from "date-fns";
 
 /**
@@ -185,7 +185,7 @@ export async function DeploymentFrequencyWidget({
           <p className="text-sm text-muted-foreground">{t("description")}</p>
         </CardHeader>
         <CardContent>
-          <DeploymentFrequencyChart
+          <DeploymentFrequencyBarChart
             data={aggregatedData}
             aggregationLevel={aggregationLevel}
           />

@@ -7,7 +7,7 @@ import {
   getCachedPRs,
   getCachedCommits,
   getCachedDeployments,
-} from "@/app/[locale]/analytics/data-fetchers";
+} from "@/app/[locale]/(app)/analytics/_lib/data-fetchers";
 
 /**
  * HeroMetrics Component
