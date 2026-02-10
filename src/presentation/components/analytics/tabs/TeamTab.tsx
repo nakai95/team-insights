@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Users, AlertCircle } from "lucide-react";
+import { TeamTabHeader } from "./TeamTabHeader";
 
 /**
  * TeamTab Component
@@ -45,6 +46,9 @@ export async function TeamTab({ repositoryId, dateRange }: TeamTabProps) {
 
   // Fetch contributor data
   const result = await getCachedContributors(repositoryId, dateRange);
+
+  // Construct repository URL from repositoryId (owner/repo)
+  const repositoryUrl = `https://github.com/${repositoryId}`;
 
   // Handle error
   if (!result.ok) {
@@ -92,6 +96,12 @@ export async function TeamTab({ repositoryId, dateRange }: TeamTabProps) {
 
   return (
     <div className="space-y-6">
+      {/* Header with Identity Merger */}
+      <TeamTabHeader
+        repositoryUrl={repositoryUrl}
+        contributors={contributors}
+      />
+
       {/* Charts Section */}
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-[2fr_1fr]">
         {/* Implementation Activity Chart */}

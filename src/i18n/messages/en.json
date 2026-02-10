@@ -177,6 +177,15 @@
     "title": "Merge Duplicate Contributors",
     "description": "Select contributors that represent the same person. Choose one as the primary identity to preserve.",
     "button": "Merge Identities",
+    "suggestions": {
+      "title": "Suggested Merges",
+      "description": "We detected potential duplicate contributors based on name similarity",
+      "highConfidence": "High confidence",
+      "mediumConfidence": "Medium confidence",
+      "lowConfidence": "Low confidence",
+      "apply": "Apply",
+      "moreAvailable": "+{count} more suggestions"
+    },
     "instructions": {
       "title": "How to merge:",
       "step1": "Check the boxes for contributors to merge",

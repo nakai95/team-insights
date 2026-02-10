@@ -177,6 +177,15 @@
     "title": "重複するContributorを統合",
     "description": "同じ人物を表すContributorを選択してください。保持する主要なIDを1つ選択してください。",
     "button": "ID統合",
+    "suggestions": {
+      "title": "統合候補",
+      "description": "名前の類似性に基づいて、重複している可能性のあるContributorを検出しました",
+      "highConfidence": "高い信頼度",
+      "mediumConfidence": "中程度の信頼度",
+      "lowConfidence": "低い信頼度",
+      "apply": "適用",
+      "moreAvailable": "他に{count}件の候補があります"
+    },
     "instructions": {
       "title": "統合方法:",
       "step1": "統合するContributorのチェックボックスをオンにします",

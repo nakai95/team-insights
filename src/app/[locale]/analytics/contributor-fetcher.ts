@@ -11,6 +11,8 @@ import { OctokitAdapter } from "@/infrastructure/github/OctokitAdapter";
 import { ContributorMapper } from "@/application/mappers/ContributorMapper";
 import { createSessionProvider } from "@/infrastructure/auth/SessionProviderFactory";
 import { Result, ok, err } from "@/lib/result";
+import { getMergePreferences } from "@/lib/utils/mergeCookie";
+import { ContributorService } from "@/domain/services/ContributorService";
 
 /**
  * Cached Contributor Analysis Fetcher
@@ -75,9 +77,18 @@ export const getCachedContributors = cache(
       }
 
       // Map to DTOs
-      const contributorDtos = result.value.analysis.contributors.map(
+      let contributorDtos = result.value.analysis.contributors.map(
         (contributor) => ContributorMapper.toDto(contributor),
       );
+
+      // Apply merge preferences from cookie
+      const mergePreferences = await getMergePreferences(repositoryId);
+      if (mergePreferences.length > 0) {
+        contributorDtos = applyMergePreferences(
+          contributorDtos,
+          mergePreferences,
+        );
+      }
 
       return ok(contributorDtos);
     } catch (error) {
@@ -89,3 +100,65 @@ export const getCachedContributors = cache(
     }
   },
 );
+
+/**
+ * Apply merge preferences to contributors list
+ * Merges contributors according to saved preferences from cookie
+ */
+function applyMergePreferences(
+  contributors: ContributorDto[],
+  preferences: { primaryId: string; mergedIds: string[] }[],
+): ContributorDto[] {
+  let result = [...contributors];
+
+  for (const preference of preferences) {
+    // Find primary contributor
+    const primaryDto = result.find((c) => c.id === preference.primaryId);
+    if (!primaryDto) {
+      continue; // Primary not found, skip this merge
+    }
+
+    // Find contributors to merge
+    const mergedDtos = preference.mergedIds
+      .map((id) => result.find((c) => c.id === id))
+      .filter((c): c is ContributorDto => c !== undefined);
+
+    if (mergedDtos.length === 0) {
+      continue; // No contributors to merge, skip
+    }
+
+    // Convert to domain entities
+    const primaryEntity = ContributorMapper.toDomain(primaryDto);
+    const mergedEntities = mergedDtos
+      .map((dto) => ContributorMapper.toDomain(dto))
+      .filter((e): e is NonNullable<typeof e> => e !== null);
+
+    if (!primaryEntity || mergedEntities.length === 0) {
+      continue; // Conversion failed, skip
+    }
+
+    // Perform merge
+    const mergeResult = ContributorService.mergeContributors(
+      primaryEntity,
+      mergedEntities,
+    );
+
+    if (!mergeResult.ok) {
+      continue; // Merge failed, skip
+    }
+
+    // Convert merged entity back to DTO
+    const mergedDto = ContributorMapper.toDto(mergeResult.value);
+
+    // Remove merged contributors from result
+    result = result.filter(
+      (c) =>
+        c.id !== preference.primaryId && !preference.mergedIds.includes(c.id),
+    );
+
+    // Add merged contributor
+    result.push(mergedDto);
+  }
+
+  return result;
+}
