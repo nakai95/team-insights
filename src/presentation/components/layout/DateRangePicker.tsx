@@ -2,9 +2,10 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import type { DateRange as ReactDayPickerDateRange } from "react-day-picker";
@@ -14,6 +15,9 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { AppLayout, AppFooter } from "@/presentation/components/layout";
+import { HeroMetricsSkeleton } from "@/presentation/components/analytics/skeletons/HeroMetricsSkeleton";
+import { SkeletonChart } from "@/presentation/components/shared/SkeletonChart";
 
 /**
  * DateRangePicker Component
@@ -47,6 +51,7 @@ export function DateRangePicker() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   // Parse current date range from URL
   const getCurrentRange = (): DateRange | undefined => {
@@ -96,7 +101,10 @@ export function DateRangePicker() {
     params.delete("end");
     params.set("range", value);
 
-    router.push(`?${params.toString()}`);
+    // Navigate with transition to show loading state immediately
+    startTransition(() => {
+      router.push(`?${params.toString()}`);
+    });
     setOpen(false);
   };
 
@@ -112,7 +120,10 @@ export function DateRangePicker() {
     params.set("start", range.from.toISOString().split("T")[0]!);
     params.set("end", range.to.toISOString().split("T")[0]!);
 
-    router.push(`?${params.toString()}`);
+    // Navigate with transition to show loading state immediately
+    startTransition(() => {
+      router.push(`?${params.toString()}`);
+    });
     setOpen(false);
   };
 
@@ -125,50 +136,87 @@ export function DateRangePicker() {
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn(
-            "justify-start text-left font-normal min-w-[240px]",
-            !dateRange && "text-muted-foreground",
-          )}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          <span className="truncate">{formatRange(dateRange)}</span>
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <div className="flex">
-          {/* Presets */}
-          <div className="border-r p-3 space-y-1">
-            <div className="text-sm font-medium mb-2">{t("presets")}</div>
-            {presetRanges.map((preset) => (
-              <Button
-                key={preset.value}
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start"
-                onClick={() => handlePresetSelect(preset.days, preset.value)}
-              >
-                {preset.label}
-              </Button>
-            ))}
-          </div>
+    <>
+      {/* Loading overlay during date range change */}
+      {isPending &&
+        typeof window !== "undefined" &&
+        createPortal(
+          <div className="fixed inset-0 z-50 bg-background">
+            <AppLayout>
+              <div className="flex flex-col min-h-full">
+                <div className="flex-1 p-8">
+                  <div className="max-w-7xl mx-auto space-y-6">
+                    {/* Hero Metrics Skeleton */}
+                    <HeroMetricsSkeleton />
 
-          {/* Calendar */}
-          <div className="p-3">
-            <div className="text-sm font-medium mb-2">{t("customRange")}</div>
-            <Calendar
-              mode="range"
-              defaultMonth={dateRange?.from}
-              selected={dateRange}
-              onSelect={handleCustomSelect}
-              numberOfMonths={2}
-            />
+                    {/* Main Content Skeletons */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Large chart (2/3 width) */}
+                      <div className="lg:col-span-2">
+                        <SkeletonChart height="h-96" />
+                      </div>
+                      {/* Side widget (1/3 width) */}
+                      <div>
+                        <SkeletonChart height="h-64" />
+                      </div>
+                    </div>
+
+                    {/* Additional full-width chart */}
+                    <SkeletonChart height="h-96" />
+                  </div>
+                </div>
+                <AppFooter />
+              </div>
+            </AppLayout>
+          </div>,
+          document.body,
+        )}
+
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(
+              "justify-start text-left font-normal min-w-[240px]",
+              !dateRange && "text-muted-foreground",
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            <span className="truncate">{formatRange(dateRange)}</span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <div className="flex">
+            {/* Presets */}
+            <div className="border-r p-3 space-y-1">
+              <div className="text-sm font-medium mb-2">{t("presets")}</div>
+              {presetRanges.map((preset) => (
+                <Button
+                  key={preset.value}
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start"
+                  onClick={() => handlePresetSelect(preset.days, preset.value)}
+                >
+                  {preset.label}
+                </Button>
+              ))}
+            </div>
+
+            {/* Calendar */}
+            <div className="p-3">
+              <div className="text-sm font-medium mb-2">{t("customRange")}</div>
+              <Calendar
+                mode="range"
+                defaultMonth={dateRange?.from}
+                selected={dateRange}
+                onSelect={handleCustomSelect}
+                numberOfMonths={2}
+              />
+            </div>
           </div>
-        </div>
-      </PopoverContent>
-    </Popover>
+        </PopoverContent>
+      </Popover>
+    </>
   );
 }
