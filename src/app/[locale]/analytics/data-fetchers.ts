@@ -19,14 +19,14 @@ import type { DateRange } from "@/domain/value-objects/DateRange";
  * - Lower rate limit consumption
  *
  * Example:
- * - CommitCountWidget calls getCachedCommits("owner/repo", dateRange)
- * - ContributorCountWidget calls getCachedCommits("owner/repo", dateRange)
- * - Only ONE actual API call is made, result is shared
+ * - HeroMetrics calls getCachedCommits("owner/repo", dateRange)
+ * - Multiple widgets call getCachedPRs("owner/repo", dateRange)
+ * - Only ONE actual API call is made per unique function+args, result is shared
  */
 
 /**
  * Cached PR fetcher
- * Used by: PRCountWidget
+ * Used by: HeroMetrics, PRTrendsWidget
  */
 export const getCachedPRs = cache(
   async (repositoryId: string, dateRange: DateRange) => {
@@ -45,7 +45,7 @@ export const getCachedPRs = cache(
 
 /**
  * Cached Deployment fetcher
- * Used by: DeploymentCountWidget
+ * Used by: HeroMetrics, DORAMetricsWidget, DeploymentFrequencyWidget
  */
 export const getCachedDeployments = cache(
   async (repositoryId: string, dateRange: DateRange) => {
@@ -64,9 +64,9 @@ export const getCachedDeployments = cache(
 
 /**
  * Cached Commit fetcher
- * Used by: CommitCountWidget, ContributorCountWidget
+ * Used by: HeroMetrics
  *
- * IMPORTANT: This function is called by multiple widgets
+ * IMPORTANT: This function is called by multiple components
  * Without cache(), this would result in duplicate API calls
  */
 export const getCachedCommits = cache(

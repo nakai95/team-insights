@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
  * Usage:
  * ```typescript
  * <Suspense fallback={<MetricCardSkeleton />}>
- *   <PRCountWidget repositoryId={repositoryId} dateRange={dateRange} />
+ *   <HeroMetricCard {...props} />
  * </Suspense>
  * ```
  */
