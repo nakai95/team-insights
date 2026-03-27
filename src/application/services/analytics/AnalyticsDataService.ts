@@ -46,6 +46,7 @@ export class AnalyticsDataService {
       owner,
       repo,
       dateRange.start,
+      dateRange.end,
     );
   }
 
