@@ -166,6 +166,7 @@ export class OctokitAdapter implements IGitHubRepository {
     owner: string,
     repo: string,
     sinceDate?: Date,
+    untilDate?: Date,
   ): Promise<Result<PullRequest[]>> {
     try {
       const graphqlWithAuth = await this.getGraphqlWithAuth();
@@ -191,18 +192,35 @@ export class OctokitAdapter implements IGitHubRepository {
           cursor,
         );
 
+        // Validate response contains repository data
+        if (!response.repository) {
+          return err(
+            new Error(
+              `Repository ${owner}/${repo} not found or not accessible`,
+            ),
+          );
+        }
+
         // Transform GraphQL response to domain entities using mapper
         const prs = response.repository.pullRequests.nodes.map(mapPullRequest);
 
-        // Filter by date if provided (early termination)
-        const filteredPRs = sinceDate
+        // Filter by sinceDate (used for early termination check)
+        const sinceDateFilteredPRs = sinceDate
           ? prs.filter((pr: PullRequest) => pr.createdAt >= sinceDate)
           : prs;
+
+        // Filter by end date if provided (does NOT affect early termination)
+        const filteredPRs = untilDate
+          ? sinceDateFilteredPRs.filter(
+              (pr: PullRequest) => pr.createdAt <= untilDate,
+            )
+          : sinceDateFilteredPRs;
 
         allPullRequests.push(...filteredPRs);
 
         // Early termination: Stop if we've reached PRs older than sinceDate
-        if (sinceDate && filteredPRs.length < prs.length) {
+        // Only check sinceDate filtering (not untilDate) since PRs are ordered newest-first
+        if (sinceDate && sinceDateFilteredPRs.length < prs.length) {
           logger.info("Reached PRs older than sinceDate, stopping pagination");
           break;
         }
