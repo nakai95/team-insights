@@ -136,6 +136,7 @@ export interface IGitHubRepository {
     owner: string,
     repo: string,
     sinceDate?: Date,
+    untilDate?: Date,
   ): Promise<Result<PullRequest[]>>;
 
   /**
