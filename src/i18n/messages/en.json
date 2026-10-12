@@ -38,6 +38,10 @@
         "title": "Session Expired",
         "message": "Your session has expired. Please sign in again to continue."
       },
+      "Configuration": {
+        "title": "Configuration Error",
+        "message": "There is a problem with the server authentication configuration. Please verify that the environment variables (AUTH_SECRET, AUTH_GITHUB_ID, AUTH_GITHUB_SECRET, etc.) are correctly set."
+      },
       "default": {
         "title": "Authentication Error",
         "message": "An unexpected error occurred during authentication. Please try again or contact support if the problem persists."

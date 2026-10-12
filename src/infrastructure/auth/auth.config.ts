@@ -17,6 +17,7 @@ import GitHub from "next-auth/providers/github";
  * - AUTH_SECRET: Secret for JWT encryption (min 32 characters)
  */
 export const { auth, handlers, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     GitHub({
       clientId: process.env.AUTH_GITHUB_ID,

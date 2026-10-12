@@ -39,6 +39,17 @@ import { AlertCircle } from "lucide-react";
  * Query Parameters:
  * - error: The error code from NextAuth
  */
+const KNOWN_ERROR_CODES = [
+  "AccessDenied",
+  "OAuthSignin",
+  "OAuthCallback",
+  "OAuthAccountNotLinked",
+  "RefreshAccessTokenError",
+  "Configuration",
+] as const;
+
+type KnownErrorCode = (typeof KNOWN_ERROR_CODES)[number];
+
 export default function AuthErrorPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -53,7 +64,10 @@ export default function AuthErrorPage() {
 
   // Get user-friendly error message based on error code
   const getErrorMessage = (errorCode: string | null) => {
-    const key = errorCode || "default";
+    const key =
+      errorCode && KNOWN_ERROR_CODES.includes(errorCode as KnownErrorCode)
+        ? errorCode
+        : "default";
     return {
       title: t(`${key}.title`),
       message: t(`${key}.message`),
